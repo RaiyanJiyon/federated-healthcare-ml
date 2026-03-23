@@ -8,8 +8,8 @@ __pycache__/
 # Ignore large dataset files (keep sample data for reproducibility)
 data/raw/*.csv
 data/processed/*.csv
-!data/raw/sample.csv
-!data/processed/sample.csv
+!data/raw/diabetes.csv
+!data/processed/diabetes.csv
 
 # Ignore generated results
 results/logs/
