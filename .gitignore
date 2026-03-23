@@ -2,3 +2,15 @@ venv/
 *.egg-info/
 __pycache__/
 .pytest_cache/
+*.pyc
+.ipynb_checkpoints/
+
+# Ignore large dataset files (keep sample data for reproducibility)
+data/raw/*.csv
+data/processed/*.csv
+!data/raw/sample.csv
+!data/processed/sample.csv
+
+# Ignore generated results
+results/logs/
+results/plots/*.png
