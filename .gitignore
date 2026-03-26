@@ -17,3 +17,6 @@ results/plots/*.png
 
 # Ignore environment variables file (keep .env.local for local development)
 .env.local
+
+# Ignore Markdown files for Guidelines and documentation
+Guideline.md
