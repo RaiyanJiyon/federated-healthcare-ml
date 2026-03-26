@@ -36,8 +36,11 @@ class DataPreprocessor:
         
         if isinstance(X_processed, pd.DataFrame):
             # Work with column names
-            cols_to_check = [col for col in self.INVALID_ZERO_COLUMNS if col in X_processed.columns]
-            
+            cols_to_check = []
+            for col in self.INVALID_ZERO_COLUMNS:
+                if col in X_processed.columns:
+                    cols_to_check.append(col)  
+                    
             zero_counts = {}
             for col in cols_to_check:
                 zero_count = (X_processed[col] == 0).sum()
