@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-03-27T15:16:37.936628",
+  "model_type": "LogisticRegression_Centralized",
+  "training_samples": 614,
+  "testing_samples": 154,
+  "features": 8,
+  "training_time_seconds": 0.003726482391357422,
+  "train_metrics": {
+    "accuracy": 0.7964169381107492,
+    "loss": 0.4531100028068837
+  },
+  "test_metrics": {
+    "accuracy": 0.7012987012987013,
+    "precision": 0.5869565217391305,
+    "recall": 0.5,
+    "f1_score": 0.54,
+    "loss": 0.5138056671057633,
+    "confusion_matrix": [
+      [
+        81,
+        19
+      ],
+      [
+        27,
+        27
+      ]
+    ]
+  }
+}
