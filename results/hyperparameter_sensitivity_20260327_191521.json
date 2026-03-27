@@ -1,0 +1,741 @@
+{
+  "configuration": {
+    "num_clients": 5,
+    "alpha": 0.5,
+    "test_configs": {
+      "max_iter": [
+        100,
+        500,
+        2000,
+        5000
+      ],
+      "C": [
+        0.1,
+        1.0,
+        10.0,
+        100.0
+      ],
+      "num_rounds": [
+        5,
+        10,
+        15,
+        20
+      ]
+    }
+  },
+  "results": {
+    "max_iter=100_C=0.1_rounds=5": {
+      "max_iter": 100,
+      "C": 0.1,
+      "num_rounds": 5,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.19558024406433105
+    },
+    "max_iter=100_C=0.1_rounds=10": {
+      "max_iter": 100,
+      "C": 0.1,
+      "num_rounds": 10,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.400238037109375
+    },
+    "max_iter=100_C=0.1_rounds=15": {
+      "max_iter": 100,
+      "C": 0.1,
+      "num_rounds": 15,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.5997757911682129
+    },
+    "max_iter=100_C=0.1_rounds=20": {
+      "max_iter": 100,
+      "C": 0.1,
+      "num_rounds": 20,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.865760326385498
+    },
+    "max_iter=100_C=1.0_rounds=5": {
+      "max_iter": 100,
+      "C": 1.0,
+      "num_rounds": 5,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.35333681106567383
+    },
+    "max_iter=100_C=1.0_rounds=10": {
+      "max_iter": 100,
+      "C": 1.0,
+      "num_rounds": 10,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.609656572341919
+    },
+    "max_iter=100_C=1.0_rounds=15": {
+      "max_iter": 100,
+      "C": 1.0,
+      "num_rounds": 15,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.6899764537811279
+    },
+    "max_iter=100_C=1.0_rounds=20": {
+      "max_iter": 100,
+      "C": 1.0,
+      "num_rounds": 20,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.912494421005249
+    },
+    "max_iter=100_C=10.0_rounds=5": {
+      "max_iter": 100,
+      "C": 10.0,
+      "num_rounds": 5,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.2805759906768799
+    },
+    "max_iter=100_C=10.0_rounds=10": {
+      "max_iter": 100,
+      "C": 10.0,
+      "num_rounds": 10,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.559100866317749
+    },
+    "max_iter=100_C=10.0_rounds=15": {
+      "max_iter": 100,
+      "C": 10.0,
+      "num_rounds": 15,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.8294856548309326
+    },
+    "max_iter=100_C=10.0_rounds=20": {
+      "max_iter": 100,
+      "C": 10.0,
+      "num_rounds": 20,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 1.1173202991485596
+    },
+    "max_iter=100_C=100.0_rounds=5": {
+      "max_iter": 100,
+      "C": 100.0,
+      "num_rounds": 5,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.28363728523254395
+    },
+    "max_iter=100_C=100.0_rounds=10": {
+      "max_iter": 100,
+      "C": 100.0,
+      "num_rounds": 10,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.569807767868042
+    },
+    "max_iter=100_C=100.0_rounds=15": {
+      "max_iter": 100,
+      "C": 100.0,
+      "num_rounds": 15,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.8530845642089844
+    },
+    "max_iter=100_C=100.0_rounds=20": {
+      "max_iter": 100,
+      "C": 100.0,
+      "num_rounds": 20,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 1.144038200378418
+    },
+    "max_iter=500_C=0.1_rounds=5": {
+      "max_iter": 500,
+      "C": 0.1,
+      "num_rounds": 5,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.19708800315856934
+    },
+    "max_iter=500_C=0.1_rounds=10": {
+      "max_iter": 500,
+      "C": 0.1,
+      "num_rounds": 10,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.39517807960510254
+    },
+    "max_iter=500_C=0.1_rounds=15": {
+      "max_iter": 500,
+      "C": 0.1,
+      "num_rounds": 15,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.5941009521484375
+    },
+    "max_iter=500_C=0.1_rounds=20": {
+      "max_iter": 500,
+      "C": 0.1,
+      "num_rounds": 20,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.8180885314941406
+    },
+    "max_iter=500_C=1.0_rounds=5": {
+      "max_iter": 500,
+      "C": 1.0,
+      "num_rounds": 5,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.241729736328125
+    },
+    "max_iter=500_C=1.0_rounds=10": {
+      "max_iter": 500,
+      "C": 1.0,
+      "num_rounds": 10,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.48326849937438965
+    },
+    "max_iter=500_C=1.0_rounds=15": {
+      "max_iter": 500,
+      "C": 1.0,
+      "num_rounds": 15,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.6985547542572021
+    },
+    "max_iter=500_C=1.0_rounds=20": {
+      "max_iter": 500,
+      "C": 1.0,
+      "num_rounds": 20,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.9278912544250488
+    },
+    "max_iter=500_C=10.0_rounds=5": {
+      "max_iter": 500,
+      "C": 10.0,
+      "num_rounds": 5,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.2814807891845703
+    },
+    "max_iter=500_C=10.0_rounds=10": {
+      "max_iter": 500,
+      "C": 10.0,
+      "num_rounds": 10,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.5652148723602295
+    },
+    "max_iter=500_C=10.0_rounds=15": {
+      "max_iter": 500,
+      "C": 10.0,
+      "num_rounds": 15,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.8457589149475098
+    },
+    "max_iter=500_C=10.0_rounds=20": {
+      "max_iter": 500,
+      "C": 10.0,
+      "num_rounds": 20,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 1.1402053833007812
+    },
+    "max_iter=500_C=100.0_rounds=5": {
+      "max_iter": 500,
+      "C": 100.0,
+      "num_rounds": 5,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.28926849365234375
+    },
+    "max_iter=500_C=100.0_rounds=10": {
+      "max_iter": 500,
+      "C": 100.0,
+      "num_rounds": 10,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.5994656085968018
+    },
+    "max_iter=500_C=100.0_rounds=15": {
+      "max_iter": 500,
+      "C": 100.0,
+      "num_rounds": 15,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.8716762065887451
+    },
+    "max_iter=500_C=100.0_rounds=20": {
+      "max_iter": 500,
+      "C": 100.0,
+      "num_rounds": 20,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 1.241542100906372
+    },
+    "max_iter=2000_C=0.1_rounds=5": {
+      "max_iter": 2000,
+      "C": 0.1,
+      "num_rounds": 5,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.17676496505737305
+    },
+    "max_iter=2000_C=0.1_rounds=10": {
+      "max_iter": 2000,
+      "C": 0.1,
+      "num_rounds": 10,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.3485074043273926
+    },
+    "max_iter=2000_C=0.1_rounds=15": {
+      "max_iter": 2000,
+      "C": 0.1,
+      "num_rounds": 15,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.5130162239074707
+    },
+    "max_iter=2000_C=0.1_rounds=20": {
+      "max_iter": 2000,
+      "C": 0.1,
+      "num_rounds": 20,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.7640407085418701
+    },
+    "max_iter=2000_C=1.0_rounds=5": {
+      "max_iter": 2000,
+      "C": 1.0,
+      "num_rounds": 5,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.23697614669799805
+    },
+    "max_iter=2000_C=1.0_rounds=10": {
+      "max_iter": 2000,
+      "C": 1.0,
+      "num_rounds": 10,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.4693009853363037
+    },
+    "max_iter=2000_C=1.0_rounds=15": {
+      "max_iter": 2000,
+      "C": 1.0,
+      "num_rounds": 15,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.6994428634643555
+    },
+    "max_iter=2000_C=1.0_rounds=20": {
+      "max_iter": 2000,
+      "C": 1.0,
+      "num_rounds": 20,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.9368057250976562
+    },
+    "max_iter=2000_C=10.0_rounds=5": {
+      "max_iter": 2000,
+      "C": 10.0,
+      "num_rounds": 5,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.28594088554382324
+    },
+    "max_iter=2000_C=10.0_rounds=10": {
+      "max_iter": 2000,
+      "C": 10.0,
+      "num_rounds": 10,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.5710351467132568
+    },
+    "max_iter=2000_C=10.0_rounds=15": {
+      "max_iter": 2000,
+      "C": 10.0,
+      "num_rounds": 15,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.8525598049163818
+    },
+    "max_iter=2000_C=10.0_rounds=20": {
+      "max_iter": 2000,
+      "C": 10.0,
+      "num_rounds": 20,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 1.1469428539276123
+    },
+    "max_iter=2000_C=100.0_rounds=5": {
+      "max_iter": 2000,
+      "C": 100.0,
+      "num_rounds": 5,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.2906067371368408
+    },
+    "max_iter=2000_C=100.0_rounds=10": {
+      "max_iter": 2000,
+      "C": 100.0,
+      "num_rounds": 10,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.6013171672821045
+    },
+    "max_iter=2000_C=100.0_rounds=15": {
+      "max_iter": 2000,
+      "C": 100.0,
+      "num_rounds": 15,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.92234206199646
+    },
+    "max_iter=2000_C=100.0_rounds=20": {
+      "max_iter": 2000,
+      "C": 100.0,
+      "num_rounds": 20,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 1.226423978805542
+    },
+    "max_iter=5000_C=0.1_rounds=5": {
+      "max_iter": 5000,
+      "C": 0.1,
+      "num_rounds": 5,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.21827363967895508
+    },
+    "max_iter=5000_C=0.1_rounds=10": {
+      "max_iter": 5000,
+      "C": 0.1,
+      "num_rounds": 10,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.4172234535217285
+    },
+    "max_iter=5000_C=0.1_rounds=15": {
+      "max_iter": 5000,
+      "C": 0.1,
+      "num_rounds": 15,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.6558201313018799
+    },
+    "max_iter=5000_C=0.1_rounds=20": {
+      "max_iter": 5000,
+      "C": 0.1,
+      "num_rounds": 20,
+      "accuracy": 0.6493506493506493,
+      "precision": 0.5,
+      "recall": 0.9444444444444444,
+      "f1_score": 0.6538461538461539,
+      "training_time": 0.8555023670196533
+    },
+    "max_iter=5000_C=1.0_rounds=5": {
+      "max_iter": 5000,
+      "C": 1.0,
+      "num_rounds": 5,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.24198484420776367
+    },
+    "max_iter=5000_C=1.0_rounds=10": {
+      "max_iter": 5000,
+      "C": 1.0,
+      "num_rounds": 10,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.4833502769470215
+    },
+    "max_iter=5000_C=1.0_rounds=15": {
+      "max_iter": 5000,
+      "C": 1.0,
+      "num_rounds": 15,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.7204601764678955
+    },
+    "max_iter=5000_C=1.0_rounds=20": {
+      "max_iter": 5000,
+      "C": 1.0,
+      "num_rounds": 20,
+      "accuracy": 0.7467532467532467,
+      "precision": 0.6056338028169014,
+      "recall": 0.7962962962962963,
+      "f1_score": 0.688,
+      "training_time": 0.9845161437988281
+    },
+    "max_iter=5000_C=10.0_rounds=5": {
+      "max_iter": 5000,
+      "C": 10.0,
+      "num_rounds": 5,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.293302059173584
+    },
+    "max_iter=5000_C=10.0_rounds=10": {
+      "max_iter": 5000,
+      "C": 10.0,
+      "num_rounds": 10,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 0.595984697341919
+    },
+    "max_iter=5000_C=10.0_rounds=15": {
+      "max_iter": 5000,
+      "C": 10.0,
+      "num_rounds": 15,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 1.0356388092041016
+    },
+    "max_iter=5000_C=10.0_rounds=20": {
+      "max_iter": 5000,
+      "C": 10.0,
+      "num_rounds": 20,
+      "accuracy": 0.7662337662337663,
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1_score": 0.6470588235294118,
+      "training_time": 1.20998215675354
+    },
+    "max_iter=5000_C=100.0_rounds=5": {
+      "max_iter": 5000,
+      "C": 100.0,
+      "num_rounds": 5,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.30333375930786133
+    },
+    "max_iter=5000_C=100.0_rounds=10": {
+      "max_iter": 5000,
+      "C": 100.0,
+      "num_rounds": 10,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.5932137966156006
+    },
+    "max_iter=5000_C=100.0_rounds=15": {
+      "max_iter": 5000,
+      "C": 100.0,
+      "num_rounds": 15,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 0.9017763137817383
+    },
+    "max_iter=5000_C=100.0_rounds=20": {
+      "max_iter": 5000,
+      "C": 100.0,
+      "num_rounds": 20,
+      "accuracy": 0.7532467532467533,
+      "precision": 0.7,
+      "recall": 0.5185185185185185,
+      "f1_score": 0.5957446808510638,
+      "training_time": 1.191042184829712
+    }
+  },
+  "sensitivity_analysis": {
+    "max_iter_impact": {
+      "100": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.609656572341919
+      },
+      "500": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.48326849937438965
+      },
+      "2000": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.4693009853363037
+      },
+      "5000": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.4833502769470215
+      }
+    },
+    "C_impact": {
+      "0.1": {
+        "accuracy": 0.6493506493506493,
+        "recall": 0.9444444444444444,
+        "time": 0.3485074043273926
+      },
+      "1.0": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.4693009853363037
+      },
+      "10.0": {
+        "accuracy": 0.7662337662337663,
+        "recall": 0.6111111111111112,
+        "time": 0.5710351467132568
+      },
+      "100.0": {
+        "accuracy": 0.7532467532467533,
+        "recall": 0.5185185185185185,
+        "time": 0.6013171672821045
+      }
+    },
+    "rounds_impact": {
+      "5": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.23697614669799805
+      },
+      "10": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.4693009853363037
+      },
+      "15": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.6994428634643555
+      },
+      "20": {
+        "accuracy": 0.7467532467532467,
+        "recall": 0.7962962962962963,
+        "time": 0.9368057250976562
+      }
+    }
+  },
+  "best_configurations": {
+    "recall": "max_iter=100_C=0.1_rounds=5",
+    "accuracy": "max_iter=100_C=10.0_rounds=5",
+    "f1_score": "max_iter=100_C=1.0_rounds=5"
+  }
+}

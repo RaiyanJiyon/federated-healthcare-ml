@@ -1,0 +1,62 @@
+{
+  "experiment": "exp2_optimized",
+  "timestamp": "2026-03-27T19:14:28.711361",
+  "config": {
+    "model": "LogisticRegression",
+    "class_weight": "balanced",
+    "max_iter": 2000,
+    "decision_threshold": 0.3,
+    "features_used": 19,
+    "feature_names": [
+      "Pregnancies",
+      "Glucose",
+      "BloodPressure",
+      "SkinThickness",
+      "Insulin",
+      "BMI",
+      "DiabetesPedigreeFunction",
+      "Age",
+      "Glucose_x_BMI",
+      "Glucose_x_Age",
+      "BloodPressure_x_BMI",
+      "Insulin_x_Glucose",
+      "Age_x_BMI",
+      "Glucose_squared",
+      "BMI_squared",
+      "Age_squared",
+      "BloodPressure_squared",
+      "Glucose_per_Insulin",
+      "BloodPressure_per_Age"
+    ]
+  },
+  "data": {
+    "train_size": 614,
+    "test_size": 154,
+    "positive_class_rate": 0.35064935064935066
+  },
+  "metrics": {
+    "accuracy": 0.6948051948051948,
+    "precision": 0.5402298850574713,
+    "recall": 0.8703703703703703,
+    "f1_score": 0.6666666666666666,
+    "specificity": 0.6,
+    "auc_roc": null
+  },
+  "confusion_matrix": {
+    "true_negatives": 60,
+    "false_positives": 40,
+    "false_negatives": 7,
+    "true_positives": 47
+  },
+  "healthcare_impact": {
+    "correct_cases": 47,
+    "total_cases": 54,
+    "missed_cases": 7,
+    "false_alarms": 40
+  },
+  "improvements": {
+    "recall_improvement": 0.23684861499271048,
+    "missed_cases_reduction": 9
+  },
+  "goal_achieved": true
+}
