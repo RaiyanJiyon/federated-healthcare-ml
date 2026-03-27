@@ -20,3 +20,6 @@ results/plots/*.png
 
 # Ignore Markdown files for Guidelines and documentation
 Guideline.md
+
+# Ignore All JSON files
+*.json
