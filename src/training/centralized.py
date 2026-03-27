@@ -15,6 +15,10 @@ class CentralizedTrainer:
     """
     Centralized trainer for baseline healthcare ML model.
     Trains a single model on all available data without federated learning.
+    
+    IMPROVEMENTS:
+    - Uses class_weight='balanced' to handle class imbalance
+    - Critical for healthcare: recall is prioritized over accuracy
     """
     
     def __init__(self, model=None, preprocessor=None):
@@ -22,10 +26,18 @@ class CentralizedTrainer:
         Initialize the centralized trainer.
         
         Args:
-            model: LogisticRegressionModel instance (creates new if None)
+            model: ML model instance (creates new if None)
             preprocessor: DataPreprocessor instance (creates new if None)
         """
-        self.model = model or LogisticRegressionModel(learning_rate=0.01, max_iter=1000)
+        if model is None:
+            # Use improved Logistic Regression with class balancing
+            model = LogisticRegressionModel(
+                learning_rate=0.01, 
+                max_iter=1000,
+                class_weight='balanced'  # CRITICAL: Handle class imbalance
+            )
+        
+        self.model = model
         self.preprocessor = preprocessor or DataPreprocessor()
         
         self.X_train = None

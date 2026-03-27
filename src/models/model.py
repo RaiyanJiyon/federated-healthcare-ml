@@ -12,7 +12,7 @@ class LogisticRegressionModel:
     Provides interface for training, prediction, and weight management for federated learning.
     """
     
-    def __init__(self, learning_rate=0.01, max_iter=100, random_state=42):
+    def __init__(self, learning_rate=0.01, max_iter=100, random_state=42, class_weight='balanced'):
         """
         Initialize the logistic regression model.
         
@@ -20,17 +20,23 @@ class LogisticRegressionModel:
             learning_rate (float): Learning rate for optimization (affects solver)
             max_iter (int): Maximum number of iterations for convergence
             random_state (int): Random state for reproducibility
+            class_weight (str or dict): Class weight balancing. 'balanced' auto-adjusts for class imbalance
         """
         self.learning_rate = learning_rate
         self.max_iter = max_iter
         self.random_state = random_state
+        self.class_weight = class_weight
+        self.decision_threshold = 0.5  # Default threshold for binary classification
         
         # Initialize scikit-learn logistic regression model
+        # class_weight='balanced' automatically adjusts weights inversely proportional to class frequency
+        # This helps with class imbalance (more non-diabetic than diabetic patients)
         self.model = LogisticRegression(
             max_iter=max_iter,
             random_state=random_state,
             solver='lbfgs',  # L-BFGS solver works well for small to medium datasets
             C=1.0,  # Inverse of regularization strength
+            class_weight=class_weight,  # Handle class imbalance
             verbose=0
         )
         
@@ -75,12 +81,13 @@ class LogisticRegressionModel:
             'loss': train_loss
         }
     
-    def predict(self, X):
+    def predict(self, X, use_custom_threshold=True):
         """
-        Make predictions on data.
+        Make predictions on data with custom decision threshold.
         
         Args:
             X (np.ndarray): Feature matrix
+            use_custom_threshold (bool): Use custom threshold instead of default 0.5
             
         Returns:
             np.ndarray: Predicted labels (0 or 1)
@@ -88,7 +95,35 @@ class LogisticRegressionModel:
         if not self.is_trained:
             raise ValueError("Model must be trained before making predictions")
         
-        return self.model.predict(X)
+        if use_custom_threshold and self.decision_threshold != 0.5:
+            # Use custom threshold for better recall
+            probas = self.model.predict_proba(X)[:, 1]  # Probability of class 1 (diabetic)
+            return (probas >= self.decision_threshold).astype(int)
+        else:
+            # Use default threshold (0.5)
+            return self.model.predict(X)
+    
+    def set_decision_threshold(self, threshold):
+        """
+        Set custom decision threshold for predictions.
+        
+        Lower threshold increases recall (catches more diabetic cases)
+        but may increase false positives.
+        
+        Example:
+            - threshold=0.5 (default): balanced
+            - threshold=0.4: higher recall, more false positives
+            - threshold=0.6: higher precision, fewer cases caught
+        
+        Args:
+            threshold (float): Classification threshold (0.0 to 1.0)
+        """
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError("Threshold must be between 0.0 and 1.0")
+        
+        self.decision_threshold = threshold
+        print(f"  Decision threshold set to {threshold:.2f}")
+        print(f"  Effect: {'Higher recall' if threshold < 0.5 else 'Higher precision' if threshold > 0.5 else 'Balanced'}")
     
     def predict_proba(self, X):
         """
@@ -282,7 +317,213 @@ class LogisticRegressionModel:
             max_iter=self.max_iter,
             random_state=self.random_state,
             solver='lbfgs',
-            C=1.0
+            C=1.0,
+            class_weight=self.class_weight
         )
         self.is_trained = False
         self.n_features = None
+
+
+class RandomForestModel:
+    """
+    Random Forest model for improved healthcare prediction.
+    Better handles non-linear relationships and class imbalance.
+    """
+    
+    def __init__(self, n_estimators=100, max_depth=10, random_state=42, class_weight='balanced_subsample'):
+        """
+        Initialize Random Forest model.
+        
+        Args:
+            n_estimators (int): Number of trees in forest
+            max_depth (int): Maximum depth of trees
+            random_state (int): Random seed
+            class_weight (str): How to handle class imbalance
+        """
+        from sklearn.ensemble import RandomForestClassifier
+        
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.random_state = random_state
+        self.class_weight = class_weight
+        
+        self.model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            random_state=random_state,
+            class_weight=class_weight,
+            n_jobs=-1  # Use all processors
+        )
+        
+        self.is_trained = False
+        self.n_features = None
+    
+    def fit(self, X_train, y_train, verbose=False):
+        """Train the model."""
+        if X_train.shape[0] == 0:
+            raise ValueError("Training data cannot be empty")
+        
+        self.n_features = X_train.shape[1]
+        self.model.fit(X_train, y_train)
+        self.is_trained = True
+        
+        y_pred = self.model.predict(X_train)
+        train_accuracy = accuracy_score(y_train, y_pred)
+        
+        if verbose:
+            print(f"  RandomForest Training:")
+            print(f"    - Accuracy: {train_accuracy:.4f}")
+        
+        return {'accuracy': train_accuracy}
+    
+    def predict(self, X):
+        """Make predictions."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        """Get probability predictions."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        return self.model.predict_proba(X)
+    
+    def evaluate(self, X_test, y_test, verbose=False):
+        """Evaluate model on test data."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        
+        y_pred = self.predict(X_test)
+        
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        recall = recall_score(y_test, y_pred, zero_division=0)
+        f1 = f1_score(y_test, y_pred, zero_division=0)
+        cm = confusion_matrix(y_test, y_pred)
+        
+        metrics = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'confusion_matrix': cm,
+        }
+        
+        if verbose:
+            print(f"RandomForest Evaluation:")
+            print(f"  Accuracy:  {accuracy:.4f}")
+            print(f"  Precision: {precision:.4f}")
+            print(f"  Recall:    {recall:.4f}")
+            print(f"  F1-Score:  {f1:.4f}")
+            print(f"  Confusion Matrix: {cm}")
+        
+        return metrics
+
+
+class XGBoostModel:
+    """
+    XGBoost model for optimal healthcare prediction.
+    Handles class imbalance and captures complex patterns in data.
+    """
+    
+    def __init__(self, n_estimators=100, max_depth=5, learning_rate=0.1, random_state=42):
+        """
+        Initialize XGBoost model.
+        
+        Args:
+            n_estimators (int): Number of boosting rounds
+            max_depth (int): Maximum depth of trees
+            learning_rate (float): Learning rate / eta
+            random_state (int): Random seed
+        """
+        try:
+            from xgboost import XGBClassifier
+        except ImportError:
+            raise ImportError("XGBoost not installed. Install with: pip install xgboost")
+        
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.learning_rate = learning_rate
+        self.random_state = random_state
+        
+        self.model = XGBClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            learning_rate=learning_rate,
+            random_state=random_state,
+            scale_pos_weight=1,  # Will be computed from data
+            eval_metric='logloss',
+            verbosity=0
+        )
+        
+        self.is_trained = False
+        self.n_features = None
+    
+    def fit(self, X_train, y_train, verbose=False):
+        """Train the model."""
+        if X_train.shape[0] == 0:
+            raise ValueError("Training data cannot be empty")
+        
+        self.n_features = X_train.shape[1]
+        
+        # Compute scale_pos_weight for class imbalance
+        neg_count = (y_train == 0).sum()
+        pos_count = (y_train == 1).sum()
+        scale_pos_weight = neg_count / pos_count if pos_count > 0 else 1
+        self.model.set_params(scale_pos_weight=scale_pos_weight)
+        
+        self.model.fit(X_train, y_train)
+        self.is_trained = True
+        
+        y_pred = self.model.predict(X_train)
+        train_accuracy = accuracy_score(y_train, y_pred)
+        
+        if verbose:
+            print(f"  XGBoost Training:")
+            print(f"    - Accuracy: {train_accuracy:.4f}")
+            print(f"    - Scale Pos Weight: {scale_pos_weight:.4f}")
+        
+        return {'accuracy': train_accuracy}
+    
+    def predict(self, X):
+        """Make predictions."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        """Get probability predictions."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        return self.model.predict_proba(X)
+    
+    def evaluate(self, X_test, y_test, verbose=False):
+        """Evaluate model on test data."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+        
+        y_pred = self.predict(X_test)
+        
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        recall = recall_score(y_test, y_pred, zero_division=0)
+        f1 = f1_score(y_test, y_pred, zero_division=0)
+        cm = confusion_matrix(y_test, y_pred)
+        
+        metrics = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'confusion_matrix': cm,
+        }
+        
+        if verbose:
+            print(f"XGBoost Evaluation:")
+            print(f"  Accuracy:  {accuracy:.4f}")
+            print(f"  Precision: {precision:.4f}")
+            print(f"  Recall:    {recall:.4f}")
+            print(f"  F1-Score:  {f1:.4f}")
+            print(f"  Confusion Matrix: {cm}")
+        
+        return metrics
