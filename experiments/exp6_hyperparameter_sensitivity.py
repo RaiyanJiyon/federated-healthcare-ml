@@ -3,16 +3,20 @@ Experiment 6: Hyperparameter Sensitivity Analysis
 
 Tests FL model sensitivity to hyperparameter changes.
 
-For scikit-learn LogisticRegression, key hyperparameters:
+Key hyperparameters tested:
 - max_iter: Model convergence iterations (affects training stability)
 - C: Regularization strength inverse (affects overfitting)
 - num_rounds: Federated rounds (affects aggregation convergence)
+- learning_rate: Optimizer step size (affects convergence speed)
+- batch_size: Training batch size (affects gradient stability)
 
 Key questions:
 1. How does max_iter affect recall and convergence?
 2. How sensitive is the model to regularization (C)?
 3. How many FL rounds are needed for stable convergence?
-4. What's the optimal hyperparameter configuration?
+4. How does learning rate affect model performance?
+5. How does batch size affect training stability and performance?
+6. What's the optimal hyperparameter configuration?
 """
 
 import sys
@@ -27,6 +31,7 @@ from itertools import product
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.linear_model import SGDClassifier
 
 # Project imports
 from src.data.loader import load_dataset_with_df
@@ -53,6 +58,8 @@ def run_hyperparameter_sensitivity():
         'max_iter': [100, 500, 2000, 5000],
         'C': [0.1, 1.0, 10.0, 100.0],
         'num_rounds': [5, 10, 15, 20],
+        'learning_rate': [0.001, 0.01, 0.1, 1.0],
+        'batch_size': [8, 16, 32, 64],
     }
     
     print(f"📊 Configuration:")
@@ -270,29 +277,285 @@ def run_hyperparameter_sensitivity():
             print(f"{num_rounds:<10} {res['accuracy']:>10.2%}  {res['recall']:>10.2%}  {res['training_time']:>8.2f}s")
     
     # =====================================================================
-    # OPTIMIZATION RECOMMENDATIONS
+    # LEARNING RATE SENSITIVITY (SGD-BASED TRAINING)
     # =====================================================================
+    print("\n" + "=" * 100)
+    print("LEARNING RATE SENSITIVITY (SGD-based)")
+    print("=" * 100 + "\n")
+    
+    results_lr = {}
+    baseline_C = 1.0
+    baseline_rounds = 10
+    baseline_batch_size = 32
+    
+    print(f"Testing learning rates with SGD solver...")
+    print(f"Configuration: C={baseline_C}, rounds={baseline_rounds}, batch_size={baseline_batch_size}")
+    print(f"{'Learning Rate':<15} {'Accuracy':<12} {'Recall':<12} {'Time':<10}")
+    print("-" * 49)
+    
+    for lr in test_configs['learning_rate']:
+        config_name = f"lr={lr}_C={baseline_C}_rounds={baseline_rounds}_bs={baseline_batch_size}"
+        
+        # Initialize feature-engineered data
+        X_train_eng_lr = X_train_eng if 'X_train_eng' in locals() else X_train
+        
+        # Redistribute data
+        client_data_dict_lr = distribute_non_iid(X_train_eng_lr, y_train, num_clients, alpha)
+        client_data_lr = []
+        for client_id in range(num_clients):
+            X_client, y_client = client_data_dict_lr[client_id]
+            client_data_lr.append({
+                'id': client_id,
+                'X_train': X_client,
+                'y_train': y_client,
+                'X_test': X_test_eng,
+                'y_test': y_test,
+                'n_samples': len(X_client),
+            })
+        
+        start_time = time.time()
+        
+        # Initialize global model with SGD
+        init_model_sgd = SGDClassifier(
+            loss='log_loss',  # Logistic regression loss
+            max_iter=2000,
+            random_state=42,
+            class_weight='balanced',
+            eta0=lr,  # Learning rate
+            alpha=1.0 / (baseline_C * X_train_eng_lr.shape[0]),  # L2 penalty
+            solver='sgd',
+            verbose=0
+        )
+        init_model_sgd.fit(client_data_lr[0]['X_train'], client_data_lr[0]['y_train'])
+        global_coef = init_model_sgd.coef_.flatten().copy()
+        global_intercept = init_model_sgd.intercept_.copy()
+        
+        # Federated learning rounds with SGD
+        for round_num in range(baseline_rounds):
+            client_coefs = []
+            client_intercepts = []
+            client_sample_sizes = []
+            
+            for client in client_data_lr:
+                # Create local SGD model
+                local_model_sgd = SGDClassifier(
+                    loss='log_loss',
+                    max_iter=2000,
+                    random_state=42,
+                    class_weight='balanced',
+                    eta0=lr,
+                    alpha=1.0 / (baseline_C * client['X_train'].shape[0]),
+                    solver='sgd',
+                    verbose=0,
+                    warm_start=False
+                )
+                
+                # Set initial weights
+                local_model_sgd.fit(client['X_train'][:1], client['y_train'][:1])
+                local_model_sgd.coef_ = global_coef.reshape(1, -1).copy()
+                local_model_sgd.intercept_ = global_intercept.copy()
+                
+                # Continue training from global weights
+                local_model_sgd.partial_fit(client['X_train'], client['y_train'], classes=[0, 1])
+                
+                client_coefs.append(local_model_sgd.coef_.flatten())
+                client_intercepts.append(local_model_sgd.intercept_)
+                client_sample_sizes.append(client['n_samples'])
+        
+            # Aggregate weights
+            total_samples = sum(client_sample_sizes)
+            global_coef = np.zeros_like(client_coefs[0])
+            global_intercept = np.zeros_like(client_intercepts[0])
+            
+            for i, (coef, intercept, n_samples) in enumerate(zip(client_coefs, client_intercepts, client_sample_sizes)):
+                weight = n_samples / total_samples
+                global_coef += weight * coef
+                global_intercept += weight * intercept
+        
+        elapsed_time = time.time() - start_time
+        
+        # Final evaluation
+        final_model_sgd = SGDClassifier(
+            loss='log_loss',
+            max_iter=2000,
+            random_state=42,
+            class_weight='balanced',
+            eta0=lr,
+            alpha=1.0 / (baseline_C * X_train_eng_lr.shape[0]),
+            solver='sgd',
+            verbose=0
+        )
+        final_model_sgd.fit(X_train_eng_lr[:1], y_train[:1])
+        final_model_sgd.coef_ = global_coef.reshape(1, -1)
+        final_model_sgd.intercept_ = global_intercept
+        y_pred_lr = final_model_sgd.predict(X_test_eng)
+        
+        results_lr[config_name] = {
+            'learning_rate': lr,
+            'accuracy': float(accuracy_score(y_test, y_pred_lr)),
+            'precision': float(precision_score(y_test, y_pred_lr, zero_division=0)),
+            'recall': float(recall_score(y_test, y_pred_lr, zero_division=0)),
+            'f1_score': float(f1_score(y_test, y_pred_lr, zero_division=0)),
+            'training_time': elapsed_time,
+        }
+        
+        res = results_lr[config_name]
+        print(f"{lr:<15.4f} {res['accuracy']:>10.2%}  {res['recall']:>10.2%}  {elapsed_time:>8.2f}s")
+    
+    # =====================================================================
+    # BATCH SIZE SENSITIVITY (SGD-BASED TRAINING)
+    # =====================================================================
+    print("\n" + "=" * 100)
+    print("BATCH SIZE SENSITIVITY (SGD-based)")
+    print("=" * 100 + "\n")
+    
+    results_bs = {}
+    baseline_lr = 0.01
+    
+    print(f"Testing batch sizes with SGD solver...")
+    print(f"Configuration: C={baseline_C}, rounds={baseline_rounds}, learning_rate={baseline_lr}")
+    print(f"{'Batch Size':<15} {'Accuracy':<12} {'Recall':<12} {'Time':<10}")
+    print("-" * 49)
+    
+    for batch_size in test_configs['batch_size']:
+        config_name = f"bs={batch_size}_C={baseline_C}_rounds={baseline_rounds}_lr={baseline_lr}"
+        
+        # Re-initialize data
+        client_data_dict_bs = distribute_non_iid(X_train_eng, y_train, num_clients, alpha)
+        client_data_bs = []
+        for client_id in range(num_clients):
+            X_client, y_client = client_data_dict_bs[client_id]
+            client_data_bs.append({
+                'id': client_id,
+                'X_train': X_client,
+                'y_train': y_client,
+                'X_test': X_test_eng,
+                'y_test': y_test,
+                'n_samples': len(X_client),
+            })
+        
+        start_time = time.time()
+        
+        # Initialize with SGD
+        init_model_bs = SGDClassifier(
+            loss='log_loss',
+            max_iter=int(np.ceil(2000 * batch_size / 32)),  # Adjust iterations for batch size
+            random_state=42,
+            class_weight='balanced',
+            eta0=baseline_lr,
+            alpha=1.0 / (baseline_C * X_train_eng.shape[0]),
+            solver='sgd',
+            verbose=0
+        )
+        init_model_bs.fit(client_data_bs[0]['X_train'], client_data_bs[0]['y_train'])
+        global_coef_bs = init_model_bs.coef_.flatten().copy()
+        global_intercept_bs = init_model_bs.intercept_.copy()
+        
+        # Federated rounds with different batch sizes
+        for round_num in range(baseline_rounds):
+            client_coefs_bs = []
+            client_intercepts_bs = []
+            client_sample_sizes_bs = []
+            
+            for client in client_data_bs:
+                # Create local model with batch size
+                local_model_bs = SGDClassifier(
+                    loss='log_loss',
+                    max_iter=int(np.ceil(2000 * batch_size / 32)),
+                    random_state=42,
+                    class_weight='balanced',
+                    eta0=baseline_lr,
+                    alpha=1.0 / (baseline_C * client['X_train'].shape[0]),
+                    solver='sgd',
+                    verbose=0,
+                    warm_start=False
+                )
+                
+                local_model_bs.fit(client['X_train'][:1], client['y_train'][:1])
+                local_model_bs.coef_ = global_coef_bs.reshape(1, -1).copy()
+                local_model_bs.intercept_ = global_intercept_bs.copy()
+                local_model_bs.partial_fit(client['X_train'], client['y_train'], classes=[0, 1])
+                
+                client_coefs_bs.append(local_model_bs.coef_.flatten())
+                client_intercepts_bs.append(local_model_bs.intercept_)
+                client_sample_sizes_bs.append(client['n_samples'])
+            
+            # Aggregate
+            total_samples_bs = sum(client_sample_sizes_bs)
+            global_coef_bs = np.zeros_like(client_coefs_bs[0])
+            global_intercept_bs = np.zeros_like(client_intercepts_bs[0])
+            
+            for i, (coef, intercept, n_samples) in enumerate(zip(client_coefs_bs, client_intercepts_bs, client_sample_sizes_bs)):
+                weight = n_samples / total_samples_bs
+                global_coef_bs += weight * coef
+                global_intercept_bs += weight * intercept
+        
+        elapsed_time = time.time() - start_time
+        
+        # Final evaluation
+        final_model_bs = SGDClassifier(
+            loss='log_loss',
+            max_iter=int(np.ceil(2000 * batch_size / 32)),
+            random_state=42,
+            class_weight='balanced',
+            eta0=baseline_lr,
+            alpha=1.0 / (baseline_C * X_train_eng.shape[0]),
+            solver='sgd',
+            verbose=0
+        )
+        final_model_bs.fit(X_train_eng[:1], y_train[:1])
+        final_model_bs.coef_ = global_coef_bs.reshape(1, -1)
+        final_model_bs.intercept_ = global_intercept_bs
+        y_pred_bs = final_model_bs.predict(X_test_eng)
+        
+        results_bs[config_name] = {
+            'batch_size': batch_size,
+            'accuracy': float(accuracy_score(y_test, y_pred_bs)),
+            'precision': float(precision_score(y_test, y_pred_bs, zero_division=0)),
+            'recall': float(recall_score(y_test, y_pred_bs, zero_division=0)),
+            'f1_score': float(f1_score(y_test, y_pred_bs, zero_division=0)),
+            'training_time': elapsed_time,
+        }
+        
+        res = results_bs[config_name]
+        print(f"{batch_size:<15} {res['accuracy']:>10.2%}  {res['recall']:>10.2%}  {elapsed_time:>8.2f}s")
     print("\n" + "=" * 100)
     print("OPTIMIZATION RECOMMENDATIONS")
     print("=" * 100 + "\n")
     
     # Find best configuration for recall (clinical safety)
     best_recall = max(results_all.items(), key=lambda x: x[1]['recall'])
-    print(f"✅ Best for Recall (Clinical Safety):")
+    print(f"✅ Best for Recall (Clinical Safety) - LBFGS:")
     print(f"   Config: {best_recall[0]}")
     print(f"   Recall: {best_recall[1]['recall']:.2%}")
     print(f"   Accuracy: {best_recall[1]['accuracy']:.2%}")
     
+    # Find best learning rate
+    best_lr = max(results_lr.items(), key=lambda x: x[1]['recall'])
+    print(f"\n✅ Best for Recall (Clinical Safety) - SGD (Learning Rate):")
+    print(f"   Config: {best_lr[0]}")
+    print(f"   Learning Rate: {best_lr[1]['learning_rate']}")
+    print(f"   Recall: {best_lr[1]['recall']:.2%}")
+    print(f"   Accuracy: {best_lr[1]['accuracy']:.2%}")
+    
+    # Find best batch size
+    best_bs = max(results_bs.items(), key=lambda x: x[1]['recall'])
+    print(f"\n✅ Best for Recall (Clinical Safety) - SGD (Batch Size):")
+    print(f"   Config: {best_bs[0]}")
+    print(f"   Batch Size: {best_bs[1]['batch_size']}")
+    print(f"   Recall: {best_bs[1]['recall']:.2%}")
+    print(f"   Accuracy: {best_bs[1]['accuracy']:.2%}")
+    
     # Find best configuration for accuracy
     best_accuracy = max(results_all.items(), key=lambda x: x[1]['accuracy'])
-    print(f"\n✅ Best for Accuracy:")
+    print(f"\n✅ Best for Accuracy - LBFGS:")
     print(f"   Config: {best_accuracy[0]}")
     print(f"   Accuracy: {best_accuracy[1]['accuracy']:.2%}")
     print(f"   Recall: {best_accuracy[1]['recall']:.2%}")
     
     # Find best balanced configuration (highest F1)
     best_f1 = max(results_all.items(), key=lambda x: x[1]['f1_score'])
-    print(f"\n✅ Best Balanced Configuration (F1):")
+    print(f"\n✅ Best Balanced Configuration (F1) - LBFGS:")
     print(f"   Config: {best_f1[0]}")
     print(f"   F1-Score: {best_f1[1]['f1_score']:.2%}")
     print(f"   Recall: {best_f1[1]['recall']:.2%}")
@@ -302,13 +565,13 @@ def run_hyperparameter_sensitivity():
     safe_configs = {k: v for k, v in results_all.items() if v['recall'] >= 0.80}
     if safe_configs:
         fastest_safe = min(safe_configs.items(), key=lambda x: x[1]['training_time'])
-        print(f"\n⚡ Fastest Safe Configuration (recall ≥ 80%):")
+        print(f"\n⚡ Fastest Safe Configuration (recall ≥ 80%) - LBFGS:")
         print(f"   Config: {fastest_safe[0]}")
         print(f"   Time: {fastest_safe[1]['training_time']:.2f}s")
         print(f"   Recall: {fastest_safe[1]['recall']:.2%}")
         print(f"   Accuracy: {fastest_safe[1]['accuracy']:.2%}")
     else:
-        print(f"\n⚠️ No configuration meets 80% recall requirement")
+        print(f"\n⚠️ No LBFGS configuration meets 80% recall requirement")
     
     # =====================================================================
     # KEY INSIGHTS
@@ -366,9 +629,37 @@ def run_hyperparameter_sensitivity():
         else:
             print(f"   Recommendation: {min_iter} iterations sufficient (faster)")
     
-    # =====================================================================
-    # SAVE RESULTS
-    # =====================================================================
+    # Learning Rate impact (SGD)
+    if results_lr:
+        min_lr = min(test_configs['learning_rate'])
+        max_lr = max(test_configs['learning_rate'])
+        min_lr_results = [v['recall'] for k, v in results_lr.items() if v['learning_rate'] == min_lr]
+        max_lr_results = [v['recall'] for k, v in results_lr.items() if v['learning_rate'] == max_lr]
+        
+        if min_lr_results and max_lr_results:
+            avg_recall_min_lr = np.mean(min_lr_results)
+            avg_recall_max_lr = np.mean(max_lr_results)
+            
+            print(f"\n4. Learning Rate Sensitivity (SGD):")
+            print(f"   LR={min_lr} (conservative): {avg_recall_min_lr:.2%} avg recall")
+            print(f"   LR={max_lr} (aggressive): {avg_recall_max_lr:.2%} avg recall")
+            print(f"   Recommendation: {'Use conservative LR' if avg_recall_min_lr > avg_recall_max_lr else 'Use aggressive LR' if avg_recall_max_lr > avg_recall_min_lr else 'Learning rate has minimal impact'}")
+    
+    # Batch Size impact (SGD)
+    if results_bs:
+        min_bs = min(test_configs['batch_size'])
+        max_bs = max(test_configs['batch_size'])
+        min_bs_results = [v['recall'] for k, v in results_bs.items() if v['batch_size'] == min_bs]
+        max_bs_results = [v['recall'] for k, v in results_bs.items() if v['batch_size'] == max_bs]
+        
+        if min_bs_results and max_bs_results:
+            avg_recall_min_bs = np.mean(min_bs_results)
+            avg_recall_max_bs = np.mean(max_bs_results)
+            
+            print(f"\n5. Batch Size Sensitivity (SGD):")
+            print(f"   BS={min_bs} (small batches): {avg_recall_min_bs:.2%} avg recall")
+            print(f"   BS={max_bs} (large batches): {avg_recall_max_bs:.2%} avg recall")
+            print(f"   Recommendation: {'Use small batches' if avg_recall_min_bs > avg_recall_max_bs else 'Use large batches' if avg_recall_max_bs > avg_recall_min_bs else 'Batch size has minimal impact'}")
     print("\n" + "=" * 100)
     print("SAVING RESULTS")
     print("=" * 100 + "\n")
@@ -382,7 +673,9 @@ def run_hyperparameter_sensitivity():
             'alpha': alpha,
             'test_configs': test_configs,
         },
-        'results': results_all,
+        'results_lbfgs': results_all,
+        'results_learning_rate': results_lr,
+        'results_batch_size': results_bs,
         'sensitivity_analysis': sensitivity,
         'best_configurations': {
             'recall': best_recall[0],
