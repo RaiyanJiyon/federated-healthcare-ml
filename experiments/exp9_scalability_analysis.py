@@ -33,6 +33,7 @@ from src.data.split import train_test_split_data, distribute_non_iid
 from src.models.model import LogisticRegressionModel
 from src.utils.feature_engineering import HealthcareFeatureEngineer
 from src.fl.strategy import FedAvgAggregator, aggregate_metrics
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, DIRICHLET_ALPHA, SCALABILITY_CLIENT_COUNTS, SCALABILITY_NUM_ROUNDS
 from src.evaluation.metrics import calculate_all_metrics
 
 
@@ -173,8 +174,8 @@ class ScalabilityAnalyzer:
                 # If no client has both classes, use first client and handle exception
                 init_client_idx = 0
             
-            init_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-            init_model.set_decision_threshold(0.30)
+            init_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+            init_model.set_decision_threshold(DECISION_THRESHOLD)
             try:
                 init_model.fit(client_data[init_client_idx]['X_train'], 
                              client_data[init_client_idx]['y_train'], verbose=False)
@@ -209,8 +210,8 @@ class ScalabilityAnalyzer:
             local_train_times = []
             agg_times = []
             
-            global_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-            global_model.set_decision_threshold(0.30)
+            global_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+            global_model.set_decision_threshold(DECISION_THRESHOLD)
             global_model.set_weights(global_weights)
             
             for round_num in range(num_rounds):
@@ -223,9 +224,9 @@ class ScalabilityAnalyzer:
                 client_eval_metrics = []
                 
                 for client in client_data:
-                    local_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+                    local_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
                     local_model.set_weights(global_weights)
-                    local_model.set_decision_threshold(0.30)
+                    local_model.set_decision_threshold(DECISION_THRESHOLD)
                     
                     try:
                         local_model.fit(client['X_train'], client['y_train'], verbose=False)
@@ -527,15 +528,15 @@ def run_scalability_experiment():
     # Run scalability analysis
     analyzer = ScalabilityAnalyzer()
     
-    # Test extended client counts: 5, 7, 10, 15, 20
+    # Test extended client counts from config
     # Comment out larger counts for faster testing
-    client_counts = [5, 7, 10, 15, 20]
+    client_counts = SCALABILITY_CLIENT_COUNTS
     
     scalability_results = analyzer.run_scalability_test(
         X_train_eng, y_train, X_test_eng, y_test, feature_names_eng,
         client_counts=client_counts,
-        num_rounds=10,
-        alpha=0.5
+        num_rounds=SCALABILITY_NUM_ROUNDS,
+        alpha=DIRICHLET_ALPHA
     )
     
     # Analyze results

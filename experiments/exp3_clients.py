@@ -25,6 +25,7 @@ from src.models.model import LogisticRegressionModel
 from src.utils.feature_engineering import HealthcareFeatureEngineer
 from src.fl.strategy import FedAvgAggregator, aggregate_metrics
 from src.evaluation.metrics import calculate_all_metrics
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, DIRICHLET_ALPHA
 
 
 def run_multi_client_experiment():
@@ -37,7 +38,7 @@ def run_multi_client_experiment():
     # Configuration
     client_counts = [5, 7, 10]
     num_rounds = 10
-    alpha = 0.5  # Dirichlet parameter (Non-IID)
+    alpha = DIRICHLET_ALPHA  # Dirichlet parameter (Non-IID)
     
     print(f"\n📊 Configuration:")
     print(f"   Client counts to test: {client_counts}")
@@ -110,13 +111,13 @@ def run_multi_client_experiment():
             print(f"   Client {client['id']}: {client['n_samples']} samples")
         
         # Initialize global model by training on first client
-        init_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-        init_model.set_decision_threshold(0.30)
+        init_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+        init_model.set_decision_threshold(DECISION_THRESHOLD)
         init_model.fit(client_data[0]['X_train'], client_data[0]['y_train'], verbose=False)
         global_weights = init_model.get_weights()
         
-        global_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-        global_model.set_decision_threshold(0.30)
+        global_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+        global_model.set_decision_threshold(DECISION_THRESHOLD)
         global_model.set_weights(global_weights)
         
         # Federated learning
@@ -130,9 +131,9 @@ def run_multi_client_experiment():
             # Local training
             for client_idx, client in enumerate(client_data):
                 # Local model
-                local_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+                local_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
                 local_model.set_weights(global_weights)
-                local_model.set_decision_threshold(0.30)
+                local_model.set_decision_threshold(DECISION_THRESHOLD)
                 
                 # Train (handle single-class clients)
                 try:

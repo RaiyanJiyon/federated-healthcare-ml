@@ -40,6 +40,7 @@ from src.data.split import train_test_split_data, distribute_non_iid
 from src.models.model import LogisticRegressionModel
 from src.utils.feature_engineering import HealthcareFeatureEngineer
 from src.fl.strategy import FedAvgAggregator, aggregate_metrics
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, NUM_CLIENTS, NUM_ROUNDS, DIRICHLET_ALPHA
 
 
 def run_hyperparameter_sensitivity():
@@ -50,8 +51,8 @@ def run_hyperparameter_sensitivity():
     print("=" * 100 + "\n")
     
     # Configuration
-    num_clients = 5
-    alpha = 0.5
+    num_clients = NUM_CLIENTS
+    alpha = DIRICHLET_ALPHA
     
     # Hyperparameters to test
     test_configs = {
@@ -144,7 +145,7 @@ def run_hyperparameter_sensitivity():
                 # Initialize global model
                 init_model = LogisticRegressionModel(max_iter=max_iter, class_weight='balanced')
                 init_model.model.C = C  # Set regularization
-                init_model.set_decision_threshold(0.30)
+                init_model.set_decision_threshold(DECISION_THRESHOLD)
                 init_model.fit(client_data[0]['X_train'], client_data[0]['y_train'], verbose=False)
                 global_weights = init_model.get_weights()
                 
@@ -162,7 +163,7 @@ def run_hyperparameter_sensitivity():
                         local_model = LogisticRegressionModel(max_iter=max_iter, class_weight='balanced')
                         local_model.model.C = C
                         local_model.set_weights(global_weights)
-                        local_model.set_decision_threshold(0.30)
+                        local_model.set_decision_threshold(DECISION_THRESHOLD)
                         
                         # Local training
                         try:
@@ -192,7 +193,7 @@ def run_hyperparameter_sensitivity():
                 final_model = LogisticRegressionModel(max_iter=max_iter, class_weight='balanced')
                 final_model.model.C = C
                 final_model.set_weights(global_weights)
-                final_model.set_decision_threshold(0.30)
+                final_model.set_decision_threshold(DECISION_THRESHOLD)
                 y_pred = final_model.predict(X_test_eng)
                 
                 results = {

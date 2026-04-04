@@ -5,6 +5,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import pickle
 from io import BytesIO
 
+# Import configuration
+from src.config.config import RANDOM_SEED, MAX_ITER, DECISION_THRESHOLD, LEARNING_RATE, CLASS_WEIGHT
+
 
 class LogisticRegressionModel:
     """
@@ -12,7 +15,7 @@ class LogisticRegressionModel:
     Provides interface for training, prediction, and weight management for federated learning.
     """
     
-    def __init__(self, learning_rate=0.01, max_iter=100, random_state=42, class_weight='balanced'):
+    def __init__(self, learning_rate=None, max_iter=None, random_state=None, class_weight=None):
         """
         Initialize the logistic regression model.
         
@@ -22,21 +25,22 @@ class LogisticRegressionModel:
             random_state (int): Random state for reproducibility
             class_weight (str or dict): Class weight balancing. 'balanced' auto-adjusts for class imbalance
         """
-        self.learning_rate = learning_rate
-        self.max_iter = max_iter
-        self.random_state = random_state
-        self.class_weight = class_weight
-        self.decision_threshold = 0.5  # Default threshold for binary classification
+        # Use config values as defaults if not provided
+        self.learning_rate = learning_rate if learning_rate is not None else LEARNING_RATE
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.random_state = random_state if random_state is not None else RANDOM_SEED
+        self.class_weight = class_weight if class_weight is not None else CLASS_WEIGHT
+        self.decision_threshold = DECISION_THRESHOLD  # Use config decision threshold
         
         # Initialize scikit-learn logistic regression model
         # class_weight='balanced' automatically adjusts weights inversely proportional to class frequency
         # This helps with class imbalance (more non-diabetic than diabetic patients)
         self.model = LogisticRegression(
-            max_iter=max_iter,
-            random_state=random_state,
+            max_iter=self.max_iter,
+            random_state=self.random_state,
             solver='lbfgs',  # L-BFGS solver works well for small to medium datasets
             C=1.0,  # Inverse of regularization strength
-            class_weight=class_weight,  # Handle class imbalance
+            class_weight=self.class_weight,  # Handle class imbalance
             verbose=0
         )
         

@@ -30,6 +30,7 @@ from src.data.split import train_test_split_data, distribute_non_iid
 from src.models.model import LogisticRegressionModel
 from src.utils.feature_engineering import HealthcareFeatureEngineer
 from src.fl.strategy import FedAvgAggregator, aggregate_metrics
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, NUM_CLIENTS, NUM_ROUNDS, DIRICHLET_ALPHA
 
 
 def run_dropout_experiment():
@@ -40,9 +41,9 @@ def run_dropout_experiment():
     print("=" * 100 + "\n")
     
     # Configuration
-    num_clients = 10
-    num_rounds = 10
-    alpha = 0.5
+    num_clients = NUM_CLIENTS
+    num_rounds = NUM_ROUNDS
+    alpha = DIRICHLET_ALPHA
     dropout_rates = [0.0, 0.05, 0.10, 0.20, 0.30]  # 0%, 5%, 10%, 20%, 30%
     random_seed = 42
     
@@ -143,8 +144,8 @@ def run_dropout_experiment():
             continue
         
         # Initialize global model
-        init_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-        init_model.set_decision_threshold(0.30)
+        init_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+        init_model.set_decision_threshold(DECISION_THRESHOLD)
         init_model.fit(active_clients[0]['X_train'], active_clients[0]['y_train'], verbose=False)
         global_weights = init_model.get_weights()
         
@@ -166,9 +167,9 @@ def run_dropout_experiment():
             # Local training on active clients only
             for client in active_clients:
                 # Create local model
-                local_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+                local_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
                 local_model.set_weights(global_weights)
-                local_model.set_decision_threshold(0.30)
+                local_model.set_decision_threshold(DECISION_THRESHOLD)
                 
                 # Local training
                 try:
@@ -205,9 +206,9 @@ def run_dropout_experiment():
         elapsed_time = time.time() - start_time
         
         # Final evaluation
-        final_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+        final_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
         final_model.set_weights(global_weights)
-        final_model.set_decision_threshold(0.30)
+        final_model.set_decision_threshold(DECISION_THRESHOLD)
         y_pred = final_model.predict(X_test_eng)
         
         results = {

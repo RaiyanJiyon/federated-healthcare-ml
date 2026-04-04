@@ -49,6 +49,7 @@ from src.fl.adversarial import (
     MaliciousClient, AdversarialSimulator, RobustnessEvaluator, CollaborativeAttack,
     PoisoningConfig
 )
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, DIRICHLET_ALPHA
 
 
 def evaluate_aggregation_robustness(
@@ -82,7 +83,7 @@ def evaluate_aggregation_robustness(
     np.random.seed(seed)
     
     # Split data among clients (Non-IID)
-    client_data_dict = distribute_non_iid(X_train, y_train, num_clients, alpha=0.5, seed=seed)
+    client_data_dict = distribute_non_iid(X_train, y_train, num_clients, alpha=DIRICHLET_ALPHA, seed=seed)
     client_data = list(client_data_dict.values())
     client_sizes = [len(y) for _, y in client_data]
     

@@ -29,6 +29,7 @@ from src.data.split import train_test_split_data, distribute_non_iid
 from src.models.model import LogisticRegressionModel
 from src.utils.feature_engineering import HealthcareFeatureEngineer
 from src.fl.strategy import FedAvgAggregator, FedProxAggregator, aggregate_metrics
+from src.config.config import MAX_ITER, DECISION_THRESHOLD, NUM_CLIENTS, NUM_ROUNDS, DIRICHLET_ALPHA
 
 
 def run_aggregation_comparison():
@@ -39,9 +40,9 @@ def run_aggregation_comparison():
     print("=" * 100 + "\n")
     
     # Configuration
-    num_clients = 5
-    num_rounds = 10
-    alpha = 0.5  # Non-IID parameter
+    num_clients = NUM_CLIENTS
+    num_rounds = NUM_ROUNDS
+    alpha = DIRICHLET_ALPHA  # Non-IID parameter
     mu = 0.01   # FedProx proximal term coefficient
     
     print(f"📊 Configuration:")
@@ -121,8 +122,8 @@ def run_aggregation_comparison():
     print("=" * 100 + "\n")
     
     # Initialize global model
-    init_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
-    init_model.set_decision_threshold(0.30)
+    init_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
+    init_model.set_decision_threshold(DECISION_THRESHOLD)
     init_model.fit(client_data[0]['X_train'], client_data[0]['y_train'], verbose=False)
     global_weights = init_model.get_weights()
     
@@ -146,9 +147,9 @@ def run_aggregation_comparison():
         # Local training on each client
         for client_idx, client in enumerate(client_data):
             # Create local model
-            local_model = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+            local_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
             local_model.set_weights(fedavg_weights)
-            local_model.set_decision_threshold(0.30)
+            local_model.set_decision_threshold(DECISION_THRESHOLD)
             
             # Local training
             try:
@@ -196,9 +197,9 @@ def run_aggregation_comparison():
     fedavg_time = time.time() - fedavg_start
     
     # Final evaluation with FedAvg
-    final_model_fedavg = LogisticRegressionModel(max_iter=2000, class_weight='balanced')
+    final_model_fedavg = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
     final_model_fedavg.set_weights(fedavg_weights)
-    final_model_fedavg.set_decision_threshold(0.30)
+    final_model_fedavg.set_decision_threshold(DECISION_THRESHOLD)
     y_pred_fedavg = final_model_fedavg.predict(X_test_eng)
     
     fedavg_results = {
