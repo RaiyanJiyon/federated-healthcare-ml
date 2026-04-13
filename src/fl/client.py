@@ -14,7 +14,7 @@ class FLClient(fl.client.NumPyClient):
     """Flower client for federated learning with healthcare models."""
     
     def __init__(self, model: LogisticRegressionModel, X_train: np.ndarray, y_train: np.ndarray,
-                 X_test: np.ndarray, y_test: np.ndarray):
+        X_test: np.ndarray, y_test: np.ndarray):
         """
         Initialize federated client.
         

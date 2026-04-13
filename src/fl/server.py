@@ -27,7 +27,7 @@ class FedAvgCustom(FedAvg):
         }
     
     def aggregate_evaluate(self, rnd: int, results: List[Tuple[bool, Dict]],
-                          failures: List[BaseException]) -> Tuple[float, Dict]:
+        failures: List[BaseException]) -> Tuple[float, Dict]:
         """
         Aggregate evaluation metrics from clients.
         
@@ -77,7 +77,7 @@ class FedAvgCustom(FedAvg):
 
 
 def start_fl_server(num_rounds: int = 10, num_clients: int = 5,
-                   initial_weights: Tuple = None) -> Dict:
+    initial_weights: Tuple = None) -> Dict:
     """
     Start Flower federated learning server.
     

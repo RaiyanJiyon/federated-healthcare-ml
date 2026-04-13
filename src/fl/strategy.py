@@ -21,7 +21,7 @@ class FedAvgAggregator:
         
         Args:
             client_weights: List of weight dictionaries from each client
-                           Each dict contains 'coef', 'intercept', 'classes'
+            Each dict contains 'coef', 'intercept', 'classes'
             client_sizes: List of local dataset sizes for each client
             
         Returns:
@@ -53,7 +53,7 @@ class FedAvgAggregator:
     
     @staticmethod
     def aggregate_metrics(client_metrics: List[Dict], 
-                         client_sizes: List[int]) -> Dict[str, float]:
+        client_sizes: List[int]) -> Dict[str, float]:
         """
         Aggregate evaluation metrics from clients.
         
@@ -96,8 +96,8 @@ class FedProxAggregator:
     
     @staticmethod
     def aggregate(client_weights: List[Dict], client_sizes: List[int],
-                 global_weights: Optional[Dict] = None,
-                 mu: float = 0.01) -> Dict:
+        global_weights: Optional[Dict] = None,
+        mu: float = 0.01) -> Dict:
         """
         Aggregate weights using FedProx (adds proximal term).
         
@@ -125,9 +125,9 @@ class FedProxAggregator:
 
 
 def aggregate_weights(weights_list: List[Dict], 
-                     sample_counts: List[int],
-                     strategy: str = 'fedavg',
-                     **kwargs) -> Dict:
+    sample_counts: List[int],
+    strategy: str = 'fedavg',
+    **kwargs) -> Dict:
     """
     Aggregate model weights from multiple clients.
     
@@ -149,7 +149,7 @@ def aggregate_weights(weights_list: List[Dict],
 
 
 def aggregate_metrics(metrics_list: List[Dict],
-                     sample_counts: List[int]) -> Dict[str, float]:
+    sample_counts: List[int]) -> Dict[str, float]:
     """
     Aggregate evaluation metrics from multiple clients.
     
