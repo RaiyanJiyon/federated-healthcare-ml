@@ -10,7 +10,7 @@ import seaborn as sns
 
 
 def plot_metric_over_rounds(metric_values: List[float], metric_name: str,
-                           save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot metric values over federated learning rounds.
     
@@ -33,7 +33,7 @@ def plot_metric_over_rounds(metric_values: List[float], metric_name: str,
 
 
 def plot_multiple_metrics(metrics_dict: Dict[str, List[float]],
-                         save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot multiple metrics on the same figure.
     
@@ -59,7 +59,7 @@ def plot_multiple_metrics(metrics_dict: Dict[str, List[float]],
 
 
 def plot_confusion_matrix(cm: np.ndarray, labels: List[str] = None,
-                         save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot confusion matrix as heatmap.
     
@@ -85,8 +85,8 @@ def plot_confusion_matrix(cm: np.ndarray, labels: List[str] = None,
 
 
 def plot_fl_vs_centralized(fl_metrics: Dict, centralized_metrics: Dict,
-                          metric_names: List[str] = None,
-                          save_path: Optional[str] = None) -> None:
+    metric_names: List[str] = None,
+    save_path: Optional[str] = None) -> None:
     """
     Compare federated learning vs centralized training.
     
@@ -127,7 +127,7 @@ def plot_fl_vs_centralized(fl_metrics: Dict, centralized_metrics: Dict,
 
 
 def plot_healthcare_metrics(metrics_dict: Dict[str, float],
-                           save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot healthcare-specific metrics.
     
@@ -164,7 +164,7 @@ def plot_healthcare_metrics(metrics_dict: Dict[str, float],
 
 
 def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, auc: float,
-                  save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot ROC curve.
     
@@ -190,7 +190,7 @@ def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, auc: float,
 
 
 def plot_client_convergence(client_accuracies: Dict[int, List[float]],
-                           save_path: Optional[str] = None) -> None:
+    save_path: Optional[str] = None) -> None:
     """
     Plot convergence of different clients over rounds.
     
