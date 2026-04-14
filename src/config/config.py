@@ -23,7 +23,7 @@ RANDOM_SEED = 42
 LEARNING_RATE = 0.01
 BATCH_SIZE = 32
 EPOCHS = 10
-MODEL_TYPE = "logistic_regression"  # or "neural_network"
+MODEL_TYPE = "logistic_regression"  # or "random_forest" or "xgboost"
 
 # Federated Learning configuration
 NUM_CLIENTS = 5  # Number of simulated clients

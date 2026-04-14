@@ -22,6 +22,9 @@ federated-healthcare-ml/
 ├── experiments/          # Experimental scripts
 ├── results/              # Results and logs
 ├── paper/                # Paper drafts
+├── FEATURE.md            # Essential features and research scope
+├── LEARNING_GUIDE.md     # Codebase learning guide
+├── PROJECT_STATUS.md     # Project results and status
 ├── requirements.txt      # Dependencies
 ├── run.py                # Main entry point
 └── README.md             # This file
@@ -76,6 +79,20 @@ Edit `src/config/config.py` to customize:
 - `NON_IID`: Enable non-identical data distribution (default: True)
 - `DIRICHLET_ALPHA`: Controls non-IID level (lower = more heterogeneous, default: 0.5)
 
+**Advanced Optimization & Scalability:**
+- `MAX_ITER`: Maximum iterations for model convergence (default: 2000)
+- `DECISION_THRESHOLD`: Threshold for binary classification (default: 0.30)
+- `CLASS_WEIGHT`: Handle class imbalance (default: 'balanced')
+- `SCALABILITY_CLIENT_COUNTS`: Client counts to test for scalability
+- `ENABLE_FEATURE_ENGINEERING`: Toggle feature engineering extraction
+
+**Privacy & Security:**
+- `DP_EPSILON` / `DP_DELTA`: Differential privacy budgets
+- `GRADIENT_CLIPPING`: Enable gradient clipping for privacy
+- `ENABLE_ADVERSARIAL_TESTING`: Toggle Byzantine attack testing
+- `POISON_RATE`: Fraction of clients to poison in attack
+- `POISON_STRATEGIES`: Attack strategies (e.g. "scaling", "sign_flip")
+
 **Logging:**
 - `LOG_LEVEL`: "INFO", "DEBUG", or "WARNING"
 - `LOG_FORMAT`: Log message format
@@ -96,6 +113,7 @@ python experiments/exp6_hyperparameter_sensitivity.py  # Hyperparameter tuning a
 python experiments/exp7_differential_privacy.py        # Privacy-preserving training
 python experiments/exp8_adversarial_robustness.py      # Byzantine attack resilience
 python experiments/exp9_scalability_analysis.py        # System scalability analysis
+python experiments/visualize_scalability.py            # Visualize scalability results
 ```
 
 ### 4. Main Pipeline
