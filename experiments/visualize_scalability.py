@@ -301,17 +301,17 @@ def visualize_scalability_results(result_file: str):
     
     # 1. Comprehensive analysis
     fig1 = visualizer.plot_comprehensive_analysis(
-        str(output_dir / 'scalability_comprehensive_analysis.png')
+        str(output_dir / 'scalability_comprehensive_analysis.pdf')
     )
     
     # 2. Scaling laws
     fig2 = visualizer.plot_scaling_laws(
-        str(output_dir / 'scalability_scaling_laws.png')
+        str(output_dir / 'scalability_scaling_laws.pdf')
     )
     
     # 3. Bottleneck analysis
     fig3 = visualizer.plot_bottleneck_analysis(
-        str(output_dir / 'scalability_bottleneck_analysis.png')
+        str(output_dir / 'scalability_bottleneck_analysis.pdf')
     )
     
     # 4. Summary table
