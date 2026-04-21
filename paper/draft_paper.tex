@@ -19,23 +19,22 @@
 % \thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
-\IEEEauthorblockA{\textit{dept. name of organization (of Affiliation)} \\
-\textit{name of organization (of Affiliation)}\\
-City, Country \\
-email address or ORCID}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
-\IEEEauthorblockA{\textit{dept. name of organization (of Affiliation)} \\
-\textit{name of organization (of Affiliation)}\\
-City, Country \\
-email address or ORCID}
+\author{\IEEEauthorblockN{Md. Raiyan Ur Rahman Jiyon}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{Green University of Bangladesh}\\
+Dhaka, Bangladesh \\
+raiyanjiyon@gmail.com \\
+ORCID: 0009-0000-4845-2813} % Replace with your actual ORCID
 }
 
 \maketitle
 
 \begin{abstract}
-Traditional predictive machine learning in healthcare faces a critical bottleneck: patient data are isolated within distinct clinical facilities governed by stringent privacy regulations such as the Health Insurance Portability and Accountability Act and the General Data Protection Regulation, preventing the centralized aggregation necessary for robust model training. Federated Learning (FL) offers a promising cryptographic resolution by decentralizing the training process, yet it is rarely evaluated against realistic diagnostic constraints. This paper engineers a comprehensive Federated Learning framework explicitly tailored for clinical environments using an imbalanced diabetes onset dataset. First, we mirror realistic inter-hospital demographic variances by distributing patient data across discrete network proxy clients via a Non-IID Dirichlet partition (alpha = 0.5). We then secure the network utilizing Differential Privacy (DP-SGD) and mathematically defend against malicious client injections via robust Byzantine aggregation schema (Krum/Median). Most importantly, we shift algorithmic focus away from gross accuracy toward clinical safety—a trade-off achieved through custom threshold optimization and secondary interaction engineering that successfully escalates critical diagnostic Recall from an unsafe 70 percent baseline to an 87.04 percent detection rate, demonstrating definitively that privacy-preserving AI can effectively prioritize patient survival metrics across isolated healthcare silos.
+Traditional predictive AI in healthcare usually hits a wall pretty early: patient data is stuck in silos. Because of strict privacy rules like HIPAA and GDPR, clinical facilities can't just pool their data into one big central pot, which makes training a strong model nearly impossible. Federated Learning (FL) looks like a great fix since it keeps training decentralized, but we rarely see it tested against the messy, practical constraints of a real clinic.
+
+In this paper, we built a Federated Learning framework specifically for the clinical world, using an imbalanced diabetes dataset to keep things realistic. We started by mimicking the demographic gaps you'd actually see between different hospitals, distributing data across network proxies using a Non-IID Dirichlet partition (alpha = 0.5). To keep the network locked down, we pulled in Differential Privacy (DP-SGD) and added a mathematical shield against bad-actor injections using robust Byzantine aggregation (specifically Krum and Median).
+
+The real breakthrough, though, was shifting our focus. Instead of chasing raw accuracy, we prioritized clinical safety. By tweaking custom thresholds and refining how the model interacts with data, we managed to push critical diagnostic Recall from a dangerous 70\% baseline all the way up to 87.04\%. It’s proof that privacy-first AI doesn't have to compromise on the metrics that actually keep patients alive across isolated healthcare silos.
 \end{abstract}
 
 \begin{IEEEkeywords}
