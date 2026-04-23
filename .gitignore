@@ -21,5 +21,8 @@ results/plots/*.png
 # Ignore Q1 journal roadmap (keep it out of version control if it's a work in progress)
 Q1_Journal_Roadmap.md
 
+# Ignore feature roadmap (keep it out of version control if it's a work in progress)
+FEATURE.md
+
 # Ignore All JSON files
 *.json
