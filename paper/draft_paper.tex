@@ -42,15 +42,14 @@ Federated Learning, Healthcare Machine Learning, Differential Privacy, Non-IID D
 \end{IEEEkeywords}
 
 \section{Introduction}
-The digitalization of healthcare systems has generated massive repositories of high-dimensional clinical data, presenting an unprecedented opportunity for diagnostic machine learning integrations. However, the development of functional, cross-demographic predictive models has historically required compiling sweeping datasets into centralized servers—a paradigm fundamentally incompatible with modern data protection regulations including the Health Insurance Portability and Accountability Act (HIPAA) and the General Data Protection Regulation (GDPR). Patient records are consequently trapped in isolated data silos across varying, independent proxy facilities \cite{price2019privacy}.
+Today, healthcare systems store huge amounts of patient data. This creates a big chance for us to use machine learning to help doctors diagnose diseases. But there is a problem. In a traditional machine learning approach, you have to send all the data to a cloud platform so the models can be trained. This is not safe and it violates data security laws like HIPAA or GDPR. Because of these security issues, authorities can't share their data, so patient records stay stuck in isolated databases across different hospitals and clinics \cite{price2019privacy}.
+Federated Learning (FL) was created to solve this. It lets us train models across different healthcare sites without moving the private data or breaking privacy rules. In an FL setup, each hospital trains the model on its own local data. Then, they only send the updated model weights to a central server, not the actual patient files. Even though this sounds good, most current FL studies use perfect, evenly distributed public datasets. Real clinical data is messy and varies a lot from one hospital to another.
 
-Federated Learning (FL) has emerged as a state-of-the-art methodology designed specifically to bridge distributed healthcare silos without breaching privacy protocol. In FL setups, disparate systems train model weights locally atop stationary raw data, transmitting only cryptographic metric derivatives to a central aggregator. Nonetheless, existing FL studies are overwhelmingly calibrated against standard, uniformly distributed (IID) public datasets and optimized for broad mathematical accuracy, failing to mimic realistic clinical disparities.
-
-In this research, we engineer and evaluate a robust, privacy-centric Federated Learning pipeline exclusively utilizing clinical diabetes data. We address strict healthcare constraints to prove the feasibility of ethical, distributed health analytics. The major contributions of this work are summarized as follows:
+In this research, we built and tested an FL system using actual clinical diabetes data. We wanted to see if this works under the strict rules hospitals have to follow. Our work focuses on three main things:
 \begin{itemize}
-    \item We implement a Dirichlet-based Non-IID distribution to realistically simulate discrete hospital data silos.
-    \item We deploy Byzantine-robust aggregation policies (Krum and Median) to mathematically defend the global model against toxic data-poisoning threat vectors.
-    \item We aggressively prioritize critical diagnostic Recall, achieving an 87.04\% detection rate over gross centralized accuracy to definitively improve patient safety metrics.
+\item We used a Dirichlet-based distribution to mimic how data is actually split between different hospitals.
+\item We used Krum and Median aggregation methods. These help protect the global model if one of the sites has bad or "poisoned" data.
+\item We focused on "Recall" rather than just overall accuracy. We reached an 87.04\% detection rate because catching every case of diabetes is what actually keeps patients safe.
 \end{itemize}
 
 The remainder of this paper is organized as follows: Section II reviews related literature and existing theoretical gaps. Section III details our methodology, including data distribution, robust aggregation, and privacy constraints. Section IV evaluates our empirical results and scalability benchmarks. Finally, Section V concludes the research narrative and discusses future work.
