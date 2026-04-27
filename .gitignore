@@ -24,5 +24,8 @@ Q1_Journal_Roadmap.md
 # Ignore feature roadmap (keep it out of version control if it's a work in progress)
 FEATURE.md
 
+# Ignore verification report (keep it out of version control if it's a work in progress)
+VERIFICATION_REPORT.md
+
 # Ignore All JSON files
 *.json
