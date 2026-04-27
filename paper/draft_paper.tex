@@ -9,6 +9,7 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{placeins}
 \usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=blue]{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -148,6 +149,7 @@ While DP-SGD ensures gradient security and Non-IID Dirichlet distribution guaran
 \label{fig:scaling}
 \end{figure}
 
+\FloatBarrier
 \section{Conclusion}
 This paper presents a comprehensive, reproducible evaluation of Federated Learning under realistic healthcare constraints, providing transparent empirical evidence of both its capabilities and its limitations. By evaluating the system against severe Non-IID data distributions designed to simulate real-world hospital disparity, our framework actively mirrors clinical reality and avoids the methodological pitfalls of idealized IID evaluations.
 
