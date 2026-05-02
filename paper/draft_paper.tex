@@ -59,12 +59,12 @@ Unfortunately, applying FL to real healthcare networks faces significant statist
 
 Moreover, while decentralization helps to reduce bulk data breaches, fundamental transmission paradigms remain susceptible to gradient inversion attacks, in which adversaries can reconstruct sensitive patient data from shared model updates \cite{zhu2019deep}. These attacks compromise the privacy promise of FL, which lacks explicitly defined mathematical boundaries \cite{dwork2014algorithmic, abadi2016deep}. In this study, we design and test a fully secured, privacy-focused Federated Learning pipeline using the Pima Indians Diabetes Database \cite{smith1988using}. We address strict healthcare constraints to demonstrate empirically the viability of secure, distributed health analytics within adversarial networks. The significant contributions of this work are summarized as follows:
 \begin{itemize}
-    \item We implement a Dirichlet-based Non-Independent and Identically Distributed (Non-IID) distribution to rigorously simulate inherently discrete hospital data silos.
-    \item We natively deploy Differentially Private Stochastic Gradient Descent (DP-SGD) alongside Byzantine-robust aggregation policies (Krum and Median) to mathematically secure the network against both gradient leakage and malicious data-poisoning threat vectors.
-    \item We prioritize critical diagnostic Recall over centralized gross accuracy, achieving comparable clinical safety in a federated setting and providing a comprehensive privacy-utility trade-off analysis across multiple privacy budgets (\( \epsilon \in \{0.5, 1.0, 2.0, 5.0, 10.0\} \)).
+    \item We propose a Non-Independent and Identically Distributed (Non-IID) distribution based on the Dirichlet distribution to simulate the inherently discrete hospital data silos.
+    \item We natively use Differentially Private Stochastic Gradient Descent (DP-SGD) and Byzantine-robust aggregation strategies such as Krum and Median to protect against both gradient information leakage and poisoning attacks.
+    \item We prioritize the recall of critical diagnostic information over central gross accuracy. We demonstrate that comparable safety can be maintained in a federated manner, coupled with an analysis of the privacy-utility relationship and corresponding trade-offs across differing privacy budgets (\( \epsilon \in \{0.5, 1.0, 2.0, 5.0, 10.0\} \)).
 \end{itemize}
 
-The remainder of this paper is organized as follows: Section II reviews related literature and existing theoretical gaps. Section III details our methodology, including data distribution, robust aggregation, and privacy constraints. Section IV evaluates our empirical results and scalability benchmarks. Finally, Section V concludes the research narrative and discusses future work.
+The remaining paper is organized as follows: Section 2 briefly reviews the relevant prior work and indicates the existing theoretical gaps. Section 3 elaborates on our approach: the data distribution, robust aggregation technique and the privacy constraints on the training dataset. Section 4 presents the results from our experiments and benchmarking of its scalability. Lastly, Section 5 offers concluding remarks and outlines future research directions.
 
 \section{Related Work}
 
