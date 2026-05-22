@@ -18,14 +18,11 @@ results/plots/*.png
 # Ignore environment variables file (keep .env.local for local development)
 .env.local
 
-# Ignore Q1 journal roadmap (keep it out of version control if it's a work in progress)
-Q1_Journal_Roadmap.md
+# Ignore all other files in the data directory except the specified CSVs
+data/
 
-# Ignore feature roadmap (keep it out of version control if it's a work in progress)
-FEATURE.md
-
-# Ignore verification report (keep it out of version control if it's a work in progress)
-VERIFICATION_REPORT.md
+PHASE_PLAN.md
+reconstructed_q_1_guide_federated_healthcare_ml_mimic_iv.md
 
 # Ignore All JSON files
 *.json
