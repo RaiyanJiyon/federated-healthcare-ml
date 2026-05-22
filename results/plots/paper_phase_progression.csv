@@ -1,0 +1,8 @@
+Phase,Experiment,Key Metric,Result,Status
+Phase 1,Baseline,AUROC,0.8850,✓ Baseline
+Phase 2,FedProx,AUROC vs FedAvg,-2.6%,✗ Underperforms
+Phase 2,Calibration,ECE,0.0088,✓ Calibrated
+Phase 2,SHAP Drift,Mean CV,0.684 (high),✓ Heterogeneous
+Phase 3,Privacy (DP),AUROC Loss,-49%,✗ Too Strict
+Phase 3,Robustness,AUROC Loss (2 attackers),-6.9%,⚠ Vulnerable
+Phase 3,Scalability,Clients (no loss),28 clients,✓ Scalable
