@@ -1,303 +1,228 @@
+#!/usr/bin/env python
 """
-Experiment 7: Differential Privacy Analysis
+Experiment 7: Differential Privacy Analysis (Phase 3)
 
 Tests federated learning with differential privacy (DP).
 Demonstrates the privacy-utility tradeoff: privacy gains vs accuracy loss.
 
 Key Questions:
 1. How does differential privacy impact model accuracy?
-2. What's the optimal epsilon for healthcare (safety & privacy)?
-3. How does privacy degrade with more FL rounds?
+2. What's the optimal epsilon for healthcare (ε=1.0)?
+3. How does privacy budget accumulate over rounds?
 4. Can we maintain clinical safety (recall ≥ 80%) with DP?
 """
 
 import sys
-sys.path.insert(0, '/home/raiyanjiyon/Machine Learning/federated-healthcare-ml')
-
-import json
-import time
-from datetime import datetime
-from pathlib import Path
-
+import logging
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from pathlib import Path
 
-# Project imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from src.data.loader import load_dataset_with_df
-from src.data.preprocess import DataPreprocessor
-from src.data.split import train_test_split_data, distribute_non_iid
-from src.models.model import LogisticRegressionModel
-from src.utils.feature_engineering import HealthcareFeatureEngineer
-from src.fl.strategy import FedAvgAggregator
-from src.fl.privacy import DifferentialPrivacyMechanism, PrivacyBudgetTracker
-from src.config.config import MAX_ITER, DECISION_THRESHOLD, NUM_CLIENTS, NUM_ROUNDS, DIRICHLET_ALPHA
+from src.data.split import distribute_by_care_unit
+from src.training.federated import FederatedTrainer
+from src.evaluation.metrics import calculate_brier_score, calculate_expected_calibration_error
+from src.config.config import RANDOM_SEED, DP_EPSILON, DP_DELTA
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, recall_score, precision_score
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-def run_differential_privacy_experiment():
-    """Test FL with differential privacy."""
+def run_dp_variant(X_train, y_train, X_val, y_val, X_test, y_test, 
+                   care_units_train, seed, use_dp):
+    """Run one federated experiment with DP enabled/disabled."""
     
-    print("\n" + "=" * 100)
-    print("EXPERIMENT 7: DIFFERENTIAL PRIVACY ANALYSIS")
-    print("=" * 100 + "\n")
+    # Distribute to care units
+    clients = distribute_by_care_unit(X_train, y_train, care_units_train, min_patients_per_unit=100)
     
-    # Configuration
-    num_clients = NUM_CLIENTS
-    alpha = DIRICHLET_ALPHA
-    num_rounds = NUM_ROUNDS
+    # Prepare validation and test data
+    val_data = (X_val, y_val)
+    test_data = (X_test, y_test)
     
-    # Epsilon values to test (privacy budgets)
-    epsilon_values = [None, 0.1, 0.5, 1.0, 2.0, 5.0]  # None = no DP (baseline)
+    # Initialize trainer
+    trainer = FederatedTrainer(
+        clients=clients,
+        val_data=val_data,
+        test_data=test_data,
+        num_rounds=20,
+        learning_rate=0.01,
+        use_dp=use_dp,
+        aggregation_strategy='fedavg',
+        fedprox_mu=0.01,
+        random_seed=seed
+    )
     
-    print(f"📊 Configuration:")
-    print(f"   Clients: {num_clients}, Non-IID (alpha={alpha})")
-    print(f"   FL Rounds: {num_rounds}")
-    print(f"   Privacy budgets (ε): {epsilon_values}")
+    # Train and get final weights
+    train_result = trainer.train()
+    final_weights = train_result['final_weights']
+    test_auroc = train_result['test_auroc']
     
-    # =====================================================================
-    # DATA LOADING & PREPROCESSING
-    # =====================================================================
-    print(f'\n📁 Loading data...')
-    df, X, y = load_dataset_with_df()
+    # Get predictions for additional metrics
+    X_test_scaled = trainer.scaler.transform(X_test)
+    model = LogisticRegression(max_iter=1000)
+    model.coef_ = final_weights['coef'].reshape(1, -1)
+    model.intercept_ = np.array([final_weights['intercept']]) if isinstance(final_weights['intercept'], (int, float)) else final_weights['intercept']
+    model.classes_ = final_weights['classes']
     
-    print('Preprocessing data...')
-    preprocessor = DataPreprocessor()
-    X_processed = preprocessor.preprocess(df.iloc[:, :-1], fit=True)
-    feature_names = list(df.columns[:-1])
+    y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+    y_pred = (y_pred_proba >= 0.5).astype(int)
     
-    X_train, X_test, y_train, y_test = train_test_split_data(X_processed, y)
-    y_train = y_train.astype(int)
-    y_test = y_test.astype(int)
+    # Evaluate
+    brier = calculate_brier_score(y_test, y_pred_proba)
+    ece = calculate_expected_calibration_error(y_test, y_pred_proba)
+    recall = recall_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
     
-    print(f'✓ Data ready: {len(X_train)} training, {len(X_test)} testing')
+    return {
+        'auroc': test_auroc,
+        'brier': brier,
+        'ece': ece,
+        'recall': recall,
+        'precision': precision,
+        'seed': seed,
+        'use_dp': use_dp
+    }
+
+
+def run_exp7():
+    """
+    Run differential privacy analysis comparing DP vs non-DP federated learning.
+    """
+    logger.info("="*70)
+    logger.info("EXPERIMENT 7: DIFFERENTIAL PRIVACY ANALYSIS")
+    logger.info("="*70)
     
-    # =====================================================================
-    # FEATURE ENGINEERING
-    # =====================================================================
-    print(f'\n📊 Creating engineered features...')
-    engineer = HealthcareFeatureEngineer()
-    X_train_eng, feature_names_eng = engineer.engineer_all_features(X_train, feature_names)
+    # Load data
+    logger.info("\n[1/3] Loading MIMIC-IV cohort...")
+    df, X, y = load_dataset_with_df(use_cache=True)
+    logger.info(f"Cohort loaded: {X.shape[0]} patients, {X.shape[1]} features")
     
-    # Apply to test set
-    X_test_df = pd.DataFrame(X_test, columns=feature_names)
-    for feat1, feat2 in engineer.interaction_pairs:
-        if feat1 in feature_names and feat2 in feature_names:
-            X_test_df[f"{feat1}_x_{feat2}"] = X_test_df[feat1] * X_test_df[feat2]
-    for feat in ['Glucose', 'BMI', 'Age', 'BloodPressure']:
-        if feat in feature_names:
-            X_test_df[f"{feat}_squared"] = X_test_df[feat] ** 2
-    X_test_df['Glucose_per_Insulin'] = X_test_df['Glucose'] / X_test_df['Insulin']
-    X_test_df['BloodPressure_per_Age'] = X_test_df['BloodPressure'] / X_test_df['Age']
-    X_test_eng = X_test_df.values
+    # Split
+    logger.info("\n[2/3] Splitting data...")
+    n_train = int(0.70 * len(X))
+    n_val = int(0.15 * len(X))
     
-    print(f'✓ Features: {X_train.shape[1]} → {X_train_eng.shape[1]}')
+    X_train, y_train = X[:n_train], y[:n_train]
+    X_val, y_val = X[n_train:n_train + n_val], y[n_train:n_train + n_val]
+    X_test, y_test = X[n_train + n_val:], y[n_train + n_val:]
     
-    # =====================================================================
-    # NON-IID DISTRIBUTION
-    # =====================================================================
-    print(f'\n🌐 Distributing data to {num_clients} clients (Non-IID)...')
-    client_data_dict = distribute_non_iid(X_train_eng, y_train, num_clients, alpha)
+    # Get care units
+    if 'first_careunit' in df.columns:
+        care_units_train = df.iloc[:n_train]['first_careunit']
+    else:
+        care_units_train = pd.Series(['Unit_' + str(i % 7) for i in range(n_train)])
     
-    client_data = []
-    for client_id in range(num_clients):
-        X_client, y_client = client_data_dict[client_id]
-        client_data.append({
-            'id': client_id,
-            'X_train': X_client,
-            'y_train': y_client,
-            'X_test': X_test_eng,
-            'y_test': y_test,
-            'n_samples': len(X_client),
+    logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
+    
+    # Scale features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Test variants: baseline (no DP) vs DP enabled
+    logger.info("\n[3/3] Running DP experiments...")
+    
+    all_results = []
+    
+    # Baseline: no DP
+    logger.info("\n--- Baseline (No DP) ---")
+    try:
+        res = run_dp_variant(
+            X_train_scaled, y_train, X_val_scaled, y_val, X_test_scaled, y_test,
+            care_units_train, seed=42, use_dp=False
+        )
+        all_results.append(res)
+        logger.info(f"✓ No DP: AUROC={res['auroc']:.4f}, Recall={res['recall']:.1%}")
+    except Exception as e:
+        logger.error(f"✗ No DP failed: {e}")
+    
+    # DP variant (uses default DP_EPSILON from config)
+    logger.info(f"\n--- Differential Privacy (enabled) ---")
+    try:
+        res = run_dp_variant(
+            X_train_scaled, y_train, X_val_scaled, y_val, X_test_scaled, y_test,
+            care_units_train, seed=42, use_dp=True
+        )
+        all_results.append(res)
+        
+        if all_results:
+            baseline_auroc = all_results[0]['auroc']
+            auroc_loss_pct = (1 - res['auroc'] / baseline_auroc) * 100
+            logger.info(f"✓ DP enabled: AUROC={res['auroc']:.4f} (loss: {auroc_loss_pct:.1f}%), Recall={res['recall']:.1%}")
+    except Exception as e:
+        logger.error(f"✗ DP failed: {e}")
+    
+    if not all_results:
+        logger.error("No successful runs!")
+        return None
+    
+    results_df = pd.DataFrame(all_results)
+    
+    # Analysis
+    logger.info("\n" + "="*70)
+    logger.info("DIFFERENTIAL PRIVACY ANALYSIS SUMMARY")
+    logger.info("="*70)
+    
+    if len(all_results) >= 2:
+        baseline = all_results[0]
+        dp_result = all_results[1]
+        
+        logger.info(f"\nBaseline (No DP):")
+        logger.info(f"  AUROC:     {baseline['auroc']:.4f}")
+        logger.info(f"  Recall:    {baseline['recall']:.1%}")
+        logger.info(f"  Precision: {baseline['precision']:.1%}")
+        logger.info(f"  Brier:     {baseline['brier']:.4f}")
+        
+        logger.info(f"\nDifferential Privacy Enabled:")
+        auroc_loss_pct = (1 - dp_result['auroc'] / baseline['auroc']) * 100
+        recall_loss_pct = (1 - dp_result['recall'] / baseline['recall']) * 100
+        logger.info(f"  AUROC:     {dp_result['auroc']:.4f} (loss: {auroc_loss_pct:.1f}%)")
+        logger.info(f"  Recall:    {dp_result['recall']:.1%} (loss: {recall_loss_pct:.1f}%)")
+        logger.info(f"  Precision: {dp_result['precision']:.1%}")
+        logger.info(f"  Brier:     {dp_result['brier']:.4f}")
+        logger.info(f"  Privacy Budget: ε={DP_EPSILON:.2f} per round × 20 rounds = {DP_EPSILON*20:.1f} total")
+        
+        # Clinical viability
+        clinically_safe = dp_result['recall'] >= 0.80
+        safety_str = "✓ VIABLE" if clinically_safe else "✗ NOT VIABLE"
+        logger.info(f"\nClinical Viability (Recall ≥ 80%): {safety_str}")
+        logger.info(f"  DP Recall: {dp_result['recall']:.1%}")
+    
+    # Save results
+    output_dir = Path('results/plots')
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    results_file = output_dir / 'exp7_differential_privacy.csv'
+    results_df.to_csv(results_file, index=False)
+    logger.info(f"\n✓ Results saved to {results_file}")
+    
+    # Create summary table
+    summary_rows = []
+    for i, res in enumerate(all_results):
+        label = 'No DP (Baseline)' if i == 0 else f'DP Enabled (ε={DP_EPSILON})'
+        summary_rows.append({
+            'experiment': label,
+            'auroc': f"{res['auroc']:.4f}",
+            'brier': f"{res['brier']:.4f}",
+            'ece': f"{res['ece']:.4f}",
+            'recall': f"{res['recall']:.1%}",
+            'precision': f"{res['precision']:.1%}"
         })
     
-    print(f"✓ {num_clients} clients created")
+    summary_df = pd.DataFrame(summary_rows)
+    summary_file = output_dir / 'exp7_differential_privacy_summary.csv'
+    summary_df.to_csv(summary_file, index=False)
+    logger.info(f"✓ Summary saved to {summary_file}")
     
-    # =====================================================================
-    # DIFFERENTIAL PRIVACY EXPERIMENTS
-    # =====================================================================
-    print("\n" + "=" * 100)
-    print("PRIVACY-UTILITY TRADEOFF ANALYSIS")
-    print("=" * 100 + "\n")
-    
-    results_all = {}
-    
-    for epsilon in epsilon_values:
-        if epsilon is None:
-            privacy_label = "No Privacy (Baseline)"
-            use_dp = False
-        else:
-            privacy_label = f"DP (ε={epsilon})"
-            use_dp = True
-        
-        print(f"\n📊 Testing: {privacy_label}")
-        print("-" * 100)
-        
-        # Initialize global model
-        init_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
-        init_model.model.C = 1.0
-        init_model.set_decision_threshold(DECISION_THRESHOLD)
-        init_model.fit(client_data[0]['X_train'], client_data[0]['y_train'], verbose=False)
-        global_weights = init_model.get_weights()
-        
-        # Initialize DP if needed
-        if use_dp:
-            dp_mechanism = DifferentialPrivacyMechanism(
-                epsilon=epsilon,
-                delta=1.0 / len(X_train_eng),
-                clipping_norm=1.0,
-                num_samples=len(X_train_eng)
-            )
-        
-        start_time = time.time()
-        
-        # Federated learning rounds
-        for round_num in range(num_rounds):
-            client_weights = []
-            client_sample_sizes = []
-            
-            # Local training on each client
-            for client in client_data:
-                # Create local model
-                local_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
-                local_model.model.C = 1.0
-                local_model.set_weights(global_weights)
-                local_model.set_decision_threshold(DECISION_THRESHOLD)
-                
-                # Local training
-                try:
-                    local_model.fit(client['X_train'], client['y_train'], verbose=False)
-                    local_weights = local_model.get_weights()
-                except ValueError:
-                    local_weights = global_weights
-                
-                # Apply DP if enabled
-                if use_dp:
-                    local_weights, _ = dp_mechanism.privatize_weights(local_weights)
-                
-                client_weights.append(local_weights)
-                client_sample_sizes.append(client['n_samples'])
-            
-            # Aggregate
-            global_weights = FedAvgAggregator.aggregate(client_weights, client_sample_sizes)
-        
-        elapsed_time = time.time() - start_time
-        
-        # Final evaluation
-        final_model = LogisticRegressionModel(max_iter=MAX_ITER, class_weight='balanced')
-        final_model.model.C = 1.0
-        final_model.set_weights(global_weights)
-        final_model.set_decision_threshold(DECISION_THRESHOLD)
-        y_pred = final_model.predict(X_test_eng)
-        
-        # Calculate metrics
-        accuracy = float(accuracy_score(y_test, y_pred))
-        precision = float(precision_score(y_test, y_pred, zero_division=0))
-        recall = float(recall_score(y_test, y_pred, zero_division=0))
-        f1 = float(f1_score(y_test, y_pred, zero_division=0))
-        
-        results_all[privacy_label] = {
-            'epsilon': epsilon,
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'f1_score': f1,
-            'training_time': elapsed_time,
-            'clinical_safe': recall >= 0.80,  # Recall > 80% = safe
-        }
-        
-        # Print results
-        print(f"  Accuracy: {accuracy:.2%}, Recall: {recall:.2%}, F1: {f1:.2%}")
-        print(f"  Time: {elapsed_time:.2f}s, Clinical Safe: {'✅ YES' if recall >= 0.80 else '❌ NO'}")
-        
-        # Print DP status if used
-        if use_dp:
-            print(f"  Privacy: ({dp_mechanism.total_epsilon_budget:.2f}, {dp_mechanism.delta:.6f})-DP")
-    
-    # =====================================================================
-    # ANALYSIS & RECOMMENDATIONS
-    # =====================================================================
-    print("\n" + "=" * 100)
-    print("PRIVACY-UTILITY TRADEOFF ANALYSIS")
-    print("=" * 100 + "\n")
-    
-    # Find baseline
-    baseline = results_all.get("No Privacy (Baseline)", {})
-    baseline_accuracy = baseline.get('accuracy', 0)
-    baseline_recall = baseline.get('recall', 0)
-    
-    print(f"📊 BASELINE (No Privacy):")
-    print(f"   Accuracy: {baseline_accuracy:.2%}")
-    print(f"   Recall:   {baseline_recall:.2%}")
-    
-    print(f"\n📊 DIFFERENTIAL PRIVACY RESULTS:")
-    print(f"{'Privacy Level':<30} {'Accuracy':<12} {'Recall':<12} {'Accuracy Loss':<15} {'Safe?':<10}")
-    print("-" * 79)
-    
-    for label, result in results_all.items():
-        if "Baseline" not in label:
-            acc_loss = baseline_accuracy - result['accuracy']
-            recall_loss = baseline_recall - result['recall']
-            safe_str = "✅ YES" if result['clinical_safe'] else "❌ NO"
-            
-            print(f"{label:<30} {result['accuracy']:>10.2%}  {result['recall']:>10.2%}  "
-                  f"-{acc_loss:>6.2%}{'':>6}  {safe_str:<10}")
-    
-    # Recommendations
-    print("\n" + "=" * 100)
-    print("RECOMMENDATIONS FOR HEALTHCARE DEPLOYMENT")
-    print("=" * 100 + "\n")
-    
-    # Find best epsilon that maintains safety
-    safe_runs = {k: v for k, v in results_all.items() 
-                 if v.get('clinical_safe') and v.get('epsilon') is not None}
-    
-    if safe_runs:
-        best_private = min(safe_runs.items(), 
-                          key=lambda x: x[1]['epsilon'])  # Minimum epsilon = most private
-        print(f"✅ RECOMMENDED: {best_private[0]}")
-        print(f"   Epsilon: {best_private[1]['epsilon']}")
-        print(f"   Recall: {best_private[1]['recall']:.2%} (clinical safety maintained)")
-        print(f"   Accuracy: {best_private[1]['accuracy']:.2%}")
-        print(f"   Privacy Loss vs Baseline: {baseline_recall - best_private[1]['recall']:.2%}")
-    else:
-        print("⚠️ WARNING: No DP configuration maintains clinical safety (recall ≥ 80%)")
-        print("   Recommendation: Use baseline (no DP) or accept slightly lower safety")
-    
-    # Tradeoff analysis
-    print("\n📊 PRIVACY-UTILITY TRADEOFF:")
-    print("   More Private (lower ε)  ←→  Better Accuracy (higher recall)")
-    print("   Typical loss with ε=1.0: 5-10% accuracy reduction")
-    print("   For healthcare: ε=1.0 provides excellent privacy with acceptable accuracy")
-    
-    # =====================================================================
-    # SAVE RESULTS
-    # =====================================================================
-    print("\n" + "=" * 100)
-    print("SAVING RESULTS")
-    print("=" * 100 + "\n")
-    
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_file = Path(f"results/differential_privacy_{timestamp}.json")
-    
-    all_results = {
-        'configuration': {
-            'num_clients': num_clients,
-            'alpha': alpha,
-            'num_rounds': num_rounds,
-            'epsilon_values': [float(e) if e else None for e in epsilon_values],
-        },
-        'results': results_all,
-        'baseline': baseline,
-    }
-    
-    with open(results_file, 'w') as f:
-        json.dump(all_results, f, indent=2)
-    
-    print(f"✓ Results saved to: {results_file}")
-    
-    return all_results
+    return results_df
 
 
-if __name__ == "__main__":
-    results = run_differential_privacy_experiment()
-    print("\n✅ Experiment complete!")
+if __name__ == '__main__':
+    results_df = run_exp7()
+    logger.info("\n✅ EXPERIMENT 7 COMPLETE")

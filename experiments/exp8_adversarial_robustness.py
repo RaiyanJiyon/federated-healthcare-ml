@@ -1,411 +1,325 @@
+#!/usr/bin/env python
 """
-Experiment 8: Adversarial Robustness Testing
-============================================
+Experiment 8: Adversarial Robustness (Phase 3)
 
-Evaluate Byzantine-resistant aggregation methods against coordinated poisoning attacks.
+Tests federated learning robustness against Byzantine attacks.
+Compares standard FedAvg against Byzantine client attacks.
 
-Tests:
-1. Different aggregation methods: FedAvg, Median, Trimmed Mean, Krum, Multi-Krum
-2. Different Byzantine percentages: 0%, 5%, 10%, 20%, 30%
-3. Different attack strategies: Scaling, Sign-flip, Label-flip, Random
-4. Metrics: Accuracy drop, attack success rate, defense effectiveness
+Key Questions:
+1. How robust is federated learning to malicious clients?
+2. What happens if some clients flip labels or return corrupted weights?
+3. Can robust aggregation (e.g., Krum) mitigate Byzantine attacks?
+4. What fraction of Byzantine clients can be tolerated?
 
-Expected results:
-- FedAvg: No defense, vulnerable to attacks
-- Median: Good defense against <50% Byzantine
-- Trimmed Mean: Moderate defense
-- Krum: Strong defense
-- Multi-Krum: Strongest defense
-
-Author: Federated Healthcare Research Team
-Date: April 2, 2026
+Attack Scenarios:
+- Label Flipping: Malicious clients flip binary labels (0 → 1, 1 → 0)
+- Impact: Gradients point in opposite direction
+- Tested with 1/7 and 2/7 malicious clients (14% and 29%)
 """
 
 import sys
-sys.path.insert(0, '/home/raiyanjiyon/Machine Learning/federated-healthcare-ml')
-
-import os
-import json
+import logging
 import numpy as np
 import pandas as pd
-import logging
-from datetime import datetime
-from typing import List, Dict, Tuple
-from tqdm import tqdm
+from pathlib import Path
+from typing import Dict, Tuple
 
-# Set up logging
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.data.loader import load_dataset_with_df
+from src.data.split import distribute_by_care_unit
+from src.training.federated import FederatedTrainer
+from src.evaluation.metrics import calculate_brier_score, calculate_expected_calibration_error
+from src.config.config import RANDOM_SEED
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, recall_score, precision_score
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Project imports
-from src.data.loader import load_dataset_with_df
-from src.data.preprocess import DataPreprocessor
-from src.data.split import train_test_split_data, distribute_non_iid
-from src.models.model import LogisticRegressionModel
-from src.utils.feature_engineering import HealthcareFeatureEngineer
-from src.fl.strategy import FedAvgAggregator
-from src.fl.robust_aggregation import RobustAggregator, PoisoningDetector
-from src.fl.adversarial import (
-    MaliciousClient, AdversarialSimulator, RobustnessEvaluator, CollaborativeAttack,
-    PoisoningConfig
-)
-from src.config.config import MAX_ITER, DECISION_THRESHOLD, DIRICHLET_ALPHA
 
-
-def evaluate_aggregation_robustness(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_test: np.ndarray,
-    y_test: np.ndarray,
-    num_clients: int = 10,
-    num_byzantine: int = 2,
-    attack_strategy: str = "scaling",
-    aggregation_method: str = "fedavg",
-    num_rounds: int = 10,
-    seed: int = 42
-) -> Dict:
+class KrumAggregator:
     """
-    Evaluate robustness of aggregation method against Byzantine attacks.
+    Krum aggregation: selects the weight vector closest to all others.
+    More robust to Byzantine attacks than simple averaging.
+    """
+    
+    @staticmethod
+    def aggregate(weight_vectors: list, sample_sizes: list = None) -> Dict:
+        """
+        Krum aggregation: select the model closest to all neighbors.
+        
+        For each model, compute sum of distances to all other models.
+        Select the model with minimum sum of distances.
+        
+        Args:
+            weight_vectors: List of weight dicts from clients
+            sample_sizes: Optional sample counts (unused in Krum)
+        
+        Returns:
+            Selected weight dict (most representative)
+        """
+        if len(weight_vectors) <= 1:
+            return weight_vectors[0]
+        
+        # Convert weights to vectors for distance computation
+        weight_arrays = []
+        for w in weight_vectors:
+            coef = w['coef'].flatten()
+            intercept = np.array([w['intercept']]) if np.isscalar(w['intercept']) else w['intercept']
+            weight_arrays.append(np.concatenate([coef, intercept]))
+        
+        # Compute pairwise distances
+        n = len(weight_arrays)
+        distances = np.zeros(n)
+        
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    dist = np.linalg.norm(weight_arrays[i] - weight_arrays[j]) ** 2
+                    distances[i] += dist
+        
+        # Select model with minimum distance sum (closest to others)
+        selected_idx = np.argmin(distances)
+        return weight_vectors[selected_idx]
+
+
+def run_robustness_variant(X_train, y_train, X_val, y_val, X_test, y_test, 
+                            care_units_train, malicious_fraction=0.0, seed=42):
+    """
+    Run federated experiment with optional Byzantine clients.
     
     Args:
-        X_train, y_train: Training data
-        X_test, y_test: Test data
-        num_clients: Number of clients
-        num_byzantine: Number of malicious clients
-        attack_strategy: Attack type
-        aggregation_method: Aggregation method to test
-        num_rounds: FL communication rounds
-        seed: Random seed
-        
-    Returns:
-        Robustness evaluation results
+        malicious_fraction: Fraction of clients to make malicious (0.0 = clean)
     """
-    np.random.seed(seed)
     
-    # Split data among clients (Non-IID)
-    client_data_dict = distribute_non_iid(X_train, y_train, num_clients, alpha=DIRICHLET_ALPHA, seed=seed)
-    client_data = list(client_data_dict.values())
-    client_sizes = [len(y) for _, y in client_data]
+    # Distribute to care units
+    clients = distribute_by_care_unit(X_train, y_train, care_units_train, min_patients_per_unit=100)
+    client_names = sorted(clients.keys())
+    n_clients = len(client_names)
+    n_malicious = max(1, int(np.ceil(n_clients * malicious_fraction)))
     
-    # Initialize aggregator
-    aggregator = RobustAggregator(
-        method=aggregation_method,
-        trim_ratio=0.1,
-        num_byzantine=num_byzantine
+    # Mark malicious clients (first n_malicious)
+    malicious_clients = set(client_names[:n_malicious]) if malicious_fraction > 0 else set()
+    
+    if malicious_clients:
+        logger.info(f"  Malicious clients ({malicious_fraction:.0%}): {malicious_clients}")
+        
+        # Apply label flipping to malicious clients
+        for client_name in malicious_clients:
+            X_c, y_c = clients[client_name]
+            y_c_flipped = 1 - y_c  # Flip binary labels
+            clients[client_name] = (X_c, y_c_flipped)
+    
+    # Prepare validation and test data
+    val_data = (X_val, y_val)
+    test_data = (X_test, y_test)
+    
+    # Initialize trainer
+    trainer = FederatedTrainer(
+        clients=clients,
+        val_data=val_data,
+        test_data=test_data,
+        num_rounds=20,
+        learning_rate=0.01,
+        use_dp=False,
+        aggregation_strategy='fedavg',
+        fedprox_mu=0.01,
+        random_seed=seed
     )
     
-    # Create poisoning configuration
-    poison_config = PoisoningConfig(
-        strategy=attack_strategy,
-        poison_factor=-4.0,
-        magnitude=1.0,
-        seed=seed
-    )
+    # Train and get final weights
+    train_result = trainer.train()
+    final_weights = train_result['final_weights']
+    test_auroc = train_result['test_auroc']
     
-    # Create adversarial simulator
-    simulator = AdversarialSimulator(
-        num_clients=num_clients,
-        num_byzantine=num_byzantine,
-        poison_config=poison_config,
-        seed=seed
-    )
-    simulator.create_byzantine_clients()
+    # Get predictions for additional metrics
+    X_test_scaled = trainer.scaler.transform(X_test)
+    model = LogisticRegression(max_iter=1000)
+    model.coef_ = final_weights['coef'].reshape(1, -1)
+    model.intercept_ = np.array([final_weights['intercept']]) if isinstance(final_weights['intercept'], (int, float)) else final_weights['intercept']
+    model.classes_ = final_weights['classes']
     
-    # Create poison detector
-    detector = PoisoningDetector(threshold=0.95, method="distance")
+    y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+    y_pred = (y_pred_proba >= 0.5).astype(int)
     
-    # Initialize global model
-    global_model = create_model(random_state=seed)
-    global_weights = global_model.coef_.flatten()
+    # Evaluate
+    brier = calculate_brier_score(y_test, y_pred_proba)
+    ece = calculate_expected_calibration_error(y_test, y_pred_proba)
+    recall = recall_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
     
-    # Training history
-    accuracies_clean = []  # Without attack
-    accuracies_poisoned = []  # With attack
-    detection_rates = []
-    
-    # Federated learning rounds
-    for round_num in tqdm(range(num_rounds), desc=f"Testing {aggregation_method} "
-                                                    f"vs {attack_strategy.replace('_', ' ')} "
-                                                    f"({num_byzantine} attackers)"):
-        client_updates = []
-        client_models = []
-        
-        # Client local training
-        for client_id, (X_client, y_client) in enumerate(client_data):
-            model = create_model(random_state=seed + round_num + client_id)
-            model.fit(X_client, y_client)
-            model_weights = model.coef_.flatten()
-            
-            # Compute update (δ = w_local - w_global)
-            update = model_weights - global_weights
-            client_updates.append(update)
-            client_models.append(model_weights)
-        
-        # Apply poisoning attack
-        client_ids = [f"client_{i}" for i in range(num_clients)]
-        poisoned_updates = simulator.poison_round(
-            client_updates, global_weights, client_ids, round_num
-        )
-        
-        # Detect poisoning
-        detection_result = detector.detect(
-            [u.reshape(-1, 1) for u in poisoned_updates],
-            client_ids
-        )
-        detected_suspicious = len(detection_result["suspicious_clients"])
-        detection_rates.append(detected_suspicious / num_byzantine if num_byzantine > 0 else 0)
-        
-        # Aggregate with Byzantine updates
-        aggregated_update = aggregator.aggregate(
-            [u.reshape(-1, 1) for u in poisoned_updates],
-            client_sizes=client_sizes
-        ).flatten()
-        
-        # Update global model
-        global_weights_poisoned = global_weights + aggregated_update
-        
-        # Evaluate poisoned model
-        global_model.coef_ = global_weights_poisoned.reshape(1, -1)
-        acc_poisoned_clean = global_model.score(X_test, y_test)
-        from sklearn.metrics import recall_score
-        rec_poisoned = recall_score(y_test, global_model.predict(X_test))
-        
-        # Aggregate without poisoning (clean)
-        aggregated_update_clean = aggregator.aggregate(
-            [u.reshape(-1, 1) for u in client_updates],
-            client_sizes=client_sizes
-        ).flatten()
-        
-        global_weights_clean = global_weights + aggregated_update_clean
-        global_model.coef_ = global_weights_clean.reshape(1, -1)
-        acc_clean = global_model.score(X_test, y_test)
-        rec_clean = recall_score(y_test, global_model.predict(X_test))
-        
-        # Update for next round (use poisoned version in simulation)
-        global_weights = global_weights_poisoned
-        
-        accuracies_clean.append(rec_clean)
-        accuracies_poisoned.append(rec_poisoned)
-    
-    # Compute robustness metrics
-    evaluator = RobustnessEvaluator()
-    robustness = evaluator.evaluate(
-        np.array(accuracies_clean),
-        np.array(accuracies_poisoned),
-        aggregation_method,
-        num_byzantine,
-        attack_strategy
-    )
-    
-    robustness["detection_rate"] = float(np.mean(detection_rates))
-    robustness["clean_accuracies"] = accuracies_clean
-    robustness["poisoned_accuracies"] = accuracies_poisoned
-    
-    return robustness
-
-
-def run_adversarial_robustness_experiment():
-    """
-    Run comprehensive adversarial robustness evaluation.
-    
-    Tests all combinations of:
-    - Aggregation methods: FedAvg, Median, Trimmed Mean, Krum, Multi-Krum
-    - Byzantine percentages: 0%, 5%, 10%, 20%, 30%
-    - Attack strategies: Scaling, Sign-flip, Label-flip, Random
-    """
-    logger.info("=" * 80)
-    logger.info("EXPERIMENT 8: ADVERSARIAL ROBUSTNESS TESTING")
-    logger.info("=" * 80)
-    
-    # Load and preprocess data
-    X, y = load_diabetes_data()
-    X = preprocess_data(X)
-    
-    # Train-test split
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-    
-    # Configuration
-    num_clients = 10
-    num_rounds = 10
-    
-    aggregation_methods = ["fedavg", "median", "trimmed_mean", "krum", "multi_krum"]
-    attack_strategies = ["scaling", "sign_flip", "label_flip", "random"]
-    byzantine_percentages = [0, 5, 10, 20, 30]  # % of clients
-    
-    results = {
-        "experiment": "adversarial_robustness",
-        "timestamp": datetime.now().isoformat(),
-        "configuration": {
-            "num_clients": num_clients,
-            "num_rounds": num_rounds,
-            "test_size": len(X_test),
-            "train_size": len(X_train),
-        },
-        "results": [],
-        "summary": {}
+    return {
+        'auroc': test_auroc,
+        'brier': brier,
+        'ece': ece,
+        'recall': recall,
+        'precision': precision,
+        'malicious_fraction': malicious_fraction,
+        'n_malicious': n_malicious,
+        'n_total_clients': n_clients,
+        'seed': seed
     }
+
+
+def run_exp8():
+    """
+    Run adversarial robustness analysis with Byzantine client scenarios.
+    """
+    logger.info("="*70)
+    logger.info("EXPERIMENT 8: ADVERSARIAL ROBUSTNESS (Byzantine Resilience)")
+    logger.info("="*70)
     
-    # Run all combinations
-    total_tests = (len(aggregation_methods) * 
-                   len(attack_strategies) * 
-                   len(byzantine_percentages))
+    # Load data
+    logger.info("\n[1/3] Loading MIMIC-IV cohort...")
+    df, X, y = load_dataset_with_df(use_cache=True)
+    logger.info(f"Cohort loaded: {X.shape[0]} patients, {X.shape[1]} features")
     
-    with tqdm(total=total_tests, desc="Overall progress") as pbar:
-        for aggregation_method in aggregation_methods:
-            method_results = {aggregation_method: {}}
-            
-            for attack_strategy in attack_strategies:
-                strategy_results = {attack_strategy: {}}
+    # Split
+    logger.info("\n[2/3] Splitting data...")
+    n_train = int(0.70 * len(X))
+    n_val = int(0.15 * len(X))
+    
+    X_train, y_train = X[:n_train], y[:n_train]
+    X_val, y_val = X[n_train:n_train + n_val], y[n_train:n_train + n_val]
+    X_test, y_test = X[n_train + n_val:], y[n_train + n_val:]
+    
+    # Get care units
+    if 'first_careunit' in df.columns:
+        care_units_train = df.iloc[:n_train]['first_careunit']
+    else:
+        care_units_train = pd.Series(['Unit_' + str(i % 7) for i in range(n_train)])
+    
+    logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
+    
+    # Scale features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Test scenarios
+    logger.info("\n[3/3] Running Byzantine robustness experiments...")
+    
+    all_results = []
+    
+    # Scenario 1: Clean (no Byzantine clients)
+    logger.info("\n--- Scenario 1: Clean Federation (No Byzantine Clients) ---")
+    try:
+        res = run_robustness_variant(
+            X_train_scaled, y_train, X_val_scaled, y_val, X_test_scaled, y_test,
+            care_units_train, malicious_fraction=0.0, seed=42
+        )
+        all_results.append(res)
+        logger.info(f"✓ Clean: AUROC={res['auroc']:.4f}, Recall={res['recall']:.1%}")
+    except Exception as e:
+        logger.error(f"✗ Clean failed: {e}")
+    
+    # Scenario 2: 1/7 Byzantine clients (~14%)
+    logger.info("\n--- Scenario 2: Byzantine Attack (1/7 clients, ~14%) ---")
+    try:
+        res = run_robustness_variant(
+            X_train_scaled, y_train, X_val_scaled, y_val, X_test_scaled, y_test,
+            care_units_train, malicious_fraction=1/7, seed=42
+        )
+        all_results.append(res)
+        logger.info(f"✓ 1/7 Byzantine: AUROC={res['auroc']:.4f}, Recall={res['recall']:.1%}")
+    except Exception as e:
+        logger.error(f"✗ 1/7 Byzantine failed: {e}")
+    
+    # Scenario 3: 2/7 Byzantine clients (~29%)
+    logger.info("\n--- Scenario 3: Byzantine Attack (2/7 clients, ~29%) ---")
+    try:
+        res = run_robustness_variant(
+            X_train_scaled, y_train, X_val_scaled, y_val, X_test_scaled, y_test,
+            care_units_train, malicious_fraction=2/7, seed=42
+        )
+        all_results.append(res)
+        logger.info(f"✓ 2/7 Byzantine: AUROC={res['auroc']:.4f}, Recall={res['recall']:.1%}")
+    except Exception as e:
+        logger.error(f"✗ 2/7 Byzantine failed: {e}")
+    
+    if not all_results:
+        logger.error("No successful runs!")
+        return None
+    
+    results_df = pd.DataFrame(all_results)
+    
+    # Analysis
+    logger.info("\n" + "="*70)
+    logger.info("ADVERSARIAL ROBUSTNESS ANALYSIS SUMMARY")
+    logger.info("="*70)
+    
+    if len(all_results) > 0:
+        clean_result = all_results[0]
+        baseline_auroc = clean_result['auroc']
+        baseline_recall = clean_result['recall']
+        
+        logger.info(f"\nClean Baseline:")
+        logger.info(f"  AUROC:     {baseline_auroc:.4f}")
+        logger.info(f"  Recall:    {baseline_recall:.1%}")
+        logger.info(f"  Precision: {clean_result['precision']:.1%}")
+        
+        if len(all_results) > 1:
+            logger.info(f"\nByzantine Resilience:")
+            for i, res in enumerate(all_results[1:], 1):
+                auroc_loss_pct = (1 - res['auroc'] / baseline_auroc) * 100
+                recall_loss_pct = (1 - res['recall'] / baseline_recall) * 100
+                logger.info(f"\n  Scenario {i}: {res['n_malicious']}/{res['n_total_clients']} Byzantine clients")
+                logger.info(f"    AUROC:  {res['auroc']:.4f} (loss: {auroc_loss_pct:.1f}%)")
+                logger.info(f"    Recall: {res['recall']:.1%} (loss: {recall_loss_pct:.1f}%)")
                 
-                for byzantine_pct in byzantine_percentages:
-                    num_byzantine = max(1, int(num_clients * byzantine_pct / 100))
-                    if byzantine_pct == 0:
-                        num_byzantine = 0
-                    
-                    try:
-                        logger.info(f"\nTesting: {aggregation_method.upper()} "
-                                   f"vs {attack_strategy} "
-                                   f"({byzantine_pct}% Byzantine = {num_byzantine} clients)")
-                        
-                        result = evaluate_aggregation_robustness(
-                            X_train, y_train, X_test, y_test,
-                            num_clients=num_clients,
-                            num_byzantine=num_byzantine,
-                            attack_strategy=attack_strategy,
-                            aggregation_method=aggregation_method,
-                            num_rounds=num_rounds,
-                            seed=42 + byzantine_pct
-                        )
-                        
-                        results["results"].append(result)
-                        strategy_results[attack_strategy][byzantine_pct] = result
-                        
-                        logger.info(f"  Recall (clean): {result['clean_accuracy_mean']:.4f}")
-                        logger.info(f"  Recall (poisoned): {result['poisoned_accuracy_mean']:.4f}")
-                        logger.info(f"  Accuracy drop: {result['accuracy_drop']:.4f}")
-                        logger.info(f"  Defense success: {result['defense_success_rate']:.1%}")
-                        
-                    except Exception as e:
-                        logger.error(f"Error in test: {e}")
-                        strategy_results[attack_strategy][byzantine_pct] = {"error": str(e)}
-                    
-                    finally:
-                        pbar.update(1)
-    
-    # Compute summary statistics
-    logger.info("\n" + "=" * 80)
-    logger.info("SUMMARY OF RESULTS")
-    logger.info("=" * 80)
-    
-    # Group results by aggregation method
-    method_summaries = {}
-    for result in results["results"]:
-        if "error" in result:
-            continue
-        
-        method = result["aggregation_method"]
-        if method not in method_summaries:
-            method_summaries[method] = {
-                "defense_success_rates": [],
-                "accuracy_drops": [],
-                "detection_rates": [],
-            }
-        
-        method_summaries[method]["defense_success_rates"].append(
-            result["defense_success_rate"]
-        )
-        method_summaries[method]["accuracy_drops"].append(
-            result["accuracy_drop"]
-        )
-        method_summaries[method]["detection_rates"].append(
-            result.get("detection_rate", 0)
-        )
-    
-    results["summary"] = {}
-    for method, data in method_summaries.items():
-        results["summary"][method] = {
-            "avg_defense_success": float(np.mean(data["defense_success_rates"])),
-            "avg_accuracy_drop": float(np.mean(data["accuracy_drops"])),
-            "avg_detection_rate": float(np.mean(data["detection_rates"])),
-            "robustness_rank": 0,  # Will be set after sorting
-        }
-    
-    # Rank by defense success
-    sorted_methods = sorted(
-        results["summary"].items(),
-        key=lambda x: x[1]["avg_defense_success"],
-        reverse=True
-    )
-    
-    for rank, (method, data) in enumerate(sorted_methods, 1):
-        data["robustness_rank"] = rank
-        results["summary"][method] = data
-    
-    # Print rankings
-    logger.info("\nAGGREGATION METHOD ROBUSTNESS RANKING:")
-    logger.info("-" * 80)
-    for i, (method, data) in enumerate(sorted_methods, 1):
-        logger.info(f"{i}. {method.upper():20} "
-                   f"Defense: {data['avg_defense_success']:6.1%}  "
-                   f"Accuracy drop: {data['avg_accuracy_drop']:6.4f}  "
-                   f"Detection: {data['avg_detection_rate']:6.1%}")
+                # Resilience assessment
+                if auroc_loss_pct < 5:
+                    logger.info(f"    Status: ✓ RESILIENT (loss < 5%)")
+                elif auroc_loss_pct < 10:
+                    logger.info(f"    Status: ⚠ DEGRADED (loss 5-10%)")
+                else:
+                    logger.info(f"    Status: ✗ VULNERABLE (loss > 10%)")
     
     # Save results
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_file = f"results/adversarial_robustness_{timestamp}.json"
-    os.makedirs("results", exist_ok=True)
+    output_dir = Path('results/plots')
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    with open(results_file, 'w') as f:
-        json.dump(results, f, indent=2)
+    results_file = output_dir / 'exp8_adversarial_robustness.csv'
+    results_df.to_csv(results_file, index=False)
+    logger.info(f"\n✓ Results saved to {results_file}")
     
-    logger.info(f"\nResults saved to {results_file}")
+    # Create summary table
+    summary_rows = []
+    for res in all_results:
+        scenario = f"Clean" if res['malicious_fraction'] == 0 else f"{res['n_malicious']}/{res['n_total_clients']} Byzantine"
+        summary_rows.append({
+            'scenario': scenario,
+            'n_malicious': res['n_malicious'],
+            'auroc': f"{res['auroc']:.4f}",
+            'recall': f"{res['recall']:.1%}",
+            'precision': f"{res['precision']:.1%}",
+            'brier': f"{res['brier']:.4f}"
+        })
     
-    # Print key findings
-    logger.info("\n" + "=" * 80)
-    logger.info("KEY FINDINGS")
-    logger.info("=" * 80)
+    summary_df = pd.DataFrame(summary_rows)
+    summary_file = output_dir / 'exp8_adversarial_robustness_summary.csv'
+    summary_df.to_csv(summary_file, index=False)
+    logger.info(f"✓ Summary saved to {summary_file}")
     
-    logger.info("\n1. ROBUSTNESS RANKING:")
-    for rank, (method, data) in enumerate(sorted_methods, 1):
-        status = "✅ STRONG" if data["avg_defense_success"] > 0.8 else \
-                 "⚠️  MODERATE" if data["avg_defense_success"] > 0.6 else \
-                 "❌ WEAK"
-        logger.info(f"   {rank}. {method.upper():20} - {status} "
-                   f"({data['avg_defense_success']:.1%})")
+    # Recommendation
+    logger.info("\n" + "="*70)
+    logger.info("RECOMMENDATIONS")
+    logger.info("="*70)
+    if len(all_results) > 1:
+        worst_loss = max([(1 - r['auroc'] / baseline_auroc) * 100 for r in all_results[1:]])
+        if worst_loss < 5:
+            logger.info("\n✓ FedAvg is RESILIENT to Byzantine attacks in this setting")
+            logger.info("  Recommendation: Current approach acceptable for federated deployment")
+        else:
+            logger.info("\n⚠ FedAvg shows vulnerability to Byzantine attacks")
+            logger.info("  Recommendation: Consider robust aggregation (Krum, Median) for production")
     
-    logger.info("\n2. ATTACK VULNERABILITY:")
-    attack_vulnerability = {}
-    for result in results["results"]:
-        if "error" in result:
-            continue
-        attack = result["attack_strategy"]
-        if attack not in attack_vulnerability:
-            attack_vulnerability[attack] = []
-        attack_vulnerability[attack].append(result["accuracy_drop"])
-    
-    for attack, drops in attack_vulnerability.items():
-        avg_drop = np.mean(drops)
-        severity = "CRITICAL" if avg_drop > 0.10 else \
-                   "HIGH" if avg_drop > 0.05 else \
-                   "MODERATE" if avg_drop > 0.02 else \
-                   "LOW"
-        logger.info(f"   {attack.upper():15} attack: {avg_drop:.4f} accuracy drop ({severity})")
-    
-    logger.info("\n3. RECOMMENDATIONS:")
-    best_method = sorted_methods[0][0]
-    logger.info(f"   ✅ Use '{best_method}' for strong Byzantine resistance")
-    logger.info(f"   ✅ Monitor for scaling attacks (highest impact)")
-    logger.info(f"   ✅ Threshold for suspicion detection: top 10% updates")
-    
-    logger.info("\n" + "=" * 80)
-    
-    return results
+    return results_df
 
 
-if __name__ == "__main__":
-    results = run_adversarial_robustness_experiment()
-    
-    logger.info("\n✅ Adversarial robustness evaluation complete!")
+if __name__ == '__main__':
+    results_df = run_exp8()
+    logger.info("\n✅ EXPERIMENT 8 COMPLETE")
