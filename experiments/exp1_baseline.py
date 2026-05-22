@@ -1,54 +1,176 @@
-"""Experiment 1: Baseline Centralized Training
+"""Experiment 1: Federated Learning Baseline
 
-This experiment trains a centralized machine learning model on the complete dataset
-without federated learning. This serves as the baseline for comparing against federated
-learning approaches.
+Trains federated learning model on 7 ICU care units.
+Each unit acts as an independent federated client.
+Compares federated performance against centralized baseline.
 
-Key metrics:
-- Accuracy: Overall prediction accuracy
-- Precision: True positive rate among positive predictions
-- Recall: True positive rate among actual positives (important for healthcare)
-- F1-Score: Harmonic mean of precision and recall
-- Confusion Matrix: Detailed breakdown of predictions
+This is the primary Phase 1 validation: does federated LR achieve
+≥0.85 AUROC when trained on 7 care-unit clients?
 
-This baseline demonstrates the best-case scenario where all data is available
-centrally, providing an upper bound for federated learning performance.
+Requirements:
+- Phase 0 cohort validation completed (baseline AUROC 0.8887)
+- Cached cohort at data/cache/mimic_iv_cohort.csv
+
+Metrics:
+- Federated Test AUROC vs Centralized Test AUROC
+- Train-test divergence
+- Per-client performance statistics
 """
 
 import sys
+import logging
 from pathlib import Path
 
 # Add parent directory to path to import src module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.training.centralized import train_centralized_baseline
+from src.data.loader import load_dataset_with_df
+from src.data.split import distribute_by_care_unit
+from src.training.federated import FederatedTrainer
+from sklearn.metrics import roc_auc_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+def train_centralized_baseline_simple(X_train, y_train, X_val, y_val, X_test, y_test):
+    """Simple centralized LR baseline (matches federated feature preprocessing)."""
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+    X_test_scaled = scaler.transform(X_test)
+    
+    model = LogisticRegression(max_iter=1000, random_state=42)
+    model.fit(X_train_scaled, y_train)
+    
+    metrics = {
+        'train_auroc': roc_auc_score(y_train, model.predict_proba(X_train_scaled)[:, 1]),
+        'val_auroc': roc_auc_score(y_val, model.predict_proba(X_val_scaled)[:, 1]),
+        'test_auroc': roc_auc_score(y_test, model.predict_proba(X_test_scaled)[:, 1])
+    }
+    
+    return model, scaler, metrics
 
 
 def main():
-    """Run centralized baseline experiment."""
-    print("\n" + "=" * 80)
-    print("EXPERIMENT 1: CENTRALIZED BASELINE TRAINING")
-    print("=" * 80)
-    print("\nObjective: Train a single model on all available data (no federated learning)")
-    print("This serves as the baseline for comparing federated approaches.")
+    """Run federated learning baseline experiment."""
+    logger.info("\n" + "=" * 80)
+    logger.info("# EXPERIMENT 1: FEDERATED LEARNING BASELINE")
+    logger.info("=" * 80)
     
     try:
-        # Run centralized training pipeline
-        trainer, results_path = train_centralized_baseline(verbose=True, save_results=True)
+        # ===== PHASE 1.1: LOAD PHASE 0 DATA =====
+        logger.info("\nPhase 1.1: Loading Phase 0 cohort and splits...")
+        df_full, X, y = load_dataset_with_df(use_cache=True)
         
-        print("\n" + "=" * 80)
-        print("✅ EXPERIMENT 1 COMPLETED SUCCESSFULLY")
-        print("=" * 80)
-        print(f"\nResults saved to: {results_path}")
-        print("\nThis baseline will be compared against federated learning in:")
-        print("  - Experiment 2: Non-IID Federated Learning")
-        print("  - Experiment 3: Multi-Client Analysis")
+        logger.info(f"Loaded: {X.shape[0]} samples, {X.shape[1]} features")
+        logger.info(f"Target distribution: {y.sum()} deaths ({100*y.mean():.1f}%)")
         
-        return 0
-    
+        # ===== PHASE 1.2: DISTRIBUTE DATA BY CARE UNIT =====
+        logger.info("\nPhase 1.2: Distributing data to federated clients by care unit...")
+        
+        # Split into train/val/test first (reusing Phase 0 splits)
+        X_train = X[:45691]  # Phase 0 train size
+        y_train = y[:45691]
+        X_val = X[45691:55482]  # Phase 0 val size
+        y_val = y[45691:55482]
+        X_test = X[55482:]  # Phase 0 test size
+        y_test = y[55482:]
+        
+        care_units_train = df_full.iloc[:45691]['first_careunit']
+        
+        # Create federated clients from training data
+        clients = distribute_by_care_unit(
+            X_train, y_train, care_units_train,
+            min_patients_per_unit=100
+        )
+        
+        logger.info(f"\n✓ Created {len(clients)} federated clients")
+        
+        # Display client statistics
+        logger.info("\nClient Statistics:")
+        logger.info("-" * 70)
+        for unit_name, (X_c, y_c) in sorted(clients.items(), key=lambda x: -len(x[1][0])):
+            logger.info(
+                f"  {unit_name:40} {len(X_c):6} patients, "
+                f"{int(y_c.sum()):4} deaths ({100*y_c.mean():5.1f}%)"
+            )
+        
+        # ===== PHASE 1.3: TRAIN CENTRALIZED BASELINE =====
+        logger.info("\n" + "=" * 70)
+        logger.info("Phase 1.3: Training Centralized Baseline (for comparison)...")
+        logger.info("=" * 70)
+        
+        cent_model, cent_scaler, cent_metrics = train_centralized_baseline_simple(
+            X_train, y_train, X_val, y_val, X_test, y_test
+        )
+        
+        logger.info(f"\nCentralized Train AUROC: {cent_metrics['train_auroc']:.4f}")
+        logger.info(f"Centralized Val AUROC:   {cent_metrics['val_auroc']:.4f}")
+        logger.info(f"Centralized Test AUROC:  {cent_metrics['test_auroc']:.4f}")
+        
+        # ===== PHASE 1.4: TRAIN FEDERATED MODEL =====
+        logger.info("\n" + "=" * 70)
+        logger.info("Phase 1.4: Training Federated Learning Model...")
+        logger.info("=" * 70)
+        
+        trainer = FederatedTrainer(
+            clients=clients,
+            val_data=(X_val, y_val),
+            test_data=(X_test, y_test),
+            num_rounds=5,
+            use_dp=False  # DISABLED for Phase 1 baseline validation
+        )
+        
+        fed_results = trainer.train()
+        
+        # ===== PHASE 1.5: COMPARISON & VALIDATION =====
+        logger.info("\n" + "=" * 70)
+        logger.info("Phase 1.5: Results Comparison")
+        logger.info("=" * 70)
+        
+        fed_auroc = fed_results['test_auroc']
+        cent_auroc = cent_metrics['test_auroc']
+        
+        logger.info(f"\nTest AUROC Comparison:")
+        logger.info(f"  Centralized: {cent_auroc:.4f}")
+        logger.info(f"  Federated:   {fed_auroc:.4f}")
+        logger.info(f"  Divergence:  {abs(cent_auroc - fed_auroc):.4f}")
+        
+        # Check Phase 1 success criteria
+        success = True
+        if fed_auroc < 0.85:
+            logger.warning(f"⚠ Federated AUROC ({fed_auroc:.4f}) < 0.85 target")
+            success = False
+        else:
+            logger.info(f"✓ Federated AUROC ({fed_auroc:.4f}) ≥ 0.85 target")
+        
+        if abs(cent_auroc - fed_auroc) > 0.05:
+            logger.warning(
+                f"⚠ Divergence between centralized and federated "
+                f"({abs(cent_auroc - fed_auroc):.4f}) > 0.05"
+            )
+            success = False
+        else:
+            logger.info(f"✓ Divergence ({abs(cent_auroc - fed_auroc):.4f}) within 0.05")
+        
+        logger.info("\n" + "=" * 70)
+        if success:
+            logger.info("✅ EXPERIMENT 1 PASSED - Ready for Phase 2")
+        else:
+            logger.info("⚠️  EXPERIMENT 1 PARTIAL - Manual review recommended")
+        logger.info("=" * 70)
+        
+        return 0 if success else 1
+        
     except Exception as e:
-        print(f"\n❌ Experiment 1 failed with error:")
-        print(f"{type(e).__name__}: {str(e)}")
+        logger.error(f"\n❌ Experiment 1 failed:")
+        logger.error(f"{type(e).__name__}: {str(e)}")
         import traceback
         traceback.print_exc()
         return 1
