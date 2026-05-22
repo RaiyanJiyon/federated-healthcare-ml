@@ -110,6 +110,7 @@ MIN_PATIENTS_PER_CLIENT = 100  # Minimum patient threshold for a care unit to be
 # ===== MODEL CONFIGURATION =====
 MODEL_TYPE = "logistic_regression"  # "logistic_regression", "mlp", "xgboost", "random_forest"
 MAX_ITER = 2000  # Maximum iterations for sklearn models
+LEARNING_RATE = 0.001  # Learning rate for optimizer
 DECISION_THRESHOLD = 0.30  # Recall-optimized threshold for mortality (lower sensitivity is worse)
 CLASS_WEIGHT = 'balanced'  # Handle class imbalance
 

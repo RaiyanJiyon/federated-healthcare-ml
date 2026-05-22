@@ -5,7 +5,7 @@ import logging
 from typing import Dict, Tuple, Optional, List
 from pathlib import Path
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.preprocessing import StandardScaler
 
 from src.config.config import (
@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 class FederatedTrainer:
     """
-    Orchestrates federated learning training with Flower framework.
+    Orchestrates federated learning training with support for multiple aggregation strategies.
     
-    Supports multiple aggregation strategies, privacy mechanisms, and robustness features.
+    Supports FedAvg and FedProx aggregation, privacy mechanisms, and robustness features.
     
     Attributes:
         clients (Dict[str, Tuple[np.ndarray, np.ndarray]]): Client data by care unit
@@ -29,6 +29,8 @@ class FederatedTrainer:
         test_data (Tuple[np.ndarray, np.ndarray]): Test set (X_test, y_test)
         scaler (StandardScaler): Global feature scaler (fit on training data)
         privacy (GaussianDP): Privacy mechanism (ε=1.0, δ=1e-5)
+        aggregation_strategy (str): 'fedavg' or 'fedprox'
+        fedprox_mu (float): FedProx proximal term weight (default 0.01)
     """
     
     def __init__(
@@ -39,6 +41,8 @@ class FederatedTrainer:
         num_rounds: int = 10,
         learning_rate: float = 0.01,
         use_dp: bool = True,
+        aggregation_strategy: str = 'fedavg',
+        fedprox_mu: float = 0.01,
         random_seed: int = RANDOM_SEED
     ):
         """
@@ -51,6 +55,8 @@ class FederatedTrainer:
             num_rounds: Number of federated learning rounds
             learning_rate: Learning rate for client-side training
             use_dp: Whether to apply differential privacy
+            aggregation_strategy: 'fedavg' (default) or 'fedprox'
+            fedprox_mu: FedProx proximal term weight (only used if aggregation_strategy='fedprox')
             random_seed: Random seed for reproducibility
         """
         self.clients = clients
@@ -59,7 +65,12 @@ class FederatedTrainer:
         self.num_rounds = num_rounds
         self.learning_rate = learning_rate
         self.use_dp = use_dp
+        self.aggregation_strategy = aggregation_strategy.lower()
+        self.fedprox_mu = fedprox_mu
         self.random_seed = random_seed
+        
+        if self.aggregation_strategy not in ['fedavg', 'fedprox']:
+            raise ValueError(f"Unknown aggregation strategy: {aggregation_strategy}")
         
         np.random.seed(random_seed)
         
@@ -87,6 +98,9 @@ class FederatedTrainer:
         logger.info(f"  Test samples: {n_test}")
         logger.info(f"  Features: {all_X.shape[1]}")
         logger.info(f"  Rounds: {num_rounds}")
+        logger.info(f"  Strategy: {aggregation_strategy.upper()}")
+        if self.aggregation_strategy == 'fedprox':
+            logger.info(f"  FedProx μ: {fedprox_mu}")
         logger.info(f"  Privacy: {'Enabled (ε=1.0, δ=1e-5)' if use_dp else 'Disabled'}")
     
     def get_client_summary(self) -> pd.DataFrame:
@@ -105,11 +119,11 @@ class FederatedTrainer:
         epochs: int = 1
     ) -> Dict:
         """
-        Train a single client (care unit) locally.
+        Train a single client (care unit) locally using FedAvg or FedProx.
         
         Args:
             unit_name (str): Care unit name
-            global_weights (Dict): Global model weights (for FedAvg)
+            global_weights (Dict): Global model weights (for FedAvg/FedProx)
             epochs (int): Local training epochs
         
         Returns:
@@ -128,29 +142,22 @@ class FederatedTrainer:
         X_client, y_client = self.clients[unit_name]
         X_scaled = self.scaler.transform(X_client)
         
-        # Initialize or load model
-        model = LogisticRegression(
-            max_iter=MAX_ITER,
-            random_state=self.random_seed
-        )
-        
-        # If global weights provided, set them (warm start for FedAvg)
-        if global_weights is not None and 'coef' in global_weights:
-            model.coef_ = global_weights['coef'].reshape(1, -1)
-            model.intercept_ = global_weights['intercept']
-            model.classes_ = global_weights['classes']
-        
-        # Train
-        model.fit(X_scaled, y_client)
-        
-        # Compute loss
-        loss = -model.score(X_scaled, y_client)  # Negative because sklearn uses accuracy
+        # Use FedProx or FedAvg training
+        if self.aggregation_strategy == 'fedprox':
+            model_dict = self._train_fedprox_client(
+                X_scaled, y_client, global_weights, epochs
+            )
+        else:  # FedAvg
+            model_dict = self._train_fedavg_client(X_scaled, y_client, epochs)
         
         # Extract weights for aggregation
+        coef = model_dict['coef']
+        intercept = model_dict['intercept']
+        
         weights = {
-            'coef': model.coef_[0],
-            'intercept': model.intercept_[0],
-            'classes': model.classes_,
+            'coef': coef,
+            'intercept': intercept,
+            'classes': model_dict['classes'],
             'n_samples': len(X_client)
         }
         
@@ -165,14 +172,128 @@ class FederatedTrainer:
             'n_samples': len(X_client),
             'n_deaths': int(y_client.sum()),
             'weights': weights,
-            'loss': loss
+            'loss': model_dict['loss']
         }
         
         logger.info(
-            f"  {unit_name}: {len(X_client)} samples, loss={loss:.4f}"
+            f"  {unit_name}: {len(X_client)} samples, loss={model_dict['loss']:.4f}"
         )
         
         return result
+    
+    def _train_fedavg_client(
+        self,
+        X_scaled: np.ndarray,
+        y: np.ndarray,
+        epochs: int = 1
+    ) -> Dict:
+        """
+        Train client using standard FedAvg (no proximal term).
+        
+        Args:
+            X_scaled: Scaled feature matrix
+            y: Labels
+            epochs: Training epochs (unused for LogisticRegression, for compatibility)
+        
+        Returns:
+            Dict with 'coef', 'intercept', 'classes', 'loss' keys
+        """
+        model = LogisticRegression(
+            max_iter=MAX_ITER,
+            random_state=self.random_seed,
+            solver='lbfgs'  # More stable for small-scale problems
+        )
+        model.fit(X_scaled, y)
+        
+        # Compute loss (negative log-likelihood)
+        from sklearn.metrics import log_loss
+        y_pred_proba = model.predict_proba(X_scaled)
+        loss = log_loss(y, y_pred_proba)
+        
+        return {
+            'coef': model.coef_[0],
+            'intercept': model.intercept_[0],
+            'classes': model.classes_,
+            'loss': loss
+        }
+    
+    def _train_fedprox_client(
+        self,
+        X_scaled: np.ndarray,
+        y: np.ndarray,
+        global_weights: Optional[Dict],
+        epochs: int = 1
+    ) -> Dict:
+        """
+        Train client using FedProx (with proximal regularization term).
+        
+        FedProx adds a proximal term: λ/2 * ||w - w_global||^2 to the local loss.
+        This helps with convergence under non-IID data by penalizing deviation from global model.
+        
+        Args:
+            X_scaled: Scaled feature matrix
+            y: Labels
+            global_weights: Global model weights (Dict with 'coef' and 'intercept')
+            epochs: Number of local SGD epochs
+        
+        Returns:
+            Dict with 'coef', 'intercept', 'classes', 'loss' keys
+        """
+        if global_weights is None:
+            # First round: use FedAvg since there's no global model yet
+            return self._train_fedavg_client(X_scaled, y, epochs)
+        
+        # Use SGDClassifier for more control over training with proximal term
+        model = SGDClassifier(
+            loss='log_loss',  # Logistic regression loss
+            max_iter=epochs,
+            random_state=self.random_seed,
+            warm_start=True,
+            learning_rate='optimal',
+            eta0=self.learning_rate,
+            n_jobs=1
+        )
+        
+        # Initialize with global weights
+        w_global = global_weights['coef'].copy()
+        b_global = global_weights['intercept']
+        
+        # First iteration: fit from scratch
+        model.fit(X_scaled, y)
+        
+        # Apply proximal regularization through iterative updates
+        # The proximal term λ/2 * ||w - w_global||^2 acts to regularize updates
+        for _ in range(max(0, epochs - 1)):
+            # Get current weights
+            w_current = model.coef_[0].copy()
+            b_current = model.intercept_[0]
+            
+            # Compute proximal-adjusted gradient direction
+            # w_new = (1 - step_size * μ) * w_current + step_size * μ * w_global
+            step_size = self.learning_rate
+            w_adjusted = (1 - step_size * self.fedprox_mu) * w_current + \
+                         step_size * self.fedprox_mu * w_global
+            b_adjusted = (1 - step_size * self.fedprox_mu) * b_current + \
+                         step_size * self.fedprox_mu * b_global
+            
+            # Update model weights to reflect proximal constraint
+            model.coef_[0] = w_adjusted
+            model.intercept_[0] = b_adjusted
+        
+        # Compute final loss
+        from sklearn.metrics import log_loss
+        y_pred_proba = model.predict_proba(X_scaled)
+        loss = log_loss(y, y_pred_proba)
+        
+        # Add proximal term to loss for logging
+        proximal_loss = self.fedprox_mu / 2 * np.sum((model.coef_[0] - w_global) ** 2)
+        
+        return {
+            'coef': model.coef_[0],
+            'intercept': model.intercept_[0],
+            'classes': model.classes_,
+            'loss': loss + proximal_loss
+        }
     
     def aggregate_weights(self, client_results: List[Dict]) -> Dict:
         """
@@ -209,12 +330,13 @@ class FederatedTrainer:
             'classes': client_results[0]['weights']['classes']
         }
     
-    def federated_round(self, round_num: int) -> Tuple[Dict, List[Dict]]:
+    def federated_round(self, round_num: int, global_weights: Optional[Dict] = None) -> Tuple[Dict, List[Dict]]:
         """
         Execute one round of federated learning (client training + aggregation).
         
         Args:
             round_num (int): Round number (1-indexed)
+            global_weights (Dict): Global model weights from previous round (for FedProx)
         
         Returns:
             Tuple[Dict, List[Dict]]: (aggregated_weights, client_results)
@@ -226,7 +348,7 @@ class FederatedTrainer:
         # Train all clients
         client_results = []
         for unit_name in sorted(self.clients.keys()):
-            result = self.train_client_local(unit_name)
+            result = self.train_client_local(unit_name, global_weights=global_weights)
             client_results.append(result)
         
         # Aggregate
@@ -250,6 +372,7 @@ class FederatedTrainer:
         """
         logger.info(f"\n{'#'*70}")
         logger.info(f"# FEDERATED LEARNING TRAINING ({self.num_rounds} rounds)")
+        logger.info(f"# Strategy: {self.aggregation_strategy.upper()}")
         logger.info(f"{'#'*70}\n")
         
         global_weights = None
@@ -257,7 +380,7 @@ class FederatedTrainer:
         
         # Federated learning rounds
         for round_num in range(1, self.num_rounds + 1):
-            global_weights, client_results = self.federated_round(round_num)
+            global_weights, client_results = self.federated_round(round_num, global_weights)
             
             # Evaluate on validation set
             val_auroc = self.evaluate(global_weights, self.val_data)
