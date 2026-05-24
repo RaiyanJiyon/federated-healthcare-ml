@@ -73,6 +73,7 @@ class FederatedTrainer:
             raise ValueError(f"Unknown aggregation strategy: {aggregation_strategy}")
         
         np.random.seed(random_seed)
+        self.rng = np.random.default_rng(random_seed)
         
         # Fit global scaler on training data
         all_X = np.vstack([X for X, y in clients.values()])
@@ -142,8 +143,12 @@ class FederatedTrainer:
         X_client, y_client = self.clients[unit_name]
         X_scaled = self.scaler.transform(X_client)
         
-        # Use FedProx or FedAvg training
-        if self.aggregation_strategy == 'fedprox':
+        # Use DP-SGD when privacy is enabled; otherwise keep the existing local trainers.
+        if self.use_dp:
+            model_dict = self._train_dp_sgd_client(
+                X_scaled, y_client, global_weights, epochs
+            )
+        elif self.aggregation_strategy == 'fedprox':
             model_dict = self._train_fedprox_client(
                 X_scaled, y_client, global_weights, epochs
             )
@@ -160,12 +165,8 @@ class FederatedTrainer:
             'classes': model_dict['classes'],
             'n_samples': len(X_client)
         }
-        
-        # Apply DP if enabled (add noise BEFORE aggregation)
-        if self.use_dp:
-            weights['coef_dp'], _ = self.privacy.add_noise(weights['coef'])
-            intercept_noisy, _ = self.privacy.add_noise(np.array([weights['intercept']]))
-            weights['intercept_dp'] = intercept_noisy[0]
+        if 'dp_metadata' in model_dict:
+            weights['dp_metadata'] = model_dict['dp_metadata']
         
         result = {
             'unit': unit_name,
@@ -215,6 +216,94 @@ class FederatedTrainer:
             'intercept': model.intercept_[0],
             'classes': model.classes_,
             'loss': loss
+        }
+
+    def _sigmoid(self, values: np.ndarray) -> np.ndarray:
+        """Numerically stable sigmoid."""
+        values = np.clip(values, -30.0, 30.0)
+        return 1.0 / (1.0 + np.exp(-values))
+
+    def _logistic_loss(self, X_scaled: np.ndarray, y: np.ndarray, coef: np.ndarray, intercept: float) -> float:
+        """Binary logistic loss with probability clipping for stability."""
+        logits = X_scaled @ coef + intercept
+        y_pred_proba = self._sigmoid(logits)
+        epsilon = 1e-15
+        y_pred_proba = np.clip(y_pred_proba, epsilon, 1 - epsilon)
+        return float(-np.mean(y * np.log(y_pred_proba) + (1 - y) * np.log(1 - y_pred_proba)))
+
+    def _train_dp_sgd_client(
+        self,
+        X_scaled: np.ndarray,
+        y: np.ndarray,
+        global_weights: Optional[Dict],
+        epochs: int = 1,
+        batch_size: int = 32
+    ) -> Dict:
+        """Train a client with per-sample clipped DP-SGD updates."""
+        n_samples, n_features = X_scaled.shape
+        batch_size = max(1, min(batch_size, n_samples))
+
+        if global_weights is not None:
+            coef = global_weights['coef'].copy()
+            intercept = float(global_weights['intercept'])
+        else:
+            coef = np.zeros(n_features, dtype=float)
+            intercept = 0.0
+
+        has_global = global_weights is not None and self.aggregation_strategy == 'fedprox'
+        if has_global:
+            global_coef = global_weights['coef'].copy()
+            global_intercept = float(global_weights['intercept'])
+
+        for _ in range(max(1, epochs)):
+            shuffled_indices = self.rng.permutation(n_samples)
+            for start in range(0, n_samples, batch_size):
+                batch_indices = shuffled_indices[start:start + batch_size]
+                if len(batch_indices) == 0:
+                    continue
+
+                per_sample_grads = []
+                for idx in batch_indices:
+                    x_i = X_scaled[idx]
+                    y_i = float(y[idx])
+                    logit = float(np.dot(x_i, coef) + intercept)
+                    prediction = float(self._sigmoid(np.array([logit]))[0])
+                    error = prediction - y_i
+                    grad_vector = np.concatenate([error * x_i, np.array([error])])
+                    clipped_grad, _ = self.privacy.clip_gradient(grad_vector)
+                    per_sample_grads.append(clipped_grad)
+
+                batch_gradient = np.mean(per_sample_grads, axis=0)
+
+                if has_global:
+                    proximal_gradient = np.concatenate([
+                        self.fedprox_mu * (coef - global_coef),
+                        np.array([self.fedprox_mu * (intercept - global_intercept)])
+                    ])
+                    batch_gradient = batch_gradient + proximal_gradient
+
+                noise_scale = self.privacy.sigma / len(batch_indices)
+                noise = np.random.normal(loc=0.0, scale=noise_scale, size=batch_gradient.shape)
+                private_gradient = batch_gradient + noise
+
+                coef -= self.learning_rate * private_gradient[:-1]
+                intercept -= self.learning_rate * private_gradient[-1]
+
+        loss = self._logistic_loss(X_scaled, y, coef, intercept)
+
+        return {
+            'coef': coef,
+            'intercept': intercept,
+            'classes': np.array([0, 1]),
+            'loss': loss,
+            'dp_metadata': {
+                'epsilon': self.privacy.epsilon,
+                'delta': self.privacy.delta,
+                'clipping_norm': self.privacy.clipping_norm,
+                'sigma': self.privacy.sigma,
+                'batch_size': batch_size,
+                'epochs': epochs
+            }
         }
     
     def _train_fedprox_client(
@@ -316,13 +405,8 @@ class FederatedTrainer:
             n_samples = result['n_samples']
             weight = n_samples / total_samples
             
-            # Use DP weights if available, else use raw weights
-            if 'coef_dp' in weights:
-                avg_coef += weight * weights['coef_dp']
-                avg_intercept += weight * weights['intercept_dp']
-            else:
-                avg_coef += weight * weights['coef']
-                avg_intercept += weight * weights['intercept']
+            avg_coef += weight * weights['coef']
+            avg_intercept += weight * weights['intercept']
         
         return {
             'coef': avg_coef,

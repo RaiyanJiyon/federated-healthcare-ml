@@ -65,9 +65,9 @@ Jahangirnagar University, Dhaka, Bangladesh
 \begin{abstract}
 Hospitals generate massive volumes of patient data daily through electronic health records (EHRs), yet sharing this data for collaborative model training remains impractical due to privacy regulations (HIPAA, GDPR). Federated Learning (FL) enables hospitals to train diagnostic models collectively without centralizing sensitive patient records. To date, few large-scale studies have validated FL on real, heterogeneous clinical datasets. This work bridges that gap.
 
-We conduct the first federated learning study on MIMIC-IV, a comprehensive intensive care database containing 65,273 patient admissions with 31 clinical features (vital signs, lab values, and computed risk scores) distributed across 7 ICU care units. We partition the data by ICU care unit to reflect realistic Non-Independent and Identically Distributed (Non-IID) clinical populations. We train logistic regression models with FedAvg/FedProx aggregation, augmented with Byzantine-robust aggregation (Krum, Median) and Gaussian differential privacy on client updates.
+We conduct the first federated learning study on MIMIC-IV, a comprehensive intensive care database containing 65,273 patient admissions with 31 clinical features (vital signs, lab values, and computed risk scores) distributed across 7 ICU care units. We partition the data by ICU care unit to reflect realistic Non-Independent and Identically Distributed (Non-IID) clinical populations. We train logistic regression models with FedAvg/FedProx aggregation, augmented with Byzantine-robust aggregation (Krum, Median) and client-side DP-SGD with per-sample gradient clipping and Gaussian noise.
 
-Critically, we prioritize clinical safety (diagnostic Recall) over raw accuracy. The federated model achieved 41.7\% Recall across 7 ICU units---matching the centralized baseline---without exposing any patient data beyond institutional firewalls. We quantify the privacy--utility tradeoff at \(\epsilon = 1.0\) and demonstrate robustness to up to 30\% client dropout. The work provides both a benchmark and a practical blueprint for privacy-preserving federated learning in multi-hospital networks.
+Critically, we prioritize clinical safety (diagnostic Recall) over raw accuracy. The federated model achieved 41.7\% Recall across 7 ICU units---matching the centralized baseline---without exposing any patient data beyond institutional firewalls. The implementation now applies privacy at the client optimizer level, so the manuscript should interpret any privacy--utility results from the corrected DP-SGD rerun rather than the obsolete weight-space prototype. The work provides both a benchmark and a practical blueprint for privacy-preserving federated learning in multi-hospital networks.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -243,13 +243,11 @@ Algorithm~\ref{alg:fl_dp} applies a Gaussian perturbation mechanism to client co
 These theorems justify the design of Algorithm~\ref{alg:fl_dp}: each layer of defense (Gaussian perturbation, Byzantine-robust aggregation, client dropout tolerance) has a clear operational role and does not compromise convergence rates beyond constant factors.
 
 \subsection{Differential Privacy Constraints}
-We added formal privacy protection at the client level using a Gaussian mechanism, following the framework introduced by Abadi et al.\ \cite{abadi2016deep}. Before any ICU sends its updated model coefficients to the server, calibrated Gaussian noise is injected into the learned coefficient vector and each coefficient vector is clipped to an L2 norm of at most \(C\).
+We added formal privacy protection at the client level using the Gaussian mechanism of Abadi et al.\ \cite{abadi2016deep}, but the implementation now applies it inside the local optimizer rather than after the model is fit. Each client clips per-sample gradients, averages the clipped batch gradient, adds calibrated Gaussian noise, and updates the local logistic-regression weights with a stochastic gradient step.
 
-Early diagnostic experiments revealed a practical issue: with moderate model dimension (31 coefficients) and small privacy budgets (e.g. \(\epsilon=1.0\)), the Gaussian noise norm can dominate the gradient/weight norms, producing destructive updates and poor utility. To investigate this, we instrumented the privacy mechanism to log per-client gradient L2, noise L2, and the computed noise scale \(\sigma\). Those diagnostics show noise_norm \(\gg\) grad_norm for \(\epsilon=1.0, C=1\), explaining the severe AUROC drop observed in short runs.
+The previous weight-space Gaussian prototype is preserved only in archived diagnostic logs and should be treated as historical provenance, not as the current privacy claim. The corrected DP-SGD pipeline is the basis for any future confirmatory runs and manuscript-level privacy reporting.
 
-Based on short diagnostic sweeps and confirmatory runs, we report the empirically useful configuration used in the final experiments: client-side Gaussian perturbation on coefficients, clipping \(C=1.0\), failure probability \(\delta=10^{-5}\), and privacy budget \(\epsilon=16.0\). Aggregated confirmatory results (5 seeded runs) are: AUROC = 0.8687 \(\pm\) 0.0108 for \(\epsilon=16\), and AUROC = 0.8273 \(\pm\) 0.0253 for \(\epsilon=8\) (see results/summary/CONFIRMATORY_SUMMARY.md for provenance). For completeness, low budgets such as \(\epsilon=1.0\) are reported in the diagnostic logs but are not recommended for this model/dataset combination because per-client noise magnitude overwhelms signal.
-
-These empirical findings inform our manuscript recommendation: when reporting DP-protected federated performance for this codebase and dataset, we use the client-side Gaussian mechanism with \(\epsilon=16.0\), \(\delta=10^{-5}\), and clipping \(C=1.0\) for the confirmatory experiments described in Section~IV. Readers interested in stronger formal privacy guarantees (smaller \(\epsilon\)) should consider alternative approaches (server-side noise addition, per-sample DP-SGD, or combinations with secure aggregation) which were prototyped but are left to future work.
+Readers interested in stronger formal privacy guarantees should report rerun metrics from the corrected client optimizer rather than the obsolete post-hoc coefficient-noise prototype.
 
 \section{Results and Evaluation}
 
@@ -266,9 +264,10 @@ To establish a clinical baseline, we trained a logistic regression model on the 
 
 What happens when we federate? With 7 ICU-based clients and FedAvg aggregation (no differential privacy), the federated model produced 41.7\% Recall, matching the centralized baseline in the reported results. Convergence plateaued by round 5 across all trials. Critically, no patient record ever left its originating ICU, yet the federated model preserved the reported clinical operating point. With 65,273 patients distributed across 7 clients, the local datasets are large enough for each ICU to learn robust representations of its patient population.
 
-\begin{table}[htbp]
-\caption{Federated Learning Performance on MIMIC-IV: Aggregated summary from experiment outputs (see results/plots).}
-\begin{center}
+\begin{table*}[t]
+\caption{Federated Learning Performance on MIMIC-IV: Aggregated summary from experiment outputs (see results/plots). The DP row is retained from the pre-fix prototype for provenance only and should be replaced by rerun results from the corrected DP-SGD implementation.}
+\centering
+\small
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Configuration} & \textbf{AUROC} & \textbf{Recall} & \textbf{Precision} & \textbf{Notes} \\
@@ -282,11 +281,10 @@ Adversarial (1/7 Byzantine) & 0.8618 (N/A) & 48.9\% (N/A) & 65.7\% (N/A) & Singl
 \bottomrule
 \end{tabular}
 \label{tab:performance}
-\end{center}
-\end{table}
+\end{table*}
 
 \subsection{Privacy and Scalability Trade-Offs}
-Adding Gaussian privacy noise on top of federated learning changes the operating point materially. Table~\ref{tab:performance} shows that at \(\epsilon = 1.0\), AUROC drops to 0.5425 and precision to 11.7\%, while Recall is 51.6\%. With 65,273 patients distributed across 7 clients (average ~9,300 per ICU), each local dataset is large enough to support robust model training. Practitioners considering DP for healthcare should treat this as a clear utility-versus-privacy tradeoff rather than a free improvement.
+Adding privacy noise on top of federated learning changes the operating point materially. The codebase now clips per-sample gradients inside the local optimizer and injects Gaussian noise before client updates are aggregated. The legacy weight-space prototype is preserved only for provenance in the archived logs; the manuscript should use rerun metrics from the corrected DP-SGD implementation for any final privacy claim. With 65,273 patients distributed across 7 clients (average ~9,300 per ICU), each local dataset is large enough to support robust model training.
 
 We tested scalability by expanding the network from 7 to 14, 21, and 28 clients, simulating a regional network spanning multiple health systems. Communication cost scaled linearly with client count (Fig.~\ref{fig:comprehensive}). AUROC remained stable above 0.84 for all configurations, demonstrating that the approach is robust to network growth. We also conducted failure simulations, randomly dropping clients mid-training (up to 30\% dropout rate). The federated server completed aggregation using only the responding clients, with no degradation in final model quality. Byzantine-robust aggregation (Krum, Median) required 15--20\% additional communication rounds compared to standard FedAvg, a reasonable price for robustness against malicious or compromised clients.
 
@@ -306,7 +304,7 @@ We tested scalability by expanding the network from 7 to 14, 21, and 28 clients,
 \section{Conclusion}
 This study demonstrates that federated learning can achieve clinical parity on large-scale, real-world ICU data without centralizing sensitive patient records. On MIMIC-IV with 65,273 admissions and 7 federated ICU clients, the distributed model matched the centralized baseline (41.7\% Recall) in the reported results. This is the key finding: FL is not just a privacy-preserving academic exercise---it is clinically viable on datasets of realistic scale and complexity.
 
-The privacy--utility tradeoff is now explicit. At \( \epsilon = 1.0 \), Gaussian noise lowered AUROC to 0.5425 and precision to 11.7\%, while Recall was 51.6\%. Byzantine-robust aggregation (Krum, Median) added resilience against malicious clients at the expense of some utility, which practitioners must weigh against their institution's risk tolerance and threat model.
+The privacy--utility tradeoff is now explicit. The corrected code path uses DP-SGD with per-sample clipping and Gaussian noise at the client optimizer, so privacy utility should be reported from reruns of that implementation rather than the obsolete weight-space prototype. Byzantine-robust aggregation (Krum, Median) added resilience against malicious clients at the expense of some utility, which practitioners must weigh against their institution's risk tolerance and threat model.
 
 \subsection*{Implications for Healthcare Information Systems}
 Our findings have direct implications for hospital information technology (IT) infrastructure and health information exchange networks. Most healthcare institutions today operate in data silos, unable to leverage multi-institutional datasets for model development due to regulatory and security concerns. Federated learning offers a concrete solution: hospitals can train collaborative models using only local computational resources and low-bandwidth updates, without implementing expensive secure data enclaves or third-party data intermediaries. The Byzantine-robust aggregation methods provide additional protection against compromised client sites---a realistic concern in healthcare environments vulnerable to ransomware and insider threats. With 15--20\% additional communication overhead, Byzantine defenses are a justifiable investment in multi-hospital networks where client integrity cannot be guaranteed.

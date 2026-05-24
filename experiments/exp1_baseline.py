@@ -147,17 +147,17 @@ def main():
             except Exception:
                 logger.warning("Could not override src.config.config.CLIPPING_THRESHOLD")
 
-            # Import FederatedTrainer after possible config overrides so DP settings take effect
-            from src.training.federated import FederatedTrainer
+        # Import FederatedTrainer after possible config overrides so DP settings take effect
+        from src.training.federated import FederatedTrainer
 
-            trainer = FederatedTrainer(
-                clients=clients,
-                val_data=(X_val, y_val),
-                test_data=(X_test, y_test),
-                num_rounds=args.rounds,
-                use_dp=args.use_dp,
-                random_seed=seed
-            )
+        trainer = FederatedTrainer(
+            clients=clients,
+            val_data=(X_val, y_val),
+            test_data=(X_test, y_test),
+            num_rounds=args.rounds,
+            use_dp=args.use_dp,
+            random_seed=seed
+        )
         
         fed_results = trainer.train()
         
