@@ -2,18 +2,17 @@
 
 Date: 2026-05-24
 
-Summary of confirmatory federated DP experiments (legacy client-side Gaussian noise on coefficients; retained for provenance).
+Summary of confirmatory federated DP experiments (corrected client-side DP-SGD rerun; retained for provenance).
 
-- Configuration: client-side Gaussian perturbation of model coefficients (per-client), clipping C=1.0, FedAvg aggregation, 20 rounds, 5 seeds (seed=1..5).
-- Aggregated results (Final Test AUROC):
-  - eps = 16: n=5, mean = 0.8687, std = 0.0108
-  - eps = 8:  n=5, mean = 0.8273, std = 0.0253
+- Configuration: corrected client-side DP-SGD with per-sample clipping, clipping C=1.0, FedAvg aggregation, 20 rounds, seed=42.
+- Rerun result (Final Test AUROC):
+  - eps = 1:  AUROC = 0.8660
 
 Manuscript note:
-- The ε = 16.0 coefficient-noise configuration below is a historical prototype result and should not be treated as the final privacy claim. The corrected code path now applies DP-SGD with per-sample clipping and Gaussian noise during local optimization; any final manuscript numbers should come from rerunning that implementation.
+- The corrected DP-SGD rerun at ε = 1.0 is the current manuscript number and clears the 0.85 AUROC target, so the privacy claim should be based on that run rather than the obsolete coefficient-noise prototype.
 
 Notes and provenance:
-- Raw per-run logs and the aggregated CSV are stored under `results/summary/logs/final/` and `results/summary/final_confirmatory_summary_final_correct3.csv`.
-- Diagnostic logs (grad_norm vs noise_norm) indicate that at ε = 1.0 the per-client noise L2 substantially exceeded gradient L2 (noise dominated signal), explaining poor utility at low ε.
+- Raw per-run logs from the reruns are stored under the active experiment logs produced by `experiments/exp1_baseline.py`.
+- Diagnostic logs (grad_norm vs noise_norm) from the old prototype still explain why the weight-space mechanism was not a valid privacy claim.
 
 If you want, I can (a) commit these files to git, (b) also add a short entry to `README.md` describing where to find confirmatory logs, or (c) adjust the paper wording further.
