@@ -266,7 +266,7 @@ To establish a clinical baseline, we trained a logistic regression model on the 
 What happens when we federate? With 7 ICU-based clients and FedAvg aggregation (no differential privacy), the federated model produced 86.3\% Recall and 23.9\% Precision at a validation-calibrated threshold of 0.05, matching the centralized reference operating point in the reported results. Convergence plateaued by round 5 across all trials. Critically, no patient record ever left its originating ICU, yet the federated model preserved the reported clinical operating point. With 65,273 patients distributed across 7 clients, the local datasets are large enough for each ICU to learn robust representations of its patient population.
 
 \begin{table*}[t]
-\caption{Federated Learning Performance on MIMIC-IV: Aggregated summary from experiment outputs (see results/plots). The DP row reflects the corrected DP-SGD rerun at \(\epsilon=1.0\).}
+\caption{Federated Learning Performance on MIMIC-IV: Aggregated summary from experiment outputs. The DP row reflects the corrected DP-SGD rerun at \(\epsilon=1.0\).}
 \centering
 \small
 \begin{tabular}{lcccc}
