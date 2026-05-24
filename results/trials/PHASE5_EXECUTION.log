@@ -1,0 +1,385 @@
+2026-05-24 12:48:23,224 - INFO - Starting Phase 5 trials: 120 tasks
+2026-05-24 12:48:23,224 - INFO - Seeds: 42-71
+2026-05-24 12:48:23,224 - INFO - Experiments: baseline, differential_privacy, aggregation, scalability
+2026-05-24 12:48:23,224 - INFO - [1/120] Running baseline seed 42
+2026-05-24 12:48:23,224 - INFO - Running baseline with seed 42
+2026-05-24 12:48:26,463 - INFO - ✓ baseline seed 42 completed successfully
+2026-05-24 12:48:26,464 - INFO - [2/120] Running differential_privacy seed 42
+2026-05-24 12:48:26,464 - INFO - Running differential_privacy with seed 42
+2026-05-24 12:48:35,890 - INFO - ✓ differential_privacy seed 42 completed successfully
+2026-05-24 12:48:35,891 - INFO - [3/120] Running aggregation seed 42
+2026-05-24 12:48:35,891 - INFO - Running aggregation with seed 42
+2026-05-24 12:48:44,985 - INFO - ✓ aggregation seed 42 completed successfully
+2026-05-24 12:48:44,986 - INFO - [4/120] Running scalability seed 42
+2026-05-24 12:48:44,986 - INFO - Running scalability with seed 42
+2026-05-24 12:49:00,866 - INFO - ✓ scalability seed 42 completed successfully
+2026-05-24 12:49:00,867 - INFO - [5/120] Running baseline seed 43
+2026-05-24 12:49:00,867 - INFO - Running baseline with seed 43
+2026-05-24 12:49:04,481 - INFO - ✓ baseline seed 43 completed successfully
+2026-05-24 12:49:04,481 - INFO - [6/120] Running differential_privacy seed 43
+2026-05-24 12:49:04,481 - INFO - Running differential_privacy with seed 43
+2026-05-24 12:49:13,238 - INFO - ✓ differential_privacy seed 43 completed successfully
+2026-05-24 12:49:13,238 - INFO - [7/120] Running aggregation seed 43
+2026-05-24 12:49:13,238 - INFO - Running aggregation with seed 43
+2026-05-24 12:49:21,946 - INFO - ✓ aggregation seed 43 completed successfully
+2026-05-24 12:49:21,946 - INFO - [8/120] Running scalability seed 43
+2026-05-24 12:49:21,947 - INFO - Running scalability with seed 43
+2026-05-24 12:49:38,155 - INFO - ✓ scalability seed 43 completed successfully
+2026-05-24 12:49:38,156 - INFO - [9/120] Running baseline seed 44
+2026-05-24 12:49:38,156 - INFO - Running baseline with seed 44
+2026-05-24 12:49:41,751 - INFO - ✓ baseline seed 44 completed successfully
+2026-05-24 12:49:41,752 - INFO - [10/120] Running differential_privacy seed 44
+2026-05-24 12:49:41,752 - INFO - Running differential_privacy with seed 44
+2026-05-24 12:49:51,058 - INFO - ✓ differential_privacy seed 44 completed successfully
+2026-05-24 12:49:51,058 - INFO - [11/120] Running aggregation seed 44
+2026-05-24 12:49:51,058 - INFO - Running aggregation with seed 44
+2026-05-24 12:50:00,223 - INFO - ✓ aggregation seed 44 completed successfully
+2026-05-24 12:50:00,224 - INFO - [12/120] Running scalability seed 44
+2026-05-24 12:50:00,224 - INFO - Running scalability with seed 44
+2026-05-24 12:50:17,122 - INFO - ✓ scalability seed 44 completed successfully
+2026-05-24 12:50:17,123 - INFO - [13/120] Running baseline seed 45
+2026-05-24 12:50:17,123 - INFO - Running baseline with seed 45
+2026-05-24 12:50:20,786 - INFO - ✓ baseline seed 45 completed successfully
+2026-05-24 12:50:20,786 - INFO - [14/120] Running differential_privacy seed 45
+2026-05-24 12:50:20,786 - INFO - Running differential_privacy with seed 45
+2026-05-24 12:50:30,569 - INFO - ✓ differential_privacy seed 45 completed successfully
+2026-05-24 12:50:30,569 - INFO - [15/120] Running aggregation seed 45
+2026-05-24 12:50:30,569 - INFO - Running aggregation with seed 45
+2026-05-24 12:50:39,588 - INFO - ✓ aggregation seed 45 completed successfully
+2026-05-24 12:50:39,588 - INFO - [16/120] Running scalability seed 45
+2026-05-24 12:50:39,588 - INFO - Running scalability with seed 45
+2026-05-24 12:50:55,796 - INFO - ✓ scalability seed 45 completed successfully
+2026-05-24 12:50:55,796 - INFO - [17/120] Running baseline seed 46
+2026-05-24 12:50:55,796 - INFO - Running baseline with seed 46
+2026-05-24 12:50:59,501 - INFO - ✓ baseline seed 46 completed successfully
+2026-05-24 12:50:59,501 - INFO - [18/120] Running differential_privacy seed 46
+2026-05-24 12:50:59,501 - INFO - Running differential_privacy with seed 46
+2026-05-24 12:51:08,999 - INFO - ✓ differential_privacy seed 46 completed successfully
+2026-05-24 12:51:08,999 - INFO - [19/120] Running aggregation seed 46
+2026-05-24 12:51:09,000 - INFO - Running aggregation with seed 46
+2026-05-24 12:51:18,285 - INFO - ✓ aggregation seed 46 completed successfully
+2026-05-24 12:51:18,285 - INFO - [20/120] Running scalability seed 46
+2026-05-24 12:51:18,286 - INFO - Running scalability with seed 46
+2026-05-24 12:51:36,255 - INFO - ✓ scalability seed 46 completed successfully
+2026-05-24 12:51:36,256 - INFO - [21/120] Running baseline seed 47
+2026-05-24 12:51:36,256 - INFO - Running baseline with seed 47
+2026-05-24 12:51:40,011 - INFO - ✓ baseline seed 47 completed successfully
+2026-05-24 12:51:40,012 - INFO - [22/120] Running differential_privacy seed 47
+2026-05-24 12:51:40,012 - INFO - Running differential_privacy with seed 47
+2026-05-24 12:51:52,433 - INFO - ✓ differential_privacy seed 47 completed successfully
+2026-05-24 12:51:52,433 - INFO - [23/120] Running aggregation seed 47
+2026-05-24 12:51:52,434 - INFO - Running aggregation with seed 47
+2026-05-24 12:52:01,318 - INFO - ✓ aggregation seed 47 completed successfully
+2026-05-24 12:52:01,318 - INFO - [24/120] Running scalability seed 47
+2026-05-24 12:52:01,318 - INFO - Running scalability with seed 47
+2026-05-24 12:52:16,633 - INFO - ✓ scalability seed 47 completed successfully
+2026-05-24 12:52:16,633 - INFO - [25/120] Running baseline seed 48
+2026-05-24 12:52:16,633 - INFO - Running baseline with seed 48
+2026-05-24 12:52:20,174 - INFO - ✓ baseline seed 48 completed successfully
+2026-05-24 12:52:20,174 - INFO - [26/120] Running differential_privacy seed 48
+2026-05-24 12:52:20,175 - INFO - Running differential_privacy with seed 48
+2026-05-24 12:52:28,994 - INFO - ✓ differential_privacy seed 48 completed successfully
+2026-05-24 12:52:28,994 - INFO - [27/120] Running aggregation seed 48
+2026-05-24 12:52:28,994 - INFO - Running aggregation with seed 48
+2026-05-24 12:52:37,343 - INFO - ✓ aggregation seed 48 completed successfully
+2026-05-24 12:52:37,343 - INFO - [28/120] Running scalability seed 48
+2026-05-24 12:52:37,343 - INFO - Running scalability with seed 48
+2026-05-24 12:52:51,881 - INFO - ✓ scalability seed 48 completed successfully
+2026-05-24 12:52:51,882 - INFO - [29/120] Running baseline seed 49
+2026-05-24 12:52:51,882 - INFO - Running baseline with seed 49
+2026-05-24 12:52:56,052 - INFO - ✓ baseline seed 49 completed successfully
+2026-05-24 12:52:56,052 - INFO - [30/120] Running differential_privacy seed 49
+2026-05-24 12:52:56,052 - INFO - Running differential_privacy with seed 49
+2026-05-24 12:53:05,774 - INFO - ✓ differential_privacy seed 49 completed successfully
+2026-05-24 12:53:05,774 - INFO - [31/120] Running aggregation seed 49
+2026-05-24 12:53:05,774 - INFO - Running aggregation with seed 49
+2026-05-24 12:53:15,290 - INFO - ✓ aggregation seed 49 completed successfully
+2026-05-24 12:53:15,290 - INFO - [32/120] Running scalability seed 49
+2026-05-24 12:53:15,290 - INFO - Running scalability with seed 49
+2026-05-24 12:53:33,225 - INFO - ✓ scalability seed 49 completed successfully
+2026-05-24 12:53:33,226 - INFO - [33/120] Running baseline seed 50
+2026-05-24 12:53:33,226 - INFO - Running baseline with seed 50
+2026-05-24 12:53:36,936 - INFO - ✓ baseline seed 50 completed successfully
+2026-05-24 12:53:36,936 - INFO - [34/120] Running differential_privacy seed 50
+2026-05-24 12:53:36,936 - INFO - Running differential_privacy with seed 50
+2026-05-24 12:53:47,054 - INFO - ✓ differential_privacy seed 50 completed successfully
+2026-05-24 12:53:47,055 - INFO - [35/120] Running aggregation seed 50
+2026-05-24 12:53:47,055 - INFO - Running aggregation with seed 50
+2026-05-24 12:53:55,861 - INFO - ✓ aggregation seed 50 completed successfully
+2026-05-24 12:53:55,861 - INFO - [36/120] Running scalability seed 50
+2026-05-24 12:53:55,861 - INFO - Running scalability with seed 50
+2026-05-24 12:54:15,054 - INFO - ✓ scalability seed 50 completed successfully
+2026-05-24 12:54:15,054 - INFO - [37/120] Running baseline seed 51
+2026-05-24 12:54:15,054 - INFO - Running baseline with seed 51
+2026-05-24 12:54:19,034 - INFO - ✓ baseline seed 51 completed successfully
+2026-05-24 12:54:19,035 - INFO - [38/120] Running differential_privacy seed 51
+2026-05-24 12:54:19,035 - INFO - Running differential_privacy with seed 51
+2026-05-24 12:54:27,745 - INFO - ✓ differential_privacy seed 51 completed successfully
+2026-05-24 12:54:27,745 - INFO - [39/120] Running aggregation seed 51
+2026-05-24 12:54:27,745 - INFO - Running aggregation with seed 51
+2026-05-24 12:54:36,978 - INFO - ✓ aggregation seed 51 completed successfully
+2026-05-24 12:54:36,979 - INFO - [40/120] Running scalability seed 51
+2026-05-24 12:54:36,979 - INFO - Running scalability with seed 51
+2026-05-24 12:54:56,507 - INFO - ✓ scalability seed 51 completed successfully
+2026-05-24 12:54:56,507 - INFO - [41/120] Running baseline seed 52
+2026-05-24 12:54:56,508 - INFO - Running baseline with seed 52
+2026-05-24 12:55:00,558 - INFO - ✓ baseline seed 52 completed successfully
+2026-05-24 12:55:00,558 - INFO - [42/120] Running differential_privacy seed 52
+2026-05-24 12:55:00,558 - INFO - Running differential_privacy with seed 52
+2026-05-24 12:55:10,787 - INFO - ✓ differential_privacy seed 52 completed successfully
+2026-05-24 12:55:10,788 - INFO - [43/120] Running aggregation seed 52
+2026-05-24 12:55:10,788 - INFO - Running aggregation with seed 52
+2026-05-24 12:55:19,863 - INFO - ✓ aggregation seed 52 completed successfully
+2026-05-24 12:55:19,863 - INFO - [44/120] Running scalability seed 52
+2026-05-24 12:55:19,863 - INFO - Running scalability with seed 52
+2026-05-24 12:55:37,111 - INFO - ✓ scalability seed 52 completed successfully
+2026-05-24 12:55:37,112 - INFO - [45/120] Running baseline seed 53
+2026-05-24 12:55:37,112 - INFO - Running baseline with seed 53
+2026-05-24 12:55:40,500 - INFO - ✓ baseline seed 53 completed successfully
+2026-05-24 12:55:40,500 - INFO - [46/120] Running differential_privacy seed 53
+2026-05-24 12:55:40,500 - INFO - Running differential_privacy with seed 53
+2026-05-24 12:55:50,215 - INFO - ✓ differential_privacy seed 53 completed successfully
+2026-05-24 12:55:50,216 - INFO - [47/120] Running aggregation seed 53
+2026-05-24 12:55:50,216 - INFO - Running aggregation with seed 53
+2026-05-24 12:56:00,093 - INFO - ✓ aggregation seed 53 completed successfully
+2026-05-24 12:56:00,093 - INFO - [48/120] Running scalability seed 53
+2026-05-24 12:56:00,093 - INFO - Running scalability with seed 53
+2026-05-24 12:56:15,178 - INFO - ✓ scalability seed 53 completed successfully
+2026-05-24 12:56:15,179 - INFO - [49/120] Running baseline seed 54
+2026-05-24 12:56:15,179 - INFO - Running baseline with seed 54
+2026-05-24 12:56:18,597 - INFO - ✓ baseline seed 54 completed successfully
+2026-05-24 12:56:18,598 - INFO - [50/120] Running differential_privacy seed 54
+2026-05-24 12:56:18,598 - INFO - Running differential_privacy with seed 54
+2026-05-24 12:56:27,536 - INFO - ✓ differential_privacy seed 54 completed successfully
+2026-05-24 12:56:27,536 - INFO - [51/120] Running aggregation seed 54
+2026-05-24 12:56:27,537 - INFO - Running aggregation with seed 54
+2026-05-24 12:56:35,864 - INFO - ✓ aggregation seed 54 completed successfully
+2026-05-24 12:56:35,864 - INFO - [52/120] Running scalability seed 54
+2026-05-24 12:56:35,864 - INFO - Running scalability with seed 54
+2026-05-24 12:56:50,960 - INFO - ✓ scalability seed 54 completed successfully
+2026-05-24 12:56:50,960 - INFO - [53/120] Running baseline seed 55
+2026-05-24 12:56:50,960 - INFO - Running baseline with seed 55
+2026-05-24 12:56:54,435 - INFO - ✓ baseline seed 55 completed successfully
+2026-05-24 12:56:54,435 - INFO - [54/120] Running differential_privacy seed 55
+2026-05-24 12:56:54,436 - INFO - Running differential_privacy with seed 55
+2026-05-24 12:57:02,522 - INFO - ✓ differential_privacy seed 55 completed successfully
+2026-05-24 12:57:02,522 - INFO - [55/120] Running aggregation seed 55
+2026-05-24 12:57:02,522 - INFO - Running aggregation with seed 55
+2026-05-24 12:57:10,708 - INFO - ✓ aggregation seed 55 completed successfully
+2026-05-24 12:57:10,709 - INFO - [56/120] Running scalability seed 55
+2026-05-24 12:57:10,709 - INFO - Running scalability with seed 55
+2026-05-24 12:57:24,390 - INFO - ✓ scalability seed 55 completed successfully
+2026-05-24 12:57:24,391 - INFO - [57/120] Running baseline seed 56
+2026-05-24 12:57:24,391 - INFO - Running baseline with seed 56
+2026-05-24 12:57:27,667 - INFO - ✓ baseline seed 56 completed successfully
+2026-05-24 12:57:27,667 - INFO - [58/120] Running differential_privacy seed 56
+2026-05-24 12:57:27,667 - INFO - Running differential_privacy with seed 56
+2026-05-24 12:57:36,129 - INFO - ✓ differential_privacy seed 56 completed successfully
+2026-05-24 12:57:36,129 - INFO - [59/120] Running aggregation seed 56
+2026-05-24 12:57:36,130 - INFO - Running aggregation with seed 56
+2026-05-24 12:57:44,708 - INFO - ✓ aggregation seed 56 completed successfully
+2026-05-24 12:57:44,708 - INFO - [60/120] Running scalability seed 56
+2026-05-24 12:57:44,708 - INFO - Running scalability with seed 56
+2026-05-24 12:57:57,532 - INFO - ✓ scalability seed 56 completed successfully
+2026-05-24 12:57:57,532 - INFO - [61/120] Running baseline seed 57
+2026-05-24 12:57:57,532 - INFO - Running baseline with seed 57
+2026-05-24 12:58:00,686 - INFO - ✓ baseline seed 57 completed successfully
+2026-05-24 12:58:00,686 - INFO - [62/120] Running differential_privacy seed 57
+2026-05-24 12:58:00,686 - INFO - Running differential_privacy with seed 57
+2026-05-24 12:58:09,441 - INFO - ✓ differential_privacy seed 57 completed successfully
+2026-05-24 12:58:09,442 - INFO - [63/120] Running aggregation seed 57
+2026-05-24 12:58:09,442 - INFO - Running aggregation with seed 57
+2026-05-24 12:58:17,718 - INFO - ✓ aggregation seed 57 completed successfully
+2026-05-24 12:58:17,718 - INFO - [64/120] Running scalability seed 57
+2026-05-24 12:58:17,718 - INFO - Running scalability with seed 57
+2026-05-24 12:58:32,103 - INFO - ✓ scalability seed 57 completed successfully
+2026-05-24 12:58:32,103 - INFO - [65/120] Running baseline seed 58
+2026-05-24 12:58:32,104 - INFO - Running baseline with seed 58
+2026-05-24 12:58:35,338 - INFO - ✓ baseline seed 58 completed successfully
+2026-05-24 12:58:35,339 - INFO - [66/120] Running differential_privacy seed 58
+2026-05-24 12:58:35,339 - INFO - Running differential_privacy with seed 58
+2026-05-24 12:58:43,800 - INFO - ✓ differential_privacy seed 58 completed successfully
+2026-05-24 12:58:43,800 - INFO - [67/120] Running aggregation seed 58
+2026-05-24 12:58:43,800 - INFO - Running aggregation with seed 58
+2026-05-24 12:58:51,672 - INFO - ✓ aggregation seed 58 completed successfully
+2026-05-24 12:58:51,673 - INFO - [68/120] Running scalability seed 58
+2026-05-24 12:58:51,673 - INFO - Running scalability with seed 58
+2026-05-24 12:59:04,774 - INFO - ✓ scalability seed 58 completed successfully
+2026-05-24 12:59:04,775 - INFO - [69/120] Running baseline seed 59
+2026-05-24 12:59:04,775 - INFO - Running baseline with seed 59
+2026-05-24 12:59:08,036 - INFO - ✓ baseline seed 59 completed successfully
+2026-05-24 12:59:08,036 - INFO - [70/120] Running differential_privacy seed 59
+2026-05-24 12:59:08,037 - INFO - Running differential_privacy with seed 59
+2026-05-24 12:59:16,303 - INFO - ✓ differential_privacy seed 59 completed successfully
+2026-05-24 12:59:16,303 - INFO - [71/120] Running aggregation seed 59
+2026-05-24 12:59:16,304 - INFO - Running aggregation with seed 59
+2026-05-24 12:59:24,598 - INFO - ✓ aggregation seed 59 completed successfully
+2026-05-24 12:59:24,599 - INFO - [72/120] Running scalability seed 59
+2026-05-24 12:59:24,599 - INFO - Running scalability with seed 59
+2026-05-24 12:59:39,227 - INFO - ✓ scalability seed 59 completed successfully
+2026-05-24 12:59:39,227 - INFO - [73/120] Running baseline seed 60
+2026-05-24 12:59:39,227 - INFO - Running baseline with seed 60
+2026-05-24 12:59:42,668 - INFO - ✓ baseline seed 60 completed successfully
+2026-05-24 12:59:42,668 - INFO - [74/120] Running differential_privacy seed 60
+2026-05-24 12:59:42,669 - INFO - Running differential_privacy with seed 60
+2026-05-24 12:59:51,085 - INFO - ✓ differential_privacy seed 60 completed successfully
+2026-05-24 12:59:51,085 - INFO - [75/120] Running aggregation seed 60
+2026-05-24 12:59:51,086 - INFO - Running aggregation with seed 60
+2026-05-24 12:59:59,096 - INFO - ✓ aggregation seed 60 completed successfully
+2026-05-24 12:59:59,096 - INFO - [76/120] Running scalability seed 60
+2026-05-24 12:59:59,097 - INFO - Running scalability with seed 60
+2026-05-24 13:00:13,365 - INFO - ✓ scalability seed 60 completed successfully
+2026-05-24 13:00:13,366 - INFO - [77/120] Running baseline seed 61
+2026-05-24 13:00:13,366 - INFO - Running baseline with seed 61
+2026-05-24 13:00:16,825 - INFO - ✓ baseline seed 61 completed successfully
+2026-05-24 13:00:16,826 - INFO - [78/120] Running differential_privacy seed 61
+2026-05-24 13:00:16,826 - INFO - Running differential_privacy with seed 61
+2026-05-24 13:00:25,233 - INFO - ✓ differential_privacy seed 61 completed successfully
+2026-05-24 13:00:25,233 - INFO - [79/120] Running aggregation seed 61
+2026-05-24 13:00:25,233 - INFO - Running aggregation with seed 61
+2026-05-24 13:00:33,543 - INFO - ✓ aggregation seed 61 completed successfully
+2026-05-24 13:00:33,543 - INFO - [80/120] Running scalability seed 61
+2026-05-24 13:00:33,543 - INFO - Running scalability with seed 61
+2026-05-24 13:00:48,060 - INFO - ✓ scalability seed 61 completed successfully
+2026-05-24 13:00:48,060 - INFO - [81/120] Running baseline seed 62
+2026-05-24 13:00:48,060 - INFO - Running baseline with seed 62
+2026-05-24 13:00:51,546 - INFO - ✓ baseline seed 62 completed successfully
+2026-05-24 13:00:51,547 - INFO - [82/120] Running differential_privacy seed 62
+2026-05-24 13:00:51,547 - INFO - Running differential_privacy with seed 62
+2026-05-24 13:01:00,383 - INFO - ✓ differential_privacy seed 62 completed successfully
+2026-05-24 13:01:00,383 - INFO - [83/120] Running aggregation seed 62
+2026-05-24 13:01:00,383 - INFO - Running aggregation with seed 62
+2026-05-24 13:01:08,752 - INFO - ✓ aggregation seed 62 completed successfully
+2026-05-24 13:01:08,752 - INFO - [84/120] Running scalability seed 62
+2026-05-24 13:01:08,752 - INFO - Running scalability with seed 62
+2026-05-24 13:01:22,794 - INFO - ✓ scalability seed 62 completed successfully
+2026-05-24 13:01:22,794 - INFO - [85/120] Running baseline seed 63
+2026-05-24 13:01:22,795 - INFO - Running baseline with seed 63
+2026-05-24 13:01:26,135 - INFO - ✓ baseline seed 63 completed successfully
+2026-05-24 13:01:26,135 - INFO - [86/120] Running differential_privacy seed 63
+2026-05-24 13:01:26,135 - INFO - Running differential_privacy with seed 63
+2026-05-24 13:01:33,736 - INFO - ✓ differential_privacy seed 63 completed successfully
+2026-05-24 13:01:33,737 - INFO - [87/120] Running aggregation seed 63
+2026-05-24 13:01:33,737 - INFO - Running aggregation with seed 63
+2026-05-24 13:01:42,159 - INFO - ✓ aggregation seed 63 completed successfully
+2026-05-24 13:01:42,159 - INFO - [88/120] Running scalability seed 63
+2026-05-24 13:01:42,159 - INFO - Running scalability with seed 63
+2026-05-24 13:01:56,460 - INFO - ✓ scalability seed 63 completed successfully
+2026-05-24 13:01:56,461 - INFO - [89/120] Running baseline seed 64
+2026-05-24 13:01:56,461 - INFO - Running baseline with seed 64
+2026-05-24 13:01:59,938 - INFO - ✓ baseline seed 64 completed successfully
+2026-05-24 13:01:59,939 - INFO - [90/120] Running differential_privacy seed 64
+2026-05-24 13:01:59,939 - INFO - Running differential_privacy with seed 64
+2026-05-24 13:02:08,548 - INFO - ✓ differential_privacy seed 64 completed successfully
+2026-05-24 13:02:08,549 - INFO - [91/120] Running aggregation seed 64
+2026-05-24 13:02:08,549 - INFO - Running aggregation with seed 64
+2026-05-24 13:02:16,900 - INFO - ✓ aggregation seed 64 completed successfully
+2026-05-24 13:02:16,900 - INFO - [92/120] Running scalability seed 64
+2026-05-24 13:02:16,900 - INFO - Running scalability with seed 64
+2026-05-24 13:02:31,894 - INFO - ✓ scalability seed 64 completed successfully
+2026-05-24 13:02:31,894 - INFO - [93/120] Running baseline seed 65
+2026-05-24 13:02:31,895 - INFO - Running baseline with seed 65
+2026-05-24 13:02:35,203 - INFO - ✓ baseline seed 65 completed successfully
+2026-05-24 13:02:35,204 - INFO - [94/120] Running differential_privacy seed 65
+2026-05-24 13:02:35,204 - INFO - Running differential_privacy with seed 65
+2026-05-24 13:02:43,928 - INFO - ✓ differential_privacy seed 65 completed successfully
+2026-05-24 13:02:43,928 - INFO - [95/120] Running aggregation seed 65
+2026-05-24 13:02:43,929 - INFO - Running aggregation with seed 65
+2026-05-24 13:02:52,261 - INFO - ✓ aggregation seed 65 completed successfully
+2026-05-24 13:02:52,262 - INFO - [96/120] Running scalability seed 65
+2026-05-24 13:02:52,262 - INFO - Running scalability with seed 65
+2026-05-24 13:03:06,888 - INFO - ✓ scalability seed 65 completed successfully
+2026-05-24 13:03:06,888 - INFO - [97/120] Running baseline seed 66
+2026-05-24 13:03:06,888 - INFO - Running baseline with seed 66
+2026-05-24 13:03:10,377 - INFO - ✓ baseline seed 66 completed successfully
+2026-05-24 13:03:10,378 - INFO - [98/120] Running differential_privacy seed 66
+2026-05-24 13:03:10,378 - INFO - Running differential_privacy with seed 66
+2026-05-24 13:03:18,930 - INFO - ✓ differential_privacy seed 66 completed successfully
+2026-05-24 13:03:18,931 - INFO - [99/120] Running aggregation seed 66
+2026-05-24 13:03:18,931 - INFO - Running aggregation with seed 66
+2026-05-24 13:03:26,854 - INFO - ✓ aggregation seed 66 completed successfully
+2026-05-24 13:03:26,854 - INFO - [100/120] Running scalability seed 66
+2026-05-24 13:03:26,854 - INFO - Running scalability with seed 66
+2026-05-24 13:03:39,994 - INFO - ✓ scalability seed 66 completed successfully
+2026-05-24 13:03:39,994 - INFO - [101/120] Running baseline seed 67
+2026-05-24 13:03:39,994 - INFO - Running baseline with seed 67
+2026-05-24 13:03:43,415 - INFO - ✓ baseline seed 67 completed successfully
+2026-05-24 13:03:43,415 - INFO - [102/120] Running differential_privacy seed 67
+2026-05-24 13:03:43,416 - INFO - Running differential_privacy with seed 67
+2026-05-24 13:03:51,453 - INFO - ✓ differential_privacy seed 67 completed successfully
+2026-05-24 13:03:51,454 - INFO - [103/120] Running aggregation seed 67
+2026-05-24 13:03:51,454 - INFO - Running aggregation with seed 67
+2026-05-24 13:03:59,910 - INFO - ✓ aggregation seed 67 completed successfully
+2026-05-24 13:03:59,910 - INFO - [104/120] Running scalability seed 67
+2026-05-24 13:03:59,910 - INFO - Running scalability with seed 67
+2026-05-24 13:04:14,190 - INFO - ✓ scalability seed 67 completed successfully
+2026-05-24 13:04:14,190 - INFO - [105/120] Running baseline seed 68
+2026-05-24 13:04:14,190 - INFO - Running baseline with seed 68
+2026-05-24 13:04:17,501 - INFO - ✓ baseline seed 68 completed successfully
+2026-05-24 13:04:17,502 - INFO - [106/120] Running differential_privacy seed 68
+2026-05-24 13:04:17,502 - INFO - Running differential_privacy with seed 68
+2026-05-24 13:04:25,819 - INFO - ✓ differential_privacy seed 68 completed successfully
+2026-05-24 13:04:25,819 - INFO - [107/120] Running aggregation seed 68
+2026-05-24 13:04:25,819 - INFO - Running aggregation with seed 68
+2026-05-24 13:04:34,003 - INFO - ✓ aggregation seed 68 completed successfully
+2026-05-24 13:04:34,003 - INFO - [108/120] Running scalability seed 68
+2026-05-24 13:04:34,004 - INFO - Running scalability with seed 68
+2026-05-24 13:04:48,398 - INFO - ✓ scalability seed 68 completed successfully
+2026-05-24 13:04:48,398 - INFO - [109/120] Running baseline seed 69
+2026-05-24 13:04:48,399 - INFO - Running baseline with seed 69
+2026-05-24 13:04:51,674 - INFO - ✓ baseline seed 69 completed successfully
+2026-05-24 13:04:51,675 - INFO - [110/120] Running differential_privacy seed 69
+2026-05-24 13:04:51,675 - INFO - Running differential_privacy with seed 69
+2026-05-24 13:04:59,337 - INFO - ✓ differential_privacy seed 69 completed successfully
+2026-05-24 13:04:59,337 - INFO - [111/120] Running aggregation seed 69
+2026-05-24 13:04:59,337 - INFO - Running aggregation with seed 69
+2026-05-24 13:05:07,778 - INFO - ✓ aggregation seed 69 completed successfully
+2026-05-24 13:05:07,779 - INFO - [112/120] Running scalability seed 69
+2026-05-24 13:05:07,779 - INFO - Running scalability with seed 69
+2026-05-24 13:05:22,257 - INFO - ✓ scalability seed 69 completed successfully
+2026-05-24 13:05:22,257 - INFO - [113/120] Running baseline seed 70
+2026-05-24 13:05:22,257 - INFO - Running baseline with seed 70
+2026-05-24 13:05:25,700 - INFO - ✓ baseline seed 70 completed successfully
+2026-05-24 13:05:25,700 - INFO - [114/120] Running differential_privacy seed 70
+2026-05-24 13:05:25,700 - INFO - Running differential_privacy with seed 70
+2026-05-24 13:05:33,617 - INFO - ✓ differential_privacy seed 70 completed successfully
+2026-05-24 13:05:33,617 - INFO - [115/120] Running aggregation seed 70
+2026-05-24 13:05:33,617 - INFO - Running aggregation with seed 70
+2026-05-24 13:05:42,476 - INFO - ✓ aggregation seed 70 completed successfully
+2026-05-24 13:05:42,476 - INFO - [116/120] Running scalability seed 70
+2026-05-24 13:05:42,477 - INFO - Running scalability with seed 70
+2026-05-24 13:05:57,016 - INFO - ✓ scalability seed 70 completed successfully
+2026-05-24 13:05:57,016 - INFO - [117/120] Running baseline seed 71
+2026-05-24 13:05:57,016 - INFO - Running baseline with seed 71
+2026-05-24 13:06:00,416 - INFO - ✓ baseline seed 71 completed successfully
+2026-05-24 13:06:00,416 - INFO - [118/120] Running differential_privacy seed 71
+2026-05-24 13:06:00,416 - INFO - Running differential_privacy with seed 71
+2026-05-24 13:06:08,903 - INFO - ✓ differential_privacy seed 71 completed successfully
+2026-05-24 13:06:08,904 - INFO - [119/120] Running aggregation seed 71
+2026-05-24 13:06:08,904 - INFO - Running aggregation with seed 71
+2026-05-24 13:06:17,266 - INFO - ✓ aggregation seed 71 completed successfully
+2026-05-24 13:06:17,266 - INFO - [120/120] Running scalability seed 71
+2026-05-24 13:06:17,266 - INFO - Running scalability with seed 71
+2026-05-24 13:06:31,723 - INFO - ✓ scalability seed 71 completed successfully
+2026-05-24 13:06:31,724 - INFO - Phase 5 trials completed in 1088.5 seconds
+2026-05-24 13:06:31,724 - INFO - Generating statistical reports...
+2026-05-24 13:06:31,726 - INFO - ✓ Full report saved: /home/raiyanjiyon/Projects/federated-healthcare-ml/results/trials/TRIAL_REPORT_20260524_130631.txt
+
+================================================================================
+PHASE 5: STATISTICAL RIGOR - EXECUTION SUMMARY
+================================================================================
+Total Duration: 1088.5 seconds (0.30 hours)
+
+BASELINE
+  Description: Federated vs Centralized baseline (FedAvg, No DP)
+
+DIFFERENTIAL_PRIVACY
+  Description: DP-SGD epsilon tradeoff (epsilon in {0.5, 1.0, 2.0, 5.0, 10.0})
+
+AGGREGATION
+  Description: Byzantine robustness (FedAvg vs Median vs Krum)
+
+SCALABILITY
+  Description: Network growth (7, 14, 21, 28 clients)
+
+================================================================================

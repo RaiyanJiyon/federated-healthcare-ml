@@ -1,0 +1,15 @@
+
+== results/summary/logs/diag_clip/clip_10.log ==
+2026-05-24 15:50:18,945 - root - INFO -   Noise Scale (σ):        5.9982
+2026-05-24 15:50:19,004 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=29.9394, sigma=5.9982, epsilon_per_round=8.0000
+2026-05-24 15:50:19,354 - src.training.federated - INFO - Final Test AUROC: 0.5189
+
+== results/summary/logs/diag_clip/clip_1.log ==
+2026-05-24 15:50:13,525 - root - INFO -   Noise Scale (σ):        0.5998
+2026-05-24 15:50:13,577 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=2.9939, sigma=0.5998, epsilon_per_round=8.0000
+2026-05-24 15:50:14,009 - src.training.federated - INFO - Final Test AUROC: 0.8425
+
+== results/summary/logs/diag_clip/clip_5.log ==
+2026-05-24 15:50:16,175 - root - INFO -   Noise Scale (σ):        2.9991
+2026-05-24 15:50:16,272 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=14.9697, sigma=2.9991, epsilon_per_round=8.0000
+2026-05-24 15:50:16,694 - src.training.federated - INFO - Final Test AUROC: 0.5918

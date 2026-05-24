@@ -18,6 +18,8 @@ Metrics:
 """
 
 import sys
+import os
+import argparse
 import logging
 from pathlib import Path
 
@@ -26,7 +28,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data.loader import load_dataset_with_df
 from src.data.split import distribute_by_care_unit
-from src.training.federated import FederatedTrainer
 from sklearn.metrics import roc_auc_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -38,14 +39,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def train_centralized_baseline_simple(X_train, y_train, X_val, y_val, X_test, y_test):
+def train_centralized_baseline_simple(X_train, y_train, X_val, y_val, X_test, y_test, seed=42):
     """Simple centralized LR baseline (matches federated feature preprocessing)."""
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
     
-    model = LogisticRegression(max_iter=1000, random_state=42)
+    model = LogisticRegression(max_iter=1000, random_state=seed)
     model.fit(X_train_scaled, y_train)
     
     metrics = {
@@ -63,6 +64,16 @@ def main():
     logger.info("# EXPERIMENT 1: FEDERATED LEARNING BASELINE")
     logger.info("=" * 80)
     
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--use-dp', action='store_true', help='Enable Gaussian DP on client coefficients')
+    parser.add_argument('--epsilon', type=float, default=None, help='Override DP epsilon (overrides src.config.config.DP_EPSILON)')
+    parser.add_argument('--clipping', type=float, default=None, help='Override clipping threshold (overrides src.config.config.CLIPPING_THRESHOLD)')
+    parser.add_argument('--rounds', type=int, default=5, help='Number of federated rounds to run')
+    parser.add_argument('--seed', type=int, default=None, help='Random seed override')
+    args = parser.parse_args()
+
+    seed = args.seed if args.seed is not None else int(os.getenv('RANDOM_SEED', '42'))
+
     try:
         # ===== PHASE 1.1: LOAD PHASE 0 DATA =====
         logger.info("\nPhase 1.1: Loading Phase 0 cohort and splits...")
@@ -107,7 +118,7 @@ def main():
         logger.info("=" * 70)
         
         cent_model, cent_scaler, cent_metrics = train_centralized_baseline_simple(
-            X_train, y_train, X_val, y_val, X_test, y_test
+            X_train, y_train, X_val, y_val, X_test, y_test, seed=seed
         )
         
         logger.info(f"\nCentralized Train AUROC: {cent_metrics['train_auroc']:.4f}")
@@ -118,14 +129,35 @@ def main():
         logger.info("\n" + "=" * 70)
         logger.info("Phase 1.4: Training Federated Learning Model...")
         logger.info("=" * 70)
-        
-        trainer = FederatedTrainer(
-            clients=clients,
-            val_data=(X_val, y_val),
-            test_data=(X_test, y_test),
-            num_rounds=5,
-            use_dp=False  # DISABLED for Phase 1 baseline validation
-        )
+
+        # Allow runtime override of DP epsilon in config
+        if args.epsilon is not None:
+            try:
+                import src.config.config as cfg
+                cfg.DP_EPSILON = float(args.epsilon)
+                logger.info(f"Overriding DP epsilon to {cfg.DP_EPSILON}")
+            except Exception:
+                logger.warning("Could not override src.config.config.DP_EPSILON")
+
+        if args.clipping is not None:
+            try:
+                import src.config.config as cfg
+                cfg.CLIPPING_THRESHOLD = float(args.clipping)
+                logger.info(f"Overriding clipping threshold to {cfg.CLIPPING_THRESHOLD}")
+            except Exception:
+                logger.warning("Could not override src.config.config.CLIPPING_THRESHOLD")
+
+            # Import FederatedTrainer after possible config overrides so DP settings take effect
+            from src.training.federated import FederatedTrainer
+
+            trainer = FederatedTrainer(
+                clients=clients,
+                val_data=(X_val, y_val),
+                test_data=(X_test, y_test),
+                num_rounds=args.rounds,
+                use_dp=args.use_dp,
+                random_seed=seed
+            )
         
         fed_results = trainer.train()
         

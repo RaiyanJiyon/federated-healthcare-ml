@@ -150,13 +150,21 @@ class DifferentialPrivacyMechanism:
         Returns:
             np.ndarray: Noisy gradient
         """
+        grad_norm = float(np.linalg.norm(clipped_gradient))
         noise = np.random.normal(
             loc=0.0,
             scale=self.sigma,
             size=clipped_gradient.shape
         )
         noisy_gradient = clipped_gradient + noise
-        
+        noise_norm = float(np.linalg.norm(noise))
+
+        # Diagnostic logging when add_noise is used directly (as in FederatedTrainer)
+        logging.info(
+            f"add_noise: grad_norm={grad_norm:.4f}, noise_norm={noise_norm:.4f}, "
+            f"sigma={self.sigma:.4f}, epsilon_per_round={self.epsilon:.4f}"
+        )
+
         return noisy_gradient, noise
     
     def privatize_gradient(self, gradient: np.ndarray) -> Tuple[np.ndarray, Dict]:
@@ -198,7 +206,15 @@ class DifferentialPrivacyMechanism:
         }
         
         self.history.append(metadata)
-        
+
+        # Detailed logging for diagnostics
+        logging.info(
+            f"DP Round {self.rounds_count}: clipping_ratio={metadata['clipping_ratio']:.4f}, "
+            f"grad_norm_before={metadata['gradient_norm_before']:.4f}, "
+            f"grad_norm_after={metadata['gradient_norm_after']:.4f}, "
+            f"noise_norm={metadata['noise_norm']:.4f}, epsilon_total={metadata['epsilon_total']:.4f}"
+        )
+
         return noisy, metadata
     
     def _describe_privacy_budget(self, epsilon_total: float) -> str:
@@ -233,9 +249,30 @@ class DifferentialPrivacyMechanism:
         
         # Privatize coefficient weights
         if 'coef' in weights:
+            coef = weights['coef']
+            # log example coefficient magnitudes before privatization
+            try:
+                coef_max = float(np.max(np.abs(coef)))
+                coef_mean = float(np.mean(coef))
+            except Exception:
+                coef_max = None
+                coef_mean = None
+
+            logging.info(f"Privatizing coefficients: max_abs={coef_max}, mean={coef_mean}")
+
             coef_noisy, coef_meta = self.privatize_gradient(weights['coef'].flatten())
             privatized['coef'] = coef_noisy.reshape(weights['coef'].shape)
             all_metadata['coef'] = coef_meta
+
+            # log after-privatization stats
+            try:
+                coef_noisy_arr = np.array(privatized['coef']).flatten()
+                noisy_max = float(np.max(np.abs(coef_noisy_arr)))
+                noisy_mean = float(np.mean(coef_noisy_arr))
+            except Exception:
+                noisy_max = None
+                noisy_mean = None
+            logging.info(f"Post-privatization coefficients: max_abs={noisy_max}, mean={noisy_mean}, noise_norm={coef_meta['noise_norm']}")
         
         # Privatize intercept
         if 'intercept' in weights:

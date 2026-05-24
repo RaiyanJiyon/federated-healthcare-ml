@@ -1,0 +1,11 @@
+file,eps,seed,auc
+results/summary/logs/final/confirmatory/confirm_client_eps16_seed2.log,16,2,0.8768
+results/summary/logs/final/confirmatory/confirm_client_eps16_seed3.log,16,3,0.8771
+results/summary/logs/final/confirmatory/confirm_client_eps16_seed4.log,16,4,0.8702
+results/summary/logs/final/confirmatory/confirm_client_eps16_seed5.log,16,5,0.8686
+results/summary/logs/final/confirmatory/confirm_client_eps8_seed2.log,8,2,0.8367
+results/summary/logs/final/confirmatory/confirm_client_eps8_seed3.log,8,3,0.8585
+results/summary/logs/final/confirmatory/confirm_client_eps8_seed4.log,8,4,0.8288
+results/summary/logs/final/confirmatory/confirm_client_eps8_seed5.log,8,5,0.8236
+results/summary/logs/final/eps16_rounds20.log,16,1,0.8506
+results/summary/logs/final/eps8_rounds20.log,8,1,0.7889

@@ -1,0 +1,25 @@
+
+== results/summary/logs/diag_eps3/eps_16.log ==
+2026-05-24 15:49:20,457 - root - INFO -   Noise Scale (σ):        0.2999
+2026-05-24 15:49:20,513 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.4970, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 15:49:20,941 - src.training.federated - INFO - Final Test AUROC: 0.8751
+
+== results/summary/logs/diag_eps3/eps_1.log ==
+2026-05-24 15:49:09,515 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:49:09,576 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:49:10,043 - src.training.federated - INFO - Final Test AUROC: 0.5377
+
+== results/summary/logs/diag_eps3/eps_2.log ==
+2026-05-24 15:49:12,272 - root - INFO -   Noise Scale (σ):        2.3993
+2026-05-24 15:49:12,329 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=11.9758, sigma=2.3993, epsilon_per_round=2.0000
+2026-05-24 15:49:12,775 - src.training.federated - INFO - Final Test AUROC: 0.6253
+
+== results/summary/logs/diag_eps3/eps_4.log ==
+2026-05-24 15:49:15,030 - root - INFO -   Noise Scale (σ):        1.1996
+2026-05-24 15:49:15,125 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=5.9879, sigma=1.1996, epsilon_per_round=4.0000
+2026-05-24 15:49:15,541 - src.training.federated - INFO - Final Test AUROC: 0.7474
+
+== results/summary/logs/diag_eps3/eps_8.log ==
+2026-05-24 15:49:17,849 - root - INFO -   Noise Scale (σ):        0.5998
+2026-05-24 15:49:17,907 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=2.9939, sigma=0.5998, epsilon_per_round=8.0000
+2026-05-24 15:49:18,291 - src.training.federated - INFO - Final Test AUROC: 0.8425

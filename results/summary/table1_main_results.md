@@ -1,0 +1,10 @@
+# Table1 Main Results
+
+| Model                       |   AUROC |   Brier Score | ECE    |   Recall |   Precision | Clinical Status   |
+|:----------------------------|--------:|--------------:|:-------|---------:|------------:|:------------------|
+| Centralized LR              |  0.885  |        0.0617 | 0.0088 |    0.417 |       0.764 | ✗ Unsafe          |
+| FedAvg (Baseline)           |  0.885  |        0.0617 | 0.0088 |    0.417 |       0.764 | ✗ Unsafe          |
+| FedProx (μ=0.01)            |  0.8591 |        0.0841 | 0.0832 |    0.38  |       0.63  | ✗ Unsafe          |
+| With DP (ε=1.0)             |  0.4508 |        0.3874 | —      |    0.369 |       0.101 | ✗ Unsafe          |
+| With Byzantine Attack (1/7) |  0.8618 |        0.0617 | 0.0088 |    0.489 |       0.645 | ✗ Unsafe          |
+

@@ -1,0 +1,12 @@
+2026-05-24 16:17:41,489 - __main__ - INFO - Starting prototype run: mode=client, eps=8, C=1.0, rounds=3, seed=3
+2026-05-24 16:17:41,909 - __main__ - INFO - Round 1 Validation AUROC: 0.4540
+2026-05-24 16:17:42,061 - __main__ - INFO - Round 2 Validation AUROC: 0.7580
+2026-05-24 16:17:42,220 - __main__ - INFO - Round 3 Validation AUROC: 0.6639
+2026-05-24 16:17:42,227 - __main__ - INFO - Final Test AUROC: 0.6651
+2026-05-24 16:17:42,228 - __main__ - INFO - Completed client eps=8 seed=3 -> test_auc=0.6651
+2026-05-24 16:18:05,556 - __main__ - INFO - Starting prototype run: mode=client, eps=8, C=1.0, rounds=3, seed=3
+2026-05-24 16:18:05,938 - __main__ - INFO - Round 1 Validation AUROC: 0.4540
+2026-05-24 16:18:06,086 - __main__ - INFO - Round 2 Validation AUROC: 0.7580
+2026-05-24 16:18:06,365 - __main__ - INFO - Round 3 Validation AUROC: 0.6639
+2026-05-24 16:18:06,372 - __main__ - INFO - Final Test AUROC: 0.6651
+2026-05-24 16:18:06,373 - __main__ - INFO - Completed client eps=8 seed=3 -> test_auc=0.6651

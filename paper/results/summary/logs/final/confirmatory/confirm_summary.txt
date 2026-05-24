@@ -1,0 +1,24 @@
+
+== results/summary/logs/final/confirmatory/confirm_client_eps16_seed2.log ==
+2026-05-24 16:20:26,304 - src.training.federated - INFO - Final Test AUROC: 0.8768
+
+== results/summary/logs/final/confirmatory/confirm_client_eps16_seed3.log ==
+2026-05-24 16:20:31,703 - src.training.federated - INFO - Final Test AUROC: 0.8771
+
+== results/summary/logs/final/confirmatory/confirm_client_eps16_seed4.log ==
+2026-05-24 16:20:36,839 - src.training.federated - INFO - Final Test AUROC: 0.8702
+
+== results/summary/logs/final/confirmatory/confirm_client_eps16_seed5.log ==
+2026-05-24 16:20:42,213 - src.training.federated - INFO - Final Test AUROC: 0.8686
+
+== results/summary/logs/final/confirmatory/confirm_client_eps8_seed2.log ==
+2026-05-24 16:20:47,389 - src.training.federated - INFO - Final Test AUROC: 0.8367
+
+== results/summary/logs/final/confirmatory/confirm_client_eps8_seed3.log ==
+2026-05-24 16:20:52,524 - src.training.federated - INFO - Final Test AUROC: 0.8585
+
+== results/summary/logs/final/confirmatory/confirm_client_eps8_seed4.log ==
+2026-05-24 16:20:57,993 - src.training.federated - INFO - Final Test AUROC: 0.8288
+
+== results/summary/logs/final/confirmatory/confirm_client_eps8_seed5.log ==
+2026-05-24 16:21:02,998 - src.training.federated - INFO - Final Test AUROC: 0.8236

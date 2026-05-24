@@ -1,0 +1,231 @@
+2026-05-24 15:42:01,730 - __main__ - INFO - 
+================================================================================
+2026-05-24 15:42:01,730 - __main__ - INFO - # EXPERIMENT 1: FEDERATED LEARNING BASELINE
+2026-05-24 15:42:01,730 - __main__ - INFO - ================================================================================
+2026-05-24 15:42:01,731 - __main__ - INFO - 
+Phase 1.1: Loading Phase 0 cohort and splits...
+2026-05-24 15:42:01,731 - src.data.loader - INFO - Loading cohort from cache: /home/raiyanjiyon/Projects/federated-healthcare-ml/data/cache/mimic_iv_cohort.csv
+2026-05-24 15:42:01,908 - src.data.loader - WARNING - Missing features: {'admission_type_emergency'}
+2026-05-24 15:42:01,916 - src.data.loader - INFO - Dataset: 65273 patients, 31 features
+2026-05-24 15:42:01,917 - src.data.loader - INFO - Target distribution: [58207  7066]
+2026-05-24 15:42:01,917 - __main__ - INFO - Loaded: 65273 samples, 31 features
+2026-05-24 15:42:01,917 - __main__ - INFO - Target distribution: 7066 deaths (10.8%)
+2026-05-24 15:42:01,917 - __main__ - INFO - 
+Phase 1.2: Distributing data to federated clients by care unit...
+2026-05-24 15:42:01,921 - src.data.split - INFO - ✓ Medical Intensive Care Unit (MICU): 8791 patients, 1410 deaths (16.0%)
+2026-05-24 15:42:01,925 - src.data.split - INFO - ✓ Surgical Intensive Care Unit (SICU): 6372 patients, 754 deaths (11.8%)
+2026-05-24 15:42:01,929 - src.data.split - INFO - ✓ Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 patients, 957 deaths (13.7%)
+2026-05-24 15:42:01,933 - src.data.split - INFO - ✓ Cardiac Vascular Intensive Care Unit (CVICU): 8118 patients, 265 deaths (3.3%)
+2026-05-24 15:42:01,937 - src.data.split - INFO - ✓ Coronary Care Unit (CCU): 5113 patients, 643 deaths (12.6%)
+2026-05-24 15:42:01,940 - src.data.split - INFO - ✓ Trauma SICU (TSICU): 5458 patients, 569 deaths (10.4%)
+2026-05-24 15:42:01,943 - src.data.split - INFO - ✓ Neuro Surgical Intensive Care Unit (Neuro SICU): 907 patients, 256 deaths (28.2%)
+2026-05-24 15:42:01,948 - src.data.split - INFO -   (skipped Intensive Care Unit (ICU): 16 patients, < 100)
+2026-05-24 15:42:01,950 - src.data.split - INFO -   (skipped Medicine: 9 patients, < 100)
+2026-05-24 15:42:01,952 - src.data.split - INFO -   (skipped Neuro Intermediate: 3035 patients, < 100)
+2026-05-24 15:42:01,954 - src.data.split - INFO -   (skipped Neuro Stepdown: 784 patients, < 100)
+2026-05-24 15:42:01,956 - src.data.split - INFO -   (skipped PACU: 43 patients, < 100)
+2026-05-24 15:42:01,959 - src.data.split - INFO -   (skipped Surgery/Trauma: 2 patients, < 100)
+2026-05-24 15:42:01,961 - src.data.split - INFO -   (skipped Surgery/Vascular/Intermediate: 60 patients, < 100)
+2026-05-24 15:42:01,961 - src.data.split - INFO - 
+✓ Federated learning ready: 7 clients
+2026-05-24 15:42:01,961 - __main__ - INFO - 
+✓ Created 7 federated clients
+2026-05-24 15:42:01,961 - __main__ - INFO - 
+Client Statistics:
+2026-05-24 15:42:01,961 - __main__ - INFO - ----------------------------------------------------------------------
+2026-05-24 15:42:01,961 - __main__ - INFO -   Medical Intensive Care Unit (MICU)         8791 patients, 1410 deaths ( 16.0%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Cardiac Vascular Intensive Care Unit (CVICU)   8118 patients,  265 deaths (  3.3%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU)   6983 patients,  957 deaths ( 13.7%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Surgical Intensive Care Unit (SICU)        6372 patients,  754 deaths ( 11.8%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Trauma SICU (TSICU)                        5458 patients,  569 deaths ( 10.4%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Coronary Care Unit (CCU)                   5113 patients,  643 deaths ( 12.6%)
+2026-05-24 15:42:01,961 - __main__ - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU)    907 patients,  256 deaths ( 28.2%)
+2026-05-24 15:42:01,961 - __main__ - INFO - 
+======================================================================
+2026-05-24 15:42:01,961 - __main__ - INFO - Phase 1.3: Training Centralized Baseline (for comparison)...
+2026-05-24 15:42:01,961 - __main__ - INFO - ======================================================================
+2026-05-24 15:42:02,517 - __main__ - INFO - 
+Centralized Train AUROC: 0.8857
+2026-05-24 15:42:02,517 - __main__ - INFO - Centralized Val AUROC:   0.8846
+2026-05-24 15:42:02,517 - __main__ - INFO - Centralized Test AUROC:  0.8880
+2026-05-24 15:42:02,517 - __main__ - INFO - 
+======================================================================
+2026-05-24 15:42:02,517 - __main__ - INFO - Phase 1.4: Training Federated Learning Model...
+2026-05-24 15:42:02,517 - __main__ - INFO - ======================================================================
+2026-05-24 15:42:02,517 - __main__ - INFO - Overriding DP epsilon to 1.0
+2026-05-24 15:42:02,517 - __main__ - INFO - Overriding clipping threshold to 5.0
+2026-05-24 15:42:02,547 - root - INFO - 
+======================================================================
+2026-05-24 15:42:02,550 - root - INFO - Differential Privacy Mechanism Initialized: GaussianDP
+2026-05-24 15:42:02,550 - root - INFO - ======================================================================
+2026-05-24 15:42:02,550 - root - INFO -   Privacy Budget (ε):     1.0000
+2026-05-24 15:42:02,550 - root - INFO -   Failure Probability (δ): 0.000010
+2026-05-24 15:42:02,550 - root - INFO -   Clipping Norm (C):      1.0000
+2026-05-24 15:42:02,550 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:42:02,550 - root - INFO - ======================================================================
+
+2026-05-24 15:42:02,550 - src.training.federated - INFO - FederatedTrainer initialized:
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Clients: 7
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Training samples: 41742
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Validation samples: 9791
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Test samples: 9791
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Features: 31
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Rounds: 10
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Strategy: FEDAVG
+2026-05-24 15:42:02,550 - src.training.federated - INFO -   Privacy: Enabled (ε=1.0, δ=1e-5)
+2026-05-24 15:42:02,550 - src.training.federated - INFO - 
+######################################################################
+2026-05-24 15:42:02,550 - src.training.federated - INFO - # FEDERATED LEARNING TRAINING (10 rounds)
+2026-05-24 15:42:02,550 - src.training.federated - INFO - # Strategy: FEDAVG
+2026-05-24 15:42:02,550 - src.training.federated - INFO - ######################################################################
+
+2026-05-24 15:42:02,550 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:02,550 - src.training.federated - INFO - Round 1/10
+2026-05-24 15:42:02,550 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:02,611 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:02,631 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:02,658 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:02,687 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:02,695 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:02,722 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:02,741 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:02,742 - src.training.federated - INFO - Round 1 complete: 7 clients aggregated
+2026-05-24 15:42:02,748 - src.training.federated - INFO - Round 1 Validation AUROC: 0.7373
+2026-05-24 15:42:02,749 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:02,749 - src.training.federated - INFO - Round 2/10
+2026-05-24 15:42:02,749 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:02,772 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:02,789 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:02,815 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:02,842 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:02,851 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:02,872 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:02,890 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:02,890 - src.training.federated - INFO - Round 2 complete: 7 clients aggregated
+2026-05-24 15:42:02,896 - src.training.federated - INFO - Round 2 Validation AUROC: 0.6685
+2026-05-24 15:42:02,896 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:02,896 - src.training.federated - INFO - Round 3/10
+2026-05-24 15:42:02,896 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:02,920 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:02,937 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:02,963 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:02,990 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:02,998 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,018 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,037 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,037 - src.training.federated - INFO - Round 3 complete: 7 clients aggregated
+2026-05-24 15:42:03,043 - src.training.federated - INFO - Round 3 Validation AUROC: 0.5341
+2026-05-24 15:42:03,043 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,043 - src.training.federated - INFO - Round 4/10
+2026-05-24 15:42:03,043 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,067 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,083 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,109 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,136 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,144 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,165 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,183 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,183 - src.training.federated - INFO - Round 4 complete: 7 clients aggregated
+2026-05-24 15:42:03,190 - src.training.federated - INFO - Round 4 Validation AUROC: 0.7420
+2026-05-24 15:42:03,190 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,190 - src.training.federated - INFO - Round 5/10
+2026-05-24 15:42:03,190 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,213 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,230 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,256 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,283 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,291 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,312 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,329 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,329 - src.training.federated - INFO - Round 5 complete: 7 clients aggregated
+2026-05-24 15:42:03,335 - src.training.federated - INFO - Round 5 Validation AUROC: 0.3943
+2026-05-24 15:42:03,335 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,335 - src.training.federated - INFO - Round 6/10
+2026-05-24 15:42:03,336 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,359 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,375 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,401 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,428 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,436 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,457 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,474 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,474 - src.training.federated - INFO - Round 6 complete: 7 clients aggregated
+2026-05-24 15:42:03,480 - src.training.federated - INFO - Round 6 Validation AUROC: 0.5295
+2026-05-24 15:42:03,480 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,480 - src.training.federated - INFO - Round 7/10
+2026-05-24 15:42:03,481 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,503 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,520 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,546 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,573 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,581 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,602 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,619 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,619 - src.training.federated - INFO - Round 7 complete: 7 clients aggregated
+2026-05-24 15:42:03,625 - src.training.federated - INFO - Round 7 Validation AUROC: 0.7414
+2026-05-24 15:42:03,625 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,625 - src.training.federated - INFO - Round 8/10
+2026-05-24 15:42:03,625 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,649 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,665 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,692 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,719 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,727 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,748 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,766 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,766 - src.training.federated - INFO - Round 8 complete: 7 clients aggregated
+2026-05-24 15:42:03,773 - src.training.federated - INFO - Round 8 Validation AUROC: 0.5366
+2026-05-24 15:42:03,773 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,773 - src.training.federated - INFO - Round 9/10
+2026-05-24 15:42:03,773 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,797 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,813 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,840 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:03,869 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:03,877 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:03,898 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:03,916 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:03,916 - src.training.federated - INFO - Round 9 complete: 7 clients aggregated
+2026-05-24 15:42:03,922 - src.training.federated - INFO - Round 9 Validation AUROC: 0.6864
+2026-05-24 15:42:03,922 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:03,922 - src.training.federated - INFO - Round 10/10
+2026-05-24 15:42:03,922 - src.training.federated - INFO - ======================================================================
+2026-05-24 15:42:03,946 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 15:42:03,962 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 15:42:03,989 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 15:42:04,017 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 15:42:04,025 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 15:42:04,046 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 15:42:04,064 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 15:42:04,064 - src.training.federated - INFO - Round 10 complete: 7 clients aggregated
+2026-05-24 15:42:04,070 - src.training.federated - INFO - Round 10 Validation AUROC: 0.5018
+2026-05-24 15:42:04,076 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 15:42:04,076 - src.training.federated - INFO - Final Test AUROC: 0.4880
+2026-05-24 15:42:04,076 - src.training.federated - INFO - ======================================================================
+
+2026-05-24 15:42:04,076 - __main__ - INFO - 
+======================================================================
+2026-05-24 15:42:04,076 - __main__ - INFO - Phase 1.5: Results Comparison
+2026-05-24 15:42:04,076 - __main__ - INFO - ======================================================================
+2026-05-24 15:42:04,076 - __main__ - INFO - 
+Test AUROC Comparison:
+2026-05-24 15:42:04,076 - __main__ - INFO -   Centralized: 0.8880
+2026-05-24 15:42:04,076 - __main__ - INFO -   Federated:   0.4880
+2026-05-24 15:42:04,077 - __main__ - INFO -   Divergence:  0.3999
+2026-05-24 15:42:04,077 - __main__ - WARNING - ⚠ Federated AUROC (0.4880) < 0.85 target
+2026-05-24 15:42:04,077 - __main__ - WARNING - ⚠ Divergence between centralized and federated (0.3999) > 0.05
+2026-05-24 15:42:04,077 - __main__ - INFO - 
+======================================================================
+2026-05-24 15:42:04,077 - __main__ - INFO - ⚠️  EXPERIMENT 1 PARTIAL - Manual review recommended
+2026-05-24 15:42:04,077 - __main__ - INFO - ======================================================================

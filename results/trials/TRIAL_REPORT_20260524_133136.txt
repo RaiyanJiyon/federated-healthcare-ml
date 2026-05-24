@@ -1,0 +1,45 @@
+================================================================================
+PHASE 5: STATISTICAL RIGOR - TRIAL REPORT
+================================================================================
+Report Generated: 2026-05-24T13:31:36.541683
+Total Trials: 30
+Trial Seeds: 42-71
+
+
+────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT: BASELINE
+────────────────────────────────────────────────────────────────────────────────
+Description: Federated vs Centralized baseline (FedAvg, No DP)
+Hypothesis: Federated Recall ≈ Centralized Recall (within 1.85%)
+Test: paired_t_test
+
+No results available yet
+
+────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT: DIFFERENTIAL_PRIVACY
+────────────────────────────────────────────────────────────────────────────────
+Description: DP-SGD epsilon tradeoff (epsilon in {0.5, 1.0, 2.0, 5.0, 10.0})
+Hypothesis: Recall degrades monotonically with tighter privacy
+Test: anova
+
+No results available yet
+
+────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT: AGGREGATION
+────────────────────────────────────────────────────────────────────────────────
+Description: Byzantine robustness (FedAvg vs Median vs Krum)
+Hypothesis: Byzantine methods (Median, Krum) trade recall for robustness
+Test: paired_t_tests
+
+No results available yet
+
+────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT: SCALABILITY
+────────────────────────────────────────────────────────────────────────────────
+Description: Network growth (7, 14, 21, 28 clients)
+Hypothesis: Recall remains stable (>84%) across client counts
+Test: anova
+
+No results available yet
+
+================================================================================

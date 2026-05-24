@@ -1,0 +1,30 @@
+
+== results/summary/logs/diag_eps2/eps_16.log ==
+2026-05-24 15:47:06,722 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:47:06,766 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:06,767 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=8.8882, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:07,192 - src.training.federated - INFO - Final Test AUROC: 0.5377
+
+== results/summary/logs/diag_eps2/eps_1.log ==
+2026-05-24 15:46:56,068 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:46:56,135 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:46:56,135 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=8.8882, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:46:56,546 - src.training.federated - INFO - Final Test AUROC: 0.5377
+
+== results/summary/logs/diag_eps2/eps_2.log ==
+2026-05-24 15:46:58,724 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:46:58,782 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:46:58,782 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=8.8882, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:46:59,201 - src.training.federated - INFO - Final Test AUROC: 0.5377
+
+== results/summary/logs/diag_eps2/eps_4.log ==
+2026-05-24 15:47:01,298 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:47:01,363 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:01,364 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=8.8882, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:01,771 - src.training.federated - INFO - Final Test AUROC: 0.5377
+
+== results/summary/logs/diag_eps2/eps_8.log ==
+2026-05-24 15:47:03,966 - root - INFO -   Noise Scale (σ):        4.7985
+2026-05-24 15:47:04,080 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=23.9515, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:04,080 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=8.8882, sigma=4.7985, epsilon_per_round=1.0000
+2026-05-24 15:47:04,513 - src.training.federated - INFO - Final Test AUROC: 0.5377

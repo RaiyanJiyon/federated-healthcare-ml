@@ -1,0 +1,12 @@
+2026-05-24 16:17:49,124 - __main__ - INFO - Starting prototype run: mode=per_sample_approx, eps=8, C=1.0, rounds=3, seed=2
+2026-05-24 16:17:49,522 - __main__ - INFO - Round 1 Validation AUROC: 0.7024
+2026-05-24 16:17:49,677 - __main__ - INFO - Round 2 Validation AUROC: 0.6867
+2026-05-24 16:17:49,825 - __main__ - INFO - Round 3 Validation AUROC: 0.6659
+2026-05-24 16:17:49,831 - __main__ - INFO - Final Test AUROC: 0.6466
+2026-05-24 16:17:49,832 - __main__ - INFO - Completed per_sample_approx eps=8 seed=2 -> test_auc=0.6466
+2026-05-24 16:18:12,644 - __main__ - INFO - Starting prototype run: mode=per_sample_approx, eps=8, C=1.0, rounds=3, seed=2
+2026-05-24 16:18:13,010 - __main__ - INFO - Round 1 Validation AUROC: 0.7024
+2026-05-24 16:18:13,150 - __main__ - INFO - Round 2 Validation AUROC: 0.6867
+2026-05-24 16:18:13,288 - __main__ - INFO - Round 3 Validation AUROC: 0.6659
+2026-05-24 16:18:13,295 - __main__ - INFO - Final Test AUROC: 0.6466
+2026-05-24 16:18:13,296 - __main__ - INFO - Completed per_sample_approx eps=8 seed=2 -> test_auc=0.6466

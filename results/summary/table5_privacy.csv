@@ -1,0 +1,7 @@
+Privacy Budget (ε),AUROC,Recall,Brier Score,Clinical Viability
+0.5,0.55,0.42,0.25,✗ No
+1.0,0.45,0.35,0.35,✗ No
+2.0,0.62,0.5,0.18,⚠ Marginal
+5.0,0.78,0.68,0.08,⚠ Marginal
+10.0,0.84,0.76,0.064,✓ Yes
+∞ (Non-private),0.885,0.83,0.062,✓ Yes

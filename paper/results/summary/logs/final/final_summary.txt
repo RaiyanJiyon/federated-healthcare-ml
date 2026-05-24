@@ -1,0 +1,10 @@
+
+== results/summary/logs/final/eps16_rounds20.log ==
+2026-05-24 15:52:06,701 - root - INFO -   Noise Scale (σ):        0.2999
+2026-05-24 15:52:06,780 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.4970, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 15:52:09,629 - src.training.federated - INFO - Final Test AUROC: 0.8506
+
+== results/summary/logs/final/eps8_rounds20.log ==
+2026-05-24 15:51:47,799 - root - INFO -   Noise Scale (σ):        0.5998
+2026-05-24 15:51:47,881 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=2.9939, sigma=0.5998, epsilon_per_round=8.0000
+2026-05-24 15:51:50,858 - src.training.federated - INFO - Final Test AUROC: 0.7889

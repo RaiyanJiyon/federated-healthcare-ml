@@ -1,0 +1,641 @@
+2026-05-24 16:20:27,765 - __main__ - INFO - 
+================================================================================
+2026-05-24 16:20:27,766 - __main__ - INFO - # EXPERIMENT 1: FEDERATED LEARNING BASELINE
+2026-05-24 16:20:27,766 - __main__ - INFO - ================================================================================
+2026-05-24 16:20:27,766 - __main__ - INFO - 
+Phase 1.1: Loading Phase 0 cohort and splits...
+2026-05-24 16:20:27,766 - src.data.loader - INFO - Loading cohort from cache: /home/raiyanjiyon/Projects/federated-healthcare-ml/data/cache/mimic_iv_cohort.csv
+2026-05-24 16:20:27,944 - src.data.loader - WARNING - Missing features: {'admission_type_emergency'}
+2026-05-24 16:20:27,952 - src.data.loader - INFO - Dataset: 65273 patients, 31 features
+2026-05-24 16:20:27,953 - src.data.loader - INFO - Target distribution: [58207  7066]
+2026-05-24 16:20:27,953 - __main__ - INFO - Loaded: 65273 samples, 31 features
+2026-05-24 16:20:27,953 - __main__ - INFO - Target distribution: 7066 deaths (10.8%)
+2026-05-24 16:20:27,953 - __main__ - INFO - 
+Phase 1.2: Distributing data to federated clients by care unit...
+2026-05-24 16:20:27,957 - src.data.split - INFO - ✓ Medical Intensive Care Unit (MICU): 8791 patients, 1410 deaths (16.0%)
+2026-05-24 16:20:27,961 - src.data.split - INFO - ✓ Surgical Intensive Care Unit (SICU): 6372 patients, 754 deaths (11.8%)
+2026-05-24 16:20:27,965 - src.data.split - INFO - ✓ Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 patients, 957 deaths (13.7%)
+2026-05-24 16:20:27,969 - src.data.split - INFO - ✓ Cardiac Vascular Intensive Care Unit (CVICU): 8118 patients, 265 deaths (3.3%)
+2026-05-24 16:20:27,973 - src.data.split - INFO - ✓ Coronary Care Unit (CCU): 5113 patients, 643 deaths (12.6%)
+2026-05-24 16:20:27,977 - src.data.split - INFO - ✓ Trauma SICU (TSICU): 5458 patients, 569 deaths (10.4%)
+2026-05-24 16:20:27,979 - src.data.split - INFO - ✓ Neuro Surgical Intensive Care Unit (Neuro SICU): 907 patients, 256 deaths (28.2%)
+2026-05-24 16:20:27,984 - src.data.split - INFO -   (skipped Intensive Care Unit (ICU): 16 patients, < 100)
+2026-05-24 16:20:27,987 - src.data.split - INFO -   (skipped Medicine: 9 patients, < 100)
+2026-05-24 16:20:27,989 - src.data.split - INFO -   (skipped Neuro Intermediate: 3035 patients, < 100)
+2026-05-24 16:20:27,991 - src.data.split - INFO -   (skipped Neuro Stepdown: 784 patients, < 100)
+2026-05-24 16:20:27,993 - src.data.split - INFO -   (skipped PACU: 43 patients, < 100)
+2026-05-24 16:20:27,996 - src.data.split - INFO -   (skipped Surgery/Trauma: 2 patients, < 100)
+2026-05-24 16:20:27,998 - src.data.split - INFO -   (skipped Surgery/Vascular/Intermediate: 60 patients, < 100)
+2026-05-24 16:20:27,998 - src.data.split - INFO - 
+✓ Federated learning ready: 7 clients
+2026-05-24 16:20:27,998 - __main__ - INFO - 
+✓ Created 7 federated clients
+2026-05-24 16:20:27,998 - __main__ - INFO - 
+Client Statistics:
+2026-05-24 16:20:27,998 - __main__ - INFO - ----------------------------------------------------------------------
+2026-05-24 16:20:27,998 - __main__ - INFO -   Medical Intensive Care Unit (MICU)         8791 patients, 1410 deaths ( 16.0%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Cardiac Vascular Intensive Care Unit (CVICU)   8118 patients,  265 deaths (  3.3%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU)   6983 patients,  957 deaths ( 13.7%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Surgical Intensive Care Unit (SICU)        6372 patients,  754 deaths ( 11.8%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Trauma SICU (TSICU)                        5458 patients,  569 deaths ( 10.4%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Coronary Care Unit (CCU)                   5113 patients,  643 deaths ( 12.6%)
+2026-05-24 16:20:27,998 - __main__ - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU)    907 patients,  256 deaths ( 28.2%)
+2026-05-24 16:20:27,998 - __main__ - INFO - 
+======================================================================
+2026-05-24 16:20:27,998 - __main__ - INFO - Phase 1.3: Training Centralized Baseline (for comparison)...
+2026-05-24 16:20:27,998 - __main__ - INFO - ======================================================================
+2026-05-24 16:20:28,477 - __main__ - INFO - 
+Centralized Train AUROC: 0.8857
+2026-05-24 16:20:28,478 - __main__ - INFO - Centralized Val AUROC:   0.8846
+2026-05-24 16:20:28,478 - __main__ - INFO - Centralized Test AUROC:  0.8880
+2026-05-24 16:20:28,478 - __main__ - INFO - 
+======================================================================
+2026-05-24 16:20:28,478 - __main__ - INFO - Phase 1.4: Training Federated Learning Model...
+2026-05-24 16:20:28,478 - __main__ - INFO - ======================================================================
+2026-05-24 16:20:28,478 - __main__ - INFO - Overriding DP epsilon to 16.0
+2026-05-24 16:20:28,478 - __main__ - INFO - Overriding clipping threshold to 1.0
+2026-05-24 16:20:28,508 - root - INFO - 
+======================================================================
+2026-05-24 16:20:28,509 - root - INFO - Differential Privacy Mechanism Initialized: GaussianDP
+2026-05-24 16:20:28,509 - root - INFO - ======================================================================
+2026-05-24 16:20:28,509 - root - INFO -   Privacy Budget (ε):     16.0000
+2026-05-24 16:20:28,509 - root - INFO -   Failure Probability (δ): 0.000010
+2026-05-24 16:20:28,509 - root - INFO -   Clipping Norm (C):      1.0000
+2026-05-24 16:20:28,509 - root - INFO -   Noise Scale (σ):        0.2999
+2026-05-24 16:20:28,509 - root - INFO - ======================================================================
+
+2026-05-24 16:20:28,509 - src.training.federated - INFO - FederatedTrainer initialized:
+2026-05-24 16:20:28,509 - src.training.federated - INFO -   Clients: 7
+2026-05-24 16:20:28,509 - src.training.federated - INFO -   Training samples: 41742
+2026-05-24 16:20:28,509 - src.training.federated - INFO -   Validation samples: 9791
+2026-05-24 16:20:28,509 - src.training.federated - INFO -   Test samples: 9791
+2026-05-24 16:20:28,509 - src.training.federated - INFO -   Features: 31
+2026-05-24 16:20:28,512 - src.training.federated - INFO -   Rounds: 20
+2026-05-24 16:20:28,512 - src.training.federated - INFO -   Strategy: FEDAVG
+2026-05-24 16:20:28,512 - src.training.federated - INFO -   Privacy: Enabled (ε=1.0, δ=1e-5)
+2026-05-24 16:20:28,512 - src.training.federated - INFO - 
+######################################################################
+2026-05-24 16:20:28,512 - src.training.federated - INFO - # FEDERATED LEARNING TRAINING (20 rounds)
+2026-05-24 16:20:28,512 - src.training.federated - INFO - # Strategy: FEDAVG
+2026-05-24 16:20:28,512 - src.training.federated - INFO - ######################################################################
+
+2026-05-24 16:20:28,512 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:28,512 - src.training.federated - INFO - Round 1/20
+2026-05-24 16:20:28,512 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:28,575 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5242, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,575 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.5927, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,575 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:28,595 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.9724, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,596 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.5322, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,596 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:28,626 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.7044, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,626 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.0328, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,626 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:28,708 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.3792, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,708 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0828, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,709 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:28,747 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.3017, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,747 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.2990, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,747 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:28,781 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.7318, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,781 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.4638, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,781 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:28,801 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.3886, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,801 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.4893, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,801 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:28,801 - src.training.federated - INFO - Round 1 complete: 7 clients aggregated
+2026-05-24 16:20:28,808 - src.training.federated - INFO - Round 1 Validation AUROC: 0.8550
+2026-05-24 16:20:28,808 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:28,808 - src.training.federated - INFO - Round 2/20
+2026-05-24 16:20:28,808 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:28,843 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=2.1284, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,843 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0468, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,843 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:28,863 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.8440, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,863 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.0045, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,863 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:28,895 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.8198, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,895 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.4420, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,895 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:28,928 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=2.1046, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,928 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.1031, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,928 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:28,937 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.5675, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,938 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0290, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,938 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:28,961 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.6150, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,961 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.3575, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,961 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:28,980 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.6977, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,980 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1557, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:28,980 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:28,980 - src.training.federated - INFO - Round 2 complete: 7 clients aggregated
+2026-05-24 16:20:28,987 - src.training.federated - INFO - Round 2 Validation AUROC: 0.8636
+2026-05-24 16:20:28,987 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:28,987 - src.training.federated - INFO - Round 3/20
+2026-05-24 16:20:28,987 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,011 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.4263, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,012 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0201, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,012 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,029 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6861, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,029 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.3013, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,029 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,057 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.6722, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,057 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1457, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,057 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,085 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.7571, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,085 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.2008, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,085 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,093 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8552, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,093 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1017, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,093 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,114 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.3002, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,114 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.1830, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,114 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,131 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.7234, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,131 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1686, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,131 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,131 - src.training.federated - INFO - Round 3 complete: 7 clients aggregated
+2026-05-24 16:20:29,138 - src.training.federated - INFO - Round 3 Validation AUROC: 0.8639
+2026-05-24 16:20:29,138 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,138 - src.training.federated - INFO - Round 4/20
+2026-05-24 16:20:29,138 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,161 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=2.1514, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,161 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0323, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,161 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,178 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.4018, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,178 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.1765, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,178 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,208 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.7020, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,208 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.0398, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,208 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,236 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.3078, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,236 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.3445, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,236 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,244 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.9136, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,244 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1645, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,244 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,265 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.5060, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,265 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.7533, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,265 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,282 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5772, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,282 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0159, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,282 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,283 - src.training.federated - INFO - Round 4 complete: 7 clients aggregated
+2026-05-24 16:20:29,289 - src.training.federated - INFO - Round 4 Validation AUROC: 0.8712
+2026-05-24 16:20:29,289 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,289 - src.training.federated - INFO - Round 5/20
+2026-05-24 16:20:29,289 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,313 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5535, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,313 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0173, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,313 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,330 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.9252, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,330 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.2935, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,330 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,359 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.5965, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,359 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.2320, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,359 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,387 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.7045, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,388 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0125, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,388 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,395 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.7505, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,395 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.2360, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,395 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,416 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.9617, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,416 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.2850, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,416 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,433 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.6182, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,434 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0139, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,434 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,434 - src.training.federated - INFO - Round 5 complete: 7 clients aggregated
+2026-05-24 16:20:29,440 - src.training.federated - INFO - Round 5 Validation AUROC: 0.8622
+2026-05-24 16:20:29,440 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,440 - src.training.federated - INFO - Round 6/20
+2026-05-24 16:20:29,440 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,464 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5261, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,464 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1494, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,464 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,480 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.9258, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,480 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.2984, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,480 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,508 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.2939, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,508 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1924, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,508 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,537 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.4443, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,537 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0308, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,537 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,545 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=2.0071, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,545 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.5695, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,545 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,566 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=2.1175, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,566 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.3547, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,566 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,584 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.4023, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,584 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0386, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,584 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,584 - src.training.federated - INFO - Round 6 complete: 7 clients aggregated
+2026-05-24 16:20:29,590 - src.training.federated - INFO - Round 6 Validation AUROC: 0.8556
+2026-05-24 16:20:29,590 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,590 - src.training.federated - INFO - Round 7/20
+2026-05-24 16:20:29,590 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,614 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.7590, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,614 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.5508, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,615 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,631 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.1957, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,631 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.1728, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,631 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,660 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.8789, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,660 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.4824, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,660 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,689 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.4262, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,689 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=1.0873, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,689 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,697 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8423, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,697 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.3813, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,697 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,718 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.6702, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,718 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.1239, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,718 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,735 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.7646, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,735 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1012, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,735 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,735 - src.training.federated - INFO - Round 7 complete: 7 clients aggregated
+2026-05-24 16:20:29,742 - src.training.federated - INFO - Round 7 Validation AUROC: 0.8709
+2026-05-24 16:20:29,742 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,742 - src.training.federated - INFO - Round 8/20
+2026-05-24 16:20:29,742 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,766 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.4204, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,766 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1990, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,766 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,782 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.9245, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,783 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.0130, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,783 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,811 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.7836, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,811 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.3956, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,811 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,840 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.9368, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,840 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.4562, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,840 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,848 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.3332, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,848 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1434, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,848 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:29,870 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.6510, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,870 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0671, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,870 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:29,887 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.6854, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,887 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1537, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,887 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:29,888 - src.training.federated - INFO - Round 8 complete: 7 clients aggregated
+2026-05-24 16:20:29,894 - src.training.federated - INFO - Round 8 Validation AUROC: 0.8686
+2026-05-24 16:20:29,894 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:29,894 - src.training.federated - INFO - Round 9/20
+2026-05-24 16:20:29,894 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:29,918 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5384, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,919 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.2036, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,919 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:29,935 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.5323, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,935 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.3048, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,935 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:29,962 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.2657, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,962 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.2939, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,962 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:29,991 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.6329, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,991 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0636, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,991 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:29,999 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8401, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,999 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0380, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:29,999 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,020 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.9511, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,020 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.3128, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,020 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,038 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.6863, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,038 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0636, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,038 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,038 - src.training.federated - INFO - Round 9 complete: 7 clients aggregated
+2026-05-24 16:20:30,044 - src.training.federated - INFO - Round 9 Validation AUROC: 0.8694
+2026-05-24 16:20:30,044 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,044 - src.training.federated - INFO - Round 10/20
+2026-05-24 16:20:30,044 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,069 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.6403, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,069 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0223, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,069 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,086 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6017, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,086 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.1598, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,086 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,113 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.8942, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,113 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.6080, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,113 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,141 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.3135, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,142 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.3184, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,142 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,149 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.7319, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,149 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1127, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,149 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,170 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.3724, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,170 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.2008, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,170 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,188 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.7388, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,188 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.3974, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,188 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,188 - src.training.federated - INFO - Round 10 complete: 7 clients aggregated
+2026-05-24 16:20:30,194 - src.training.federated - INFO - Round 10 Validation AUROC: 0.8639
+2026-05-24 16:20:30,194 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,194 - src.training.federated - INFO - Round 11/20
+2026-05-24 16:20:30,194 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,220 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.6001, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,220 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1122, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,220 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,237 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6468, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,237 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.0483, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,237 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,265 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.6368, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,265 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.0739, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,265 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,293 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.7055, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,293 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.1344, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,293 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,301 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.4260, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,301 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0075, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,301 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,321 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.5598, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,321 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.5127, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,321 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,339 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5528, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,339 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.4527, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,339 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,339 - src.training.federated - INFO - Round 11 complete: 7 clients aggregated
+2026-05-24 16:20:30,345 - src.training.federated - INFO - Round 11 Validation AUROC: 0.8832
+2026-05-24 16:20:30,345 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,345 - src.training.federated - INFO - Round 12/20
+2026-05-24 16:20:30,345 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,369 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5794, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,369 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1218, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,370 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,386 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.2506, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,386 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.4345, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,386 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,413 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.9473, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,413 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.2297, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,413 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,441 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.4074, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,441 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0838, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,441 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,449 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8014, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,449 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1964, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,449 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,469 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.5663, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,469 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0684, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,470 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,487 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5215, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,487 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0586, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,487 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,487 - src.training.federated - INFO - Round 12 complete: 7 clients aggregated
+2026-05-24 16:20:30,493 - src.training.federated - INFO - Round 12 Validation AUROC: 0.8560
+2026-05-24 16:20:30,493 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,493 - src.training.federated - INFO - Round 13/20
+2026-05-24 16:20:30,493 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,517 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.8403, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,517 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1041, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,518 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,534 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.4407, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,534 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.2937, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,534 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,561 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.4104, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,561 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.0719, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,561 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,589 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.6407, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,589 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0071, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,589 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,596 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8165, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,597 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0753, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,597 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,619 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.4993, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,619 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.3048, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,619 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,636 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5972, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,636 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.0104, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,636 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,636 - src.training.federated - INFO - Round 13 complete: 7 clients aggregated
+2026-05-24 16:20:30,642 - src.training.federated - INFO - Round 13 Validation AUROC: 0.8784
+2026-05-24 16:20:30,642 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,643 - src.training.federated - INFO - Round 14/20
+2026-05-24 16:20:30,643 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,666 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.4516, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,667 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1730, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,667 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,683 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.2986, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,683 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.4404, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,683 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,711 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.9274, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,711 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1901, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,711 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,740 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.5144, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,740 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.1160, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,740 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,747 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.4769, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,747 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0937, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,747 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,769 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.7452, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,769 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0740, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,769 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,786 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5017, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,786 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.2823, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,786 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,786 - src.training.federated - INFO - Round 14 complete: 7 clients aggregated
+2026-05-24 16:20:30,792 - src.training.federated - INFO - Round 14 Validation AUROC: 0.8528
+2026-05-24 16:20:30,792 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,792 - src.training.federated - INFO - Round 15/20
+2026-05-24 16:20:30,792 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,816 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.6631, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,816 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.2919, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,816 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,833 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6471, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,834 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.1240, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,834 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:30,861 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.5239, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,861 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.2163, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,861 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:30,889 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.7268, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,889 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.2545, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,889 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:30,900 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.7368, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,900 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.2166, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,900 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:30,921 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.7421, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,921 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.4430, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,921 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:30,939 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5062, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,939 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1770, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,939 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:30,939 - src.training.federated - INFO - Round 15 complete: 7 clients aggregated
+2026-05-24 16:20:30,945 - src.training.federated - INFO - Round 15 Validation AUROC: 0.8716
+2026-05-24 16:20:30,945 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:30,945 - src.training.federated - INFO - Round 16/20
+2026-05-24 16:20:30,945 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:30,969 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.2089, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,969 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.2021, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,969 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:30,988 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.8392, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,989 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.2219, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,989 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:31,016 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.7965, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,016 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.3285, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,016 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:31,044 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.7408, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,044 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0308, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,044 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:31,052 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.2666, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,052 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0638, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,052 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:31,073 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.9825, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,073 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.4356, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,073 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:31,091 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.9933, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,091 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.5258, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,091 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:31,091 - src.training.federated - INFO - Round 16 complete: 7 clients aggregated
+2026-05-24 16:20:31,097 - src.training.federated - INFO - Round 16 Validation AUROC: 0.8618
+2026-05-24 16:20:31,097 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:31,097 - src.training.federated - INFO - Round 17/20
+2026-05-24 16:20:31,097 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:31,121 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5202, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,121 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0516, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,122 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:31,138 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6698, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,138 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.0524, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,138 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:31,166 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.6033, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,166 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1190, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,166 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:31,194 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.8453, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,194 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0297, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,194 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:31,202 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.8140, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,202 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0605, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,202 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:31,223 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.7495, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,223 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0355, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,223 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:31,240 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=2.1275, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,240 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.6107, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,240 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:31,240 - src.training.federated - INFO - Round 17 complete: 7 clients aggregated
+2026-05-24 16:20:31,246 - src.training.federated - INFO - Round 17 Validation AUROC: 0.8694
+2026-05-24 16:20:31,246 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:31,246 - src.training.federated - INFO - Round 18/20
+2026-05-24 16:20:31,246 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:31,271 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.8789, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,272 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.3551, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,272 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:31,288 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.4935, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,288 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.4189, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,288 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:31,316 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.7388, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,316 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.0521, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,316 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:31,345 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.8289, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,345 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.1580, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,345 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:31,353 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=2.0034, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,353 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1425, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,353 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:31,374 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.7340, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,375 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.2832, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,375 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:31,392 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.4883, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,392 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.2708, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,392 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:31,392 - src.training.federated - INFO - Round 18 complete: 7 clients aggregated
+2026-05-24 16:20:31,398 - src.training.federated - INFO - Round 18 Validation AUROC: 0.8509
+2026-05-24 16:20:31,398 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:31,398 - src.training.federated - INFO - Round 19/20
+2026-05-24 16:20:31,398 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:31,423 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.6959, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,423 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.1503, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,423 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:31,439 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.7921, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,439 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.6389, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,439 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:31,467 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=1.2733, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,467 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1357, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,467 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:31,495 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.5727, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,495 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.2989, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,495 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:31,503 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.5914, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,503 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.1663, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,503 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:31,524 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.5992, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,524 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0935, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,524 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:31,541 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.9380, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,541 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1212, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,541 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:31,541 - src.training.federated - INFO - Round 19 complete: 7 clients aggregated
+2026-05-24 16:20:31,547 - src.training.federated - INFO - Round 19 Validation AUROC: 0.8739
+2026-05-24 16:20:31,547 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:31,547 - src.training.federated - INFO - Round 20/20
+2026-05-24 16:20:31,547 - src.training.federated - INFO - ======================================================================
+2026-05-24 16:20:31,572 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.5143, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,572 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.4539, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,572 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
+2026-05-24 16:20:31,588 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=2.0481, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,589 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.0507, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,589 - src.training.federated - INFO -   Coronary Care Unit (CCU): 5113 samples, loss=0.2288
+2026-05-24 16:20:31,615 - root - INFO - add_noise: grad_norm=1.8491, noise_norm=2.0609, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,615 - root - INFO - add_noise: grad_norm=2.3548, noise_norm=0.1852, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,615 - src.training.federated - INFO -   Medical Intensive Care Unit (MICU): 8791 samples, loss=0.2735
+2026-05-24 16:20:31,643 - root - INFO - add_noise: grad_norm=2.5337, noise_norm=1.4435, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,644 - root - INFO - add_noise: grad_norm=2.6518, noise_norm=0.0742, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,644 - src.training.federated - INFO -   Medical/Surgical Intensive Care Unit (MICU/SICU): 6983 samples, loss=0.2627
+2026-05-24 16:20:31,652 - root - INFO - add_noise: grad_norm=3.2300, noise_norm=1.3819, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,652 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.0242, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,652 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
+2026-05-24 16:20:31,673 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.6800, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,673 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.2830, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,673 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
+2026-05-24 16:20:31,691 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.2368, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,691 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1076, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:31,691 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
+2026-05-24 16:20:31,691 - src.training.federated - INFO - Round 20 complete: 7 clients aggregated
+2026-05-24 16:20:31,697 - src.training.federated - INFO - Round 20 Validation AUROC: 0.8705
+2026-05-24 16:20:31,703 - src.training.federated - INFO - 
+======================================================================
+2026-05-24 16:20:31,703 - src.training.federated - INFO - Final Test AUROC: 0.8771
+2026-05-24 16:20:31,703 - src.training.federated - INFO - ======================================================================
+
+2026-05-24 16:20:31,703 - __main__ - INFO - 
+======================================================================
+2026-05-24 16:20:31,703 - __main__ - INFO - Phase 1.5: Results Comparison
+2026-05-24 16:20:31,703 - __main__ - INFO - ======================================================================
+2026-05-24 16:20:31,703 - __main__ - INFO - 
+Test AUROC Comparison:
+2026-05-24 16:20:31,703 - __main__ - INFO -   Centralized: 0.8880
+2026-05-24 16:20:31,703 - __main__ - INFO -   Federated:   0.8771
+2026-05-24 16:20:31,703 - __main__ - INFO -   Divergence:  0.0109
+2026-05-24 16:20:31,703 - __main__ - INFO - ✓ Federated AUROC (0.8771) ≥ 0.85 target
+2026-05-24 16:20:31,704 - __main__ - INFO - ✓ Divergence (0.0109) within 0.05
+2026-05-24 16:20:31,704 - __main__ - INFO - 
+======================================================================
+2026-05-24 16:20:31,704 - __main__ - INFO - ✅ EXPERIMENT 1 PASSED - Ready for Phase 2
+2026-05-24 16:20:31,704 - __main__ - INFO - ======================================================================

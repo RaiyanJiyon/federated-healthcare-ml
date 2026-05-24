@@ -12,6 +12,7 @@ Results are saved to results/plots/exp4_aggregation_comparison.csv
 
 import os
 import sys
+import argparse
 import logging
 import numpy as np
 import pandas as pd
@@ -80,6 +81,12 @@ def run_exp4():
     logger.info("FedAvg (Baseline Aggregation)")
     logger.info("="*70)
     
+    # Determine seed from CLI or environment
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--seed', type=int, default=None, help='Random seed override')
+    args = parser.parse_args()
+    seed = args.seed if args.seed is not None else int(os.getenv('RANDOM_SEED', str(RANDOM_SEED)))
+
     trainer_fedavg = FederatedTrainer(
         clients=clients,
         val_data=(X_val, y_val),
@@ -88,7 +95,7 @@ def run_exp4():
         learning_rate=0.01,
         use_dp=False,
         aggregation_strategy='fedavg',
-        random_seed=RANDOM_SEED
+        random_seed=seed
     )
     
     result_fedavg = trainer_fedavg.train()
@@ -113,7 +120,7 @@ def run_exp4():
             use_dp=False,
             aggregation_strategy='fedprox',
             fedprox_mu=mu,
-            random_seed=RANDOM_SEED
+            random_seed=seed
         )
         
         result_fedprox = trainer_fedprox.train()

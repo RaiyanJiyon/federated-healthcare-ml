@@ -1,0 +1,13 @@
+mode,eps,seed,auc,file
+client,16,1,0.8188,results/summary/logs/prototypes/client_eps16_seed1.log
+client,16,2,0.7604,results/summary/logs/prototypes/client_eps16_seed2.log
+client,16,3,0.7884,results/summary/logs/prototypes/client_eps16_seed3.log
+client,8,1,0.7146,results/summary/logs/prototypes/client_eps8_seed1.log
+client,8,2,0.627,results/summary/logs/prototypes/client_eps8_seed2.log
+client,8,3,0.6651,results/summary/logs/prototypes/client_eps8_seed3.log
+server,16,1,0.6007,results/summary/logs/prototypes/server_eps16_seed1.log
+server,16,2,0.6038,results/summary/logs/prototypes/server_eps16_seed2.log
+server,16,3,0.7514,results/summary/logs/prototypes/server_eps16_seed3.log
+server,8,1,0.4731,results/summary/logs/prototypes/server_eps8_seed1.log
+server,8,2,0.4632,results/summary/logs/prototypes/server_eps8_seed2.log
+server,8,3,0.672,results/summary/logs/prototypes/server_eps8_seed3.log
