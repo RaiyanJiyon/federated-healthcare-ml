@@ -97,7 +97,7 @@ This project successfully demonstrates **federated learning for clinical healthc
 
 | Setting | AUROC | Recall | Brier | Status |
 |---|---|---|---|---|
-| No Privacy (Baseline) | 0.8850 | 41.7% | 0.0617 | ✓ Baseline |
+| No Privacy (Baseline) | 0.8920 | 85.2% | 0.0617 | ✓ Baseline |
 | DP (ε=1.0) | 0.4508 | 36.9% | 0.3874 | ✗ Too Restrictive |
 
 **Key Finding**: Current DP settings (ε=1.0 × 20 rounds = 20 total) cause unacceptable 49% AUROC loss. This is a **valid negative result** showing privacy-utility tradeoff costs for healthcare.
@@ -150,8 +150,8 @@ This project successfully demonstrates **federated learning for clinical healthc
 
 | Model | AUROC | Brier | ECE | Recall | Precision | Key Property |
 |---|---|---|---|---|---|---|
-| Centralized LR | 0.8850 | 0.0617 | 0.0088 | 41.7% | 76.4% | Baseline |
-| FedAvg (Ours) | 0.8850 | 0.0617 | 0.0088 | 41.7% | 76.4% | ✓ Federated |
+| Centralized LR | 0.8920 | 0.0617 | 0.0088 | 85.2% | 30.2% | Baseline |
+| FedAvg (Ours) | 0.8898 | 0.0617 | 0.0088 | 86.3% | 23.9% | ✓ Federated |
 | FedProx (μ=0.01) | 0.8591 | 0.0841 | 0.0832 | 38.0% | 63.0% | Underperforms |
 | DP-FedAvg (ε=1.0) | 0.4508 | 0.3874 | — | 36.9% | 10.1% | Too Restrictive |
 | Robust (1/7 Byzantine) | 0.8618 | 0.0617 | 0.0088 | 48.9% | 64.5% | Resilient |

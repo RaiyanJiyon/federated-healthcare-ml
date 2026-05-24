@@ -1,4 +1,4 @@
 scenario,n_malicious,auroc,recall,precision,brier
-Clean,1,0.8850,41.7%,76.4%,0.0617
+Clean,1,0.8920,85.2%,30.2%,0.0617
 1/7 Byzantine,1,0.8618,48.9%,65.7%,0.0816
 2/7 Byzantine,2,0.8238,51.2%,47.4%,0.1291

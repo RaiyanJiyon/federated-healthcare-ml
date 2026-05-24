@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.preprocessing import StandardScaler
 
 from src.config.config import (
-    RANDOM_SEED, MAX_ITER, DP_EPSILON, DP_DELTA, CLIPPING_THRESHOLD
+    RANDOM_SEED, MAX_ITER, DP_EPSILON, DP_DELTA, CLIPPING_THRESHOLD, CLASS_WEIGHT
 )
 from src.fl.privacy import DifferentialPrivacyMechanism
 from src.data.split import distribute_by_care_unit, get_client_summary
@@ -202,7 +202,8 @@ class FederatedTrainer:
         model = LogisticRegression(
             max_iter=MAX_ITER,
             random_state=self.random_seed,
-            solver='lbfgs'  # More stable for small-scale problems
+            solver='lbfgs',  # More stable for small-scale problems
+            class_weight=CLASS_WEIGHT
         )
         model.fit(X_scaled, y)
         
@@ -340,7 +341,8 @@ class FederatedTrainer:
             warm_start=True,
             learning_rate='optimal',
             eta0=self.learning_rate,
-            n_jobs=1
+            n_jobs=1,
+            class_weight=CLASS_WEIGHT
         )
         
         # Initialize with global weights

@@ -23,12 +23,14 @@ import argparse
 import logging
 from pathlib import Path
 
+import numpy as np
+
 # Add parent directory to path to import src module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data.loader import load_dataset_with_df
 from src.data.split import distribute_by_care_unit
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, recall_score, precision_score, fbeta_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
@@ -46,16 +48,66 @@ def train_centralized_baseline_simple(X_train, y_train, X_val, y_val, X_test, y_
     X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
     
-    model = LogisticRegression(max_iter=1000, random_state=seed)
+    model = LogisticRegression(max_iter=1000, random_state=seed, class_weight='balanced')
     model.fit(X_train_scaled, y_train)
+
+    val_proba = model.predict_proba(X_val_scaled)[:, 1]
+    test_proba = model.predict_proba(X_test_scaled)[:, 1]
+    threshold, threshold_metrics = select_recall_calibrated_threshold(y_val, val_proba)
+
+    val_metrics = evaluate_threshold_metrics(y_val, val_proba, threshold)
+    test_metrics = evaluate_threshold_metrics(y_test, test_proba, threshold)
     
     metrics = {
         'train_auroc': roc_auc_score(y_train, model.predict_proba(X_train_scaled)[:, 1]),
         'val_auroc': roc_auc_score(y_val, model.predict_proba(X_val_scaled)[:, 1]),
-        'test_auroc': roc_auc_score(y_test, model.predict_proba(X_test_scaled)[:, 1])
+        'test_auroc': roc_auc_score(y_test, test_proba),
+        'decision_threshold': threshold,
+        'val_recall': val_metrics['recall'],
+        'val_precision': val_metrics['precision'],
+        'val_f2': val_metrics['f2'],
+        'test_recall': test_metrics['recall'],
+        'test_precision': test_metrics['precision'],
+        'test_f2': test_metrics['f2']
     }
     
     return model, scaler, metrics
+
+
+def evaluate_threshold_metrics(y_true, y_scores, threshold):
+    """Evaluate recall-oriented classification metrics at a fixed threshold."""
+    y_pred = (y_scores >= threshold).astype(int)
+    return {
+        'recall': recall_score(y_true, y_pred, zero_division=0),
+        'precision': precision_score(y_true, y_pred, zero_division=0),
+        'f2': fbeta_score(y_true, y_pred, beta=2, zero_division=0),
+    }
+
+
+def select_recall_calibrated_threshold(y_true, y_scores, target_recall=0.85):
+    """Pick the threshold closest to a target recall, preferring precision and F2 on ties."""
+    best = None
+    best_threshold = 0.5
+    for threshold in [i / 100 for i in range(1, 100)]:
+        metrics = evaluate_threshold_metrics(y_true, y_scores, threshold)
+        candidate = (
+            abs(metrics['recall'] - target_recall),
+            -metrics['precision'],
+            -metrics['f2'],
+            threshold,
+            metrics['recall'],
+            metrics['precision'],
+            metrics['f2'],
+        )
+        if best is None or candidate < best:
+            best = candidate
+            best_threshold = threshold
+
+    return best_threshold, {
+        'recall': best[4],
+        'precision': best[5],
+        'f2': best[6],
+    }
 
 
 def main():
@@ -124,6 +176,16 @@ def main():
         logger.info(f"\nCentralized Train AUROC: {cent_metrics['train_auroc']:.4f}")
         logger.info(f"Centralized Val AUROC:   {cent_metrics['val_auroc']:.4f}")
         logger.info(f"Centralized Test AUROC:  {cent_metrics['test_auroc']:.4f}")
+        logger.info(
+            f"Centralized calibrated threshold: {cent_metrics['decision_threshold']:.2f} "
+            f"(val recall={cent_metrics['val_recall']:.2%}, val precision={cent_metrics['val_precision']:.2%})"
+        )
+        logger.info(
+            f"Centralized Test Recall:    {cent_metrics['test_recall']:.2%}"
+        )
+        logger.info(
+            f"Centralized Test Precision: {cent_metrics['test_precision']:.2%}"
+        )
         
         # ===== PHASE 1.4: TRAIN FEDERATED MODEL =====
         logger.info("\n" + "=" * 70)
@@ -160,6 +222,19 @@ def main():
         )
         
         fed_results = trainer.train()
+
+        # Recall-oriented clinical threshold calibration on the federated model
+        fed_weights = fed_results['final_weights']
+        def scores_from_weights(X_input):
+            X_scaled = trainer.scaler.transform(X_input)
+            logits = X_scaled @ fed_weights['coef'] + fed_weights['intercept']
+            return 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+
+        fed_val_scores = scores_from_weights(X_val)
+        fed_test_scores = scores_from_weights(X_test)
+        fed_threshold, fed_threshold_metrics = select_recall_calibrated_threshold(y_val, fed_val_scores)
+        fed_val_clinical = evaluate_threshold_metrics(y_val, fed_val_scores, fed_threshold)
+        fed_test_clinical = evaluate_threshold_metrics(y_test, fed_test_scores, fed_threshold)
         
         # ===== PHASE 1.5: COMPARISON & VALIDATION =====
         logger.info("\n" + "=" * 70)
@@ -173,6 +248,21 @@ def main():
         logger.info(f"  Centralized: {cent_auroc:.4f}")
         logger.info(f"  Federated:   {fed_auroc:.4f}")
         logger.info(f"  Divergence:  {abs(cent_auroc - fed_auroc):.4f}")
+        logger.info(
+            f"\nClinical operating point (threshold={fed_threshold:.2f}):"
+        )
+        logger.info(
+            f"  Federated Recall:    {fed_test_clinical['recall']:.2%}"
+        )
+        logger.info(
+            f"  Federated Precision: {fed_test_clinical['precision']:.2%}"
+        )
+        logger.info(
+            f"  Federated Val Recall: {fed_val_clinical['recall']:.2%}"
+        )
+        logger.info(
+            f"  Federated Val Precision: {fed_val_clinical['precision']:.2%}"
+        )
         
         # Check Phase 1 success criteria
         success = True
@@ -190,6 +280,16 @@ def main():
             success = False
         else:
             logger.info(f"✓ Divergence ({abs(cent_auroc - fed_auroc):.4f}) within 0.05")
+
+        if fed_test_clinical['recall'] < 0.80:
+            logger.warning(
+                f"⚠ Federated recall ({fed_test_clinical['recall']:.2%}) < 80% clinical target"
+            )
+            success = False
+        else:
+            logger.info(
+                f"✓ Federated recall ({fed_test_clinical['recall']:.2%}) ≥ 80% clinical target"
+            )
         
         logger.info("\n" + "=" * 70)
         if success:
