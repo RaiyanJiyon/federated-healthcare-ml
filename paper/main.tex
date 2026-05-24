@@ -109,7 +109,7 @@ Beyond algorithmic robustness, real-world deployment of federated learning in he
 We designed our experiments to stress-test FL under conditions that look more like a real hospital network than a textbook benchmark. Four decisions shaped the setup: how we organized the distributed simulation, how we split the data to create realistic demographic variation, which server-side aggregation defenses we used, and how we added formal privacy guarantees on top of everything.
 
 \subsection{System Architecture and Reproducibility}
-We built the simulation in Python using Scikit-Learn. Each virtual hospital runs a Logistic Regression model with the L-BFGS solver and up to 2000 iterations. After training finishes locally, the hospital sends its updated model coefficients---not any patient data---to a central server that merges them. In the baseline validation, seven ICU clients train for five rounds; in the aggregation-comparison experiments, we use 20 rounds. We ran everything on CPU-only machines, since that is the kind of hardware most hospitals actually have.
+We built the simulation in Python using Scikit-Learn. Each virtual hospital trains a logistic-regression model locally, and the privacy-preserving runs use per-sample DP-SGD with clipped gradients and Gaussian noise before the server aggregates the resulting updates. In the baseline validation, seven ICU clients train for five rounds; in the aggregation-comparison experiments, we use 20 rounds. We ran everything on CPU-only machines, since that is the kind of hardware most hospitals actually have.
 
 Reproducibility matters. Every experiment uses a fixed random seed of 42 and a stratified train--validation--test split. To make sure our results are not just an artifact of one lucky data partition, we repeat selected measurements across 5 seeded runs and report the mean \( \pm \) standard deviation.
 
@@ -132,7 +132,7 @@ We formalize the federated learning optimization as a distributed empirical risk
 \min_{\mathbf{w}} F(\mathbf{w}) = \frac{1}{n} \sum_{k=1}^{K} n_k \cdot F_k(\mathbf{w}), \quad n = \sum_{k=1}^{K} n_k.
 \end{equation}
 
-Algorithm~\ref{alg:fl_dp} describes our three-level defense pipeline: local logistic-regression training at each client, optional Gaussian perturbation of the learned coefficients, and server-side aggregation.
+Algorithm~\ref{alg:fl_dp} describes our three-level defense pipeline: local logistic-regression training at each client, per-sample DP-SGD with gradient clipping and Gaussian noise, and server-side aggregation.
 
 \begin{algorithm}[t]
 \caption{Federated Learning with Byzantine Robustness and Differential Privacy}
@@ -142,8 +142,9 @@ Algorithm~\ref{alg:fl_dp} describes our three-level defense pipeline: local logi
 \State Initialize global model $\mathbf{w}_0$ at server
 \For{round $t = 1$ to $T$}
   \For{each client $k$ in parallel}
-    \State Train local logistic regression with L-BFGS on $\mathcal{D}_k$
-    \State Send learned coefficients $\mathbf{w}^t_k$ to server
+    \State Train local logistic regression with DP-SGD on $\mathcal{D}_k$
+    \State Clip each sample gradient, add Gaussian noise, and update $\mathbf{w}^t_k$
+    \State Send privatized client update $\mathbf{w}^t_k$ to server
   \EndFor
   \State Server receives updates from responding clients
   \State \textbf{if} aggregation method = FedAvg \textbf{then}
@@ -151,7 +152,6 @@ Algorithm~\ref{alg:fl_dp} describes our three-level defense pipeline: local logi
   \State \textbf{else if} aggregation method = FedProx \textbf{then}
     \State $\mathbf{w}^t_{\text{agg}} \gets \text{FedProx}(\{\mathbf{w}^t_k\})$
   \State \textbf{end if}
-  \State \textbf{if} privacy is enabled \textbf{then} add Gaussian noise to $\mathbf{w}^t_{\text{agg}}$ \textbf{end if}
   \State Update global model: $\mathbf{w}^t \gets \mathbf{w}^t_{\text{agg}}$
 \EndFor
 \State \textbf{Output:} Final model $\mathbf{w}^T$
@@ -184,11 +184,12 @@ Krum~\cite{blanchard2017machine} selects the update closest to the group consens
 
 \subsubsection{Differential Privacy Guarantees}
 
-We implement a Gaussian mechanism on the learned client coefficients before aggregation. At each communication round, the client model parameters are perturbed with zero-mean Gaussian noise calibrated by \(\epsilon = 1.0\) and \(\delta = 10^{-5}\).
+We implement a Gaussian mechanism inside the client optimizer rather than after model fitting. At each communication round, the client clips per-sample gradients, averages the clipped batch gradient, adds zero-mean Gaussian noise calibrated by \(\epsilon = 1.0\) and \(\delta = 10^{-5}\), and then applies the resulting private update.
 
 \begin{enumerate}
-\item \textbf{Noise Addition:} Add calibrated Gaussian noise to the client coefficients.
-\item \textbf{Server Aggregation:} Average the perturbed coefficients across responding clients.
+\item \textbf{Gradient Clipping:} Clip each per-sample gradient to the configured norm bound.
+\item \textbf{Noise Addition:} Add calibrated Gaussian noise to the averaged clipped gradient.
+\item \textbf{Server Aggregation:} Average the privatized client updates across responding clients.
 \item \textbf{Privacy Budget:} Track the configured \(\epsilon\) and \(\delta\) values per run.
 \end{enumerate}
 
@@ -237,7 +238,7 @@ Under strong convexity and bounded gradients, Algorithm~\ref{alg:fl_dp} with Fed
 If up to $f < K/2$ clients are Byzantine (arbitrarily malicious), then Median or Krum aggregation ensures convergence to within $\mathcal{O}(f/K)$ of the optimal loss \cite{blanchard2017machine, chen2019draco}. On MIMIC-IV with $K=7$, we can tolerate $f \le 3$ corrupted ICUs and still converge reliably.
 
 \item[Theorem 3 (Differential Privacy)] 
-Algorithm~\ref{alg:fl_dp} applies a Gaussian perturbation mechanism to client coefficients before aggregation. With $\epsilon = 1.0$ and $\delta = 10^{-5}$, the resulting model exhibits a measurable privacy--utility tradeoff consistent with the Gaussian mechanism literature \cite{abadi2016deep, dwork2014algorithmic}.
+Algorithm~\ref{alg:fl_dp} applies per-sample gradient clipping plus a Gaussian perturbation mechanism inside the client optimizer before aggregation. With $\epsilon = 1.0$ and $\delta = 10^{-5}$, the resulting model exhibits a measurable privacy--utility tradeoff consistent with the Gaussian mechanism literature \cite{abadi2016deep, dwork2014algorithmic}.
 \end{description}
 
 These theorems justify the design of Algorithm~\ref{alg:fl_dp}: each layer of defense (Gaussian perturbation, Byzantine-robust aggregation, client dropout tolerance) has a clear operational role and does not compromise convergence rates beyond constant factors.
