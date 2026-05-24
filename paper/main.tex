@@ -275,6 +275,7 @@ What happens when we federate? With 7 ICU-based clients and FedAvg aggregation (
 \midrule
 Centralized Baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, threshold=0.39 \\
 FedAvg (Baseline) & 0.8898 & 86.3\% & 23.9\% & Balanced LR, threshold=0.05 \\
+FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Underperforms \\
 \midrule
 FL + DP-SGD ($\epsilon = 1.0$, seed 42) & 0.8660 (N/A) & N/A & N/A & Corrected client-side DP-SGD rerun \\
 \midrule
