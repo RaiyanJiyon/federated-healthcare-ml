@@ -24,6 +24,7 @@ import logging
 from pathlib import Path
 
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 # Add parent directory to path to import src module
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -137,15 +138,29 @@ def main():
         # ===== PHASE 1.2: DISTRIBUTE DATA BY CARE UNIT =====
         logger.info("\nPhase 1.2: Distributing data to federated clients by care unit...")
         
-        # Split into train/val/test first (reusing Phase 0 splits)
-        X_train = X[:45691]  # Phase 0 train size
-        y_train = y[:45691]
-        X_val = X[45691:55482]  # Phase 0 val size
-        y_val = y[45691:55482]
-        X_test = X[55482:]  # Phase 0 test size
-        y_test = y[55482:]
-        
-        care_units_train = df_full.iloc[:45691]['first_careunit']
+        # Re-split the full cohort per seed so the five runs are genuinely independent.
+        indices = np.arange(len(y))
+        train_idx, temp_idx = train_test_split(
+            indices,
+            test_size=0.30,
+            random_state=seed,
+            stratify=y,
+        )
+        val_idx, test_idx = train_test_split(
+            temp_idx,
+            test_size=0.5,
+            random_state=seed,
+            stratify=y[temp_idx],
+        )
+
+        X_train = X[train_idx]
+        y_train = y[train_idx]
+        X_val = X[val_idx]
+        y_val = y[val_idx]
+        X_test = X[test_idx]
+        y_test = y[test_idx]
+
+        care_units_train = df_full.iloc[train_idx]['first_careunit']
         
         # Create federated clients from training data
         clients = distribute_by_care_unit(

@@ -65,7 +65,7 @@ This federated learning project achieves **clinical-grade performance** on MIMIC
 
 | Strategy         |   # Runs |   Mean AUROC |   Std Dev |   95% CI (Low) |   95% CI (High) |
 |:-----------------|---------:|-------------:|----------:|---------------:|----------------:|
-| FedAvg           |        5 |     0.884966 | 0         |       0.884966 |        0.884966 |
+| FedAvg           |        5 |     0.885973 | 0.00654933 |       0.880232 |        0.891713 |
 | FedProx(μ=0.001) |        5 |     0.849867 | 0.0248615 |       0.824666 |        0.865181 |
 | FedProx(μ=0.01)  |        5 |     0.849867 | 0.0248615 |       0.823757 |        0.865757 |
 
@@ -130,8 +130,8 @@ This federated learning project achieves **clinical-grade performance** on MIMIC
 ## Reproducibility Information
 
 ### Random Seed
-- Fixed: 42 across all experiments
-- Reproducibility variance: ±0.0001 AUROC
+- Statistical validation seeds: 42, 123, 456, 789, 1000
+- Reproducibility variance: ±0.0065 AUROC
 
 ### Dataset Version
 - MIMIC-IV version: 3.1

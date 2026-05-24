@@ -68,11 +68,11 @@ This project successfully demonstrates **federated learning for clinical healthc
 
 | Model | AUROC Mean | 95% CI | SD |
 |---|---|---|---|
-| FedAvg | 0.8850 | [0.8850, 0.8850] | 0.0000 |
+| FedAvg | 0.8860 | [0.8802, 0.8917] | 0.0065 |
 | FedProx (μ=0.001) | 0.8499 | [0.8247, 0.8652] | 0.0249 |
 | FedProx (μ=0.01) | 0.8499 | [0.8238, 0.8658] | 0.0249 |
 
-**Key Finding**: FedAvg shows exceptional consistency across 5 random seeds (σ=0.0000), confirming robustness of the approach.
+**Key Finding**: FedAvg remains stable across 5 random seeds (σ=0.0065), but it is not seed-invariant; the validation sweep uses genuine resplits.
 
 #### Calibration Metrics
 
