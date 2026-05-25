@@ -153,7 +153,7 @@ This project successfully demonstrates **federated learning for clinical healthc
 | Centralized LR | 0.8920 | 0.0617 | 0.0088 | 85.2% | 30.2% | Baseline |
 | FedAvg (Ours) | 0.8898 | 0.0617 | 0.0088 | 86.3% | 23.9% | ✓ Federated |
 | FedProx (μ=0.01) | 0.8591 | 0.0841 | 0.0832 | 38.0% | 63.0% | Underperforms |
-| DP-SGD (ε=1.0) | 0.8660 | 0.3874 | — | N/A | N/A | Utility Preserved |
+| DP-SGD (ε=1.0) | 0.8646 | 0.3874 | — | N/A | N/A | Utility Preserved |
 | Robust (1/7 Byzantine) | 0.8618 | 0.0617 | 0.0088 | 48.9% | 64.5% | Resilient |
 
 ---

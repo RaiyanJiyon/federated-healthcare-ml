@@ -40,7 +40,7 @@ This federated learning project achieves **clinical-grade performance** on MIMIC
 | Centralized LR              |  0.8920 |        0.0617 | 0.0088 |    0.852 |       0.302 | ✓ Safe            |
 | FedAvg (Baseline)           |  0.8898 |        0.0617 | 0.0088 |    0.863 |       0.239 | ✓ Safe            |
 | FedProx (μ=0.01)            |  0.8591 |        0.0841 | 0.0832 |    0.380 |       0.630 | ✗ Underperforms   |
-| With DP-SGD (ε=1.0)         |  0.8660 |        0.3874 | —      |    N/A   |       N/A   | ✓ Utility Preserved |
+| With DP-SGD (ε=1.0)         |  0.8646 |        0.3874 | —      |    0.853 |       0.236   | ✓ Utility Preserved |
 | With Byzantine Attack (1/7) |  0.8618 |        0.0617 | 0.0088 |    0.489 |       0.645 | ⚠ Degraded        |
 
 ### Table 2: Scalability Analysis (No Dropout)

@@ -6,7 +6,7 @@ Summary of confirmatory federated DP experiments (corrected client-side DP-SGD r
 
 - Configuration: corrected client-side DP-SGD with per-sample clipping, clipping C=1.0, FedAvg aggregation, 20 rounds, seed=42.
 - Rerun result (Final Test AUROC):
-  - eps = 1:  AUROC = 0.8660
+  - eps = 1:  AUROC = 0.8646
 
 Manuscript note:
 - The corrected DP-SGD rerun at ε = 1.0 is the current manuscript number and clears the 0.85 AUROC target, so the privacy claim should be based on that run rather than the obsolete coefficient-noise prototype.
