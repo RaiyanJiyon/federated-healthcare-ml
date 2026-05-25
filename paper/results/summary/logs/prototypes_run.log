@@ -1333,8 +1333,8 @@
 
 2026-05-24 16:18:06,946 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=1.7815, sigma=0.3285, epsilon_per_round=16.0000
 2026-05-24 16:18:06,946 - root - INFO - DP Round 1: clipping_ratio=0.3096, grad_norm_before=3.2300, grad_norm_after=1.0000, noise_norm=1.7815, epsilon_total=16.0000
-2026-05-24 16:18:06,946 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=0.0226, sigma=0.3285, epsilon_per_round=16.0000
-2026-05-24 16:18:06,946 - root - INFO - DP Round 2: clipping_ratio=0.7093, grad_norm_before=1.4097, grad_norm_after=1.0000, noise_norm=0.0226, epsilon_total=32.0000
+2026-05-24 16:18:06,946 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=0.0276, sigma=0.3285, epsilon_per_round=16.0000
+2026-05-24 16:18:06,946 - root - INFO - DP Round 2: clipping_ratio=0.7093, grad_norm_before=1.4097, grad_norm_after=1.0000, noise_norm=0.0276, epsilon_total=32.0000
 2026-05-24 16:18:06,963 - root - INFO - 
 ======================================================================
 2026-05-24 16:18:06,963 - root - INFO - Differential Privacy Mechanism Initialized: GaussianDP
@@ -1961,8 +1961,8 @@
 
 2026-05-24 16:18:08,233 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=1.5624, sigma=0.3285, epsilon_per_round=16.0000
 2026-05-24 16:18:08,233 - root - INFO - DP Round 1: clipping_ratio=0.3860, grad_norm_before=2.5904, grad_norm_after=1.0000, noise_norm=1.5624, epsilon_total=16.0000
-2026-05-24 16:18:08,233 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=0.0220, sigma=0.3285, epsilon_per_round=16.0000
-2026-05-24 16:18:08,233 - root - INFO - DP Round 2: clipping_ratio=0.2810, grad_norm_before=3.5588, grad_norm_after=1.0000, noise_norm=0.0220, epsilon_total=32.0000
+2026-05-24 16:18:08,233 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=0.0270, sigma=0.3285, epsilon_per_round=16.0000
+2026-05-24 16:18:08,233 - root - INFO - DP Round 2: clipping_ratio=0.2810, grad_norm_before=3.5588, grad_norm_after=1.0000, noise_norm=0.0270, epsilon_total=32.0000
 2026-05-24 16:18:08,250 - root - INFO - 
 ======================================================================
 2026-05-24 16:18:08,250 - root - INFO - Differential Privacy Mechanism Initialized: GaussianDP
@@ -2440,7 +2440,7 @@
 2026-05-24 16:18:11,997 - root - INFO - Privatizing coefficients: max_abs=0.9097510566414493, mean=0.011651664054072877
 2026-05-24 16:18:11,997 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=1.8671, sigma=0.3285, epsilon_per_round=16.0000
 2026-05-24 16:18:11,997 - root - INFO - DP Round 5: clipping_ratio=0.4996, grad_norm_before=2.0018, grad_norm_after=1.0000, noise_norm=1.8671, epsilon_total=80.0000
-2026-05-24 16:18:11,997 - root - INFO - Post-privatization coefficients: max_abs=0.9579149354500328, mean=-0.02204091293027251, noise_norm=1.8671045159424422
+2026-05-24 16:18:11,997 - root - INFO - Post-privatization coefficients: max_abs=0.9579149354500328, mean=-0.02704091293027251, noise_norm=1.8671045159424422
 2026-05-24 16:18:11,997 - root - INFO - add_noise: grad_norm=1.0000, noise_norm=0.0360, sigma=0.3285, epsilon_per_round=16.0000
 2026-05-24 16:18:11,997 - root - INFO - DP Round 6: clipping_ratio=0.3587, grad_norm_before=2.7875, grad_norm_after=1.0000, noise_norm=0.0360, epsilon_total=96.0000
 2026-05-24 16:18:12,002 - __main__ - INFO - Round 3 Validation AUROC: 0.7406
@@ -3637,8 +3637,8 @@
 2026-05-24 16:18:14,341 - root - INFO -   Noise Scale (σ):        0.0046
 2026-05-24 16:18:14,341 - root - INFO - ======================================================================
 
-2026-05-24 16:18:14,341 - root - INFO - add_noise: grad_norm=0.0140, noise_norm=0.0224, sigma=0.0046, epsilon_per_round=16.0000
-2026-05-24 16:18:14,341 - root - INFO - DP Round 1: clipping_ratio=0.0056, grad_norm_before=2.4938, grad_norm_after=0.0140, noise_norm=0.0224, epsilon_total=16.0000
+2026-05-24 16:18:14,341 - root - INFO - add_noise: grad_norm=0.0140, noise_norm=0.0274, sigma=0.0046, epsilon_per_round=16.0000
+2026-05-24 16:18:14,341 - root - INFO - DP Round 1: clipping_ratio=0.0056, grad_norm_before=2.4938, grad_norm_after=0.0140, noise_norm=0.0274, epsilon_total=16.0000
 2026-05-24 16:18:14,341 - root - INFO - add_noise: grad_norm=0.0140, noise_norm=0.0008, sigma=0.0046, epsilon_per_round=16.0000
 2026-05-24 16:18:14,341 - root - INFO - DP Round 2: clipping_ratio=0.0048, grad_norm_before=2.8958, grad_norm_after=0.0140, noise_norm=0.0008, epsilon_total=32.0000
 2026-05-24 16:18:14,365 - root - INFO - 
@@ -4049,8 +4049,8 @@
 2026-05-24 16:18:15,084 - root - INFO -   Noise Scale (σ):        0.0044
 2026-05-24 16:18:15,084 - root - INFO - ======================================================================
 
-2026-05-24 16:18:15,084 - root - INFO - add_noise: grad_norm=0.0135, noise_norm=0.0220, sigma=0.0044, epsilon_per_round=16.0000
-2026-05-24 16:18:15,085 - root - INFO - DP Round 1: clipping_ratio=0.0055, grad_norm_before=2.4832, grad_norm_after=0.0135, noise_norm=0.0220, epsilon_total=16.0000
+2026-05-24 16:18:15,084 - root - INFO - add_noise: grad_norm=0.0135, noise_norm=0.0270, sigma=0.0044, epsilon_per_round=16.0000
+2026-05-24 16:18:15,085 - root - INFO - DP Round 1: clipping_ratio=0.0055, grad_norm_before=2.4832, grad_norm_after=0.0135, noise_norm=0.0270, epsilon_total=16.0000
 2026-05-24 16:18:15,085 - root - INFO - add_noise: grad_norm=0.0135, noise_norm=0.0048, sigma=0.0044, epsilon_per_round=16.0000
 2026-05-24 16:18:15,085 - root - INFO - DP Round 2: clipping_ratio=0.0047, grad_norm_before=2.8690, grad_norm_after=0.0135, noise_norm=0.0048, epsilon_total=32.0000
 2026-05-24 16:18:15,090 - __main__ - INFO - Round 2 Validation AUROC: 0.8064
@@ -4377,8 +4377,8 @@
 2026-05-24 16:18:15,719 - root - INFO -   Noise Scale (σ):        0.0041
 2026-05-24 16:18:15,719 - root - INFO - ======================================================================
 
-2026-05-24 16:18:15,719 - root - INFO - add_noise: grad_norm=0.0125, noise_norm=0.0222, sigma=0.0041, epsilon_per_round=16.0000
-2026-05-24 16:18:15,719 - root - INFO - DP Round 1: clipping_ratio=0.0042, grad_norm_before=2.9842, grad_norm_after=0.0125, noise_norm=0.0222, epsilon_total=16.0000
+2026-05-24 16:18:15,719 - root - INFO - add_noise: grad_norm=0.0125, noise_norm=0.0272, sigma=0.0041, epsilon_per_round=16.0000
+2026-05-24 16:18:15,719 - root - INFO - DP Round 1: clipping_ratio=0.0042, grad_norm_before=2.9842, grad_norm_after=0.0125, noise_norm=0.0272, epsilon_total=16.0000
 2026-05-24 16:18:15,719 - root - INFO - add_noise: grad_norm=0.0125, noise_norm=0.0049, sigma=0.0041, epsilon_per_round=16.0000
 2026-05-24 16:18:15,719 - root - INFO - DP Round 2: clipping_ratio=0.0048, grad_norm_before=2.5900, grad_norm_after=0.0125, noise_norm=0.0049, epsilon_total=32.0000
 2026-05-24 16:18:15,737 - root - INFO - 

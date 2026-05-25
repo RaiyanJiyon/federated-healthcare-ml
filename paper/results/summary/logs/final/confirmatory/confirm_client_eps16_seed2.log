@@ -132,7 +132,7 @@ Centralized Train AUROC: 0.8857
 2026-05-24 16:20:23,726 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.3224, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:23,726 - src.training.federated - INFO -   Trauma SICU (TSICU): 5458 samples, loss=0.1753
 2026-05-24 16:20:23,727 - src.training.federated - INFO - Round 2 complete: 7 clients aggregated
-2026-05-24 16:20:23,732 - src.training.federated - INFO - Round 2 Validation AUROC: 0.8660
+2026-05-24 16:20:23,732 - src.training.federated - INFO - Round 2 Validation AUROC: 0.8646
 2026-05-24 16:20:23,732 - src.training.federated - INFO - 
 ======================================================================
 2026-05-24 16:20:23,732 - src.training.federated - INFO - Round 3/20
@@ -396,7 +396,7 @@ Centralized Train AUROC: 0.8857
 2026-05-24 16:20:25,122 - root - INFO - add_noise: grad_norm=1.4097, noise_norm=0.3324, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:25,122 - src.training.federated - INFO -   Neuro Surgical Intensive Care Unit (Neuro SICU): 907 samples, loss=0.3759
 2026-05-24 16:20:25,141 - root - INFO - add_noise: grad_norm=2.9842, noise_norm=1.5682, sigma=0.2999, epsilon_per_round=16.0000
-2026-05-24 16:20:25,142 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0221, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:25,142 - root - INFO - add_noise: grad_norm=2.5900, noise_norm=0.0271, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:25,142 - src.training.federated - INFO -   Surgical Intensive Care Unit (SICU): 6372 samples, loss=0.2279
 2026-05-24 16:20:25,158 - root - INFO - add_noise: grad_norm=2.4832, noise_norm=1.5581, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:25,158 - root - INFO - add_noise: grad_norm=2.8690, noise_norm=0.1890, sigma=0.2999, epsilon_per_round=16.0000

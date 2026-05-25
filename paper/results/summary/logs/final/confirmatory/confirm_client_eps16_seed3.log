@@ -327,7 +327,7 @@ Centralized Train AUROC: 0.8857
 2026-05-24 16:20:30,044 - src.training.federated - INFO - Round 10/20
 2026-05-24 16:20:30,044 - src.training.federated - INFO - ======================================================================
 2026-05-24 16:20:30,069 - root - INFO - add_noise: grad_norm=2.5904, noise_norm=1.6403, sigma=0.2999, epsilon_per_round=16.0000
-2026-05-24 16:20:30,069 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0223, sigma=0.2999, epsilon_per_round=16.0000
+2026-05-24 16:20:30,069 - root - INFO - add_noise: grad_norm=3.5588, noise_norm=0.0273, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:30,069 - src.training.federated - INFO -   Cardiac Vascular Intensive Care Unit (CVICU): 8118 samples, loss=0.0754
 2026-05-24 16:20:30,086 - root - INFO - add_noise: grad_norm=2.4938, noise_norm=1.6017, sigma=0.2999, epsilon_per_round=16.0000
 2026-05-24 16:20:30,086 - root - INFO - add_noise: grad_norm=2.8958, noise_norm=0.1598, sigma=0.2999, epsilon_per_round=16.0000
