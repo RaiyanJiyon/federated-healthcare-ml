@@ -95,12 +95,12 @@ def figure1_main_results() -> None:
             bar.set_edgecolor("#555555")
             axes[1].text(
                 bar.get_x() + bar.get_width() / 2,
-                2.0,
-                "pending",
+                4.0,
+                "†",
                 ha="center",
                 va="bottom",
-                fontsize=9,
-                rotation=90,
+                fontsize=11,
+                rotation=0,
             )
         else:
             axes[1].text(
