@@ -35,6 +35,7 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{tabularx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds}
 
@@ -71,25 +72,25 @@ Privacy regulations (HIPAA, GDPR) prevent hospitals from pooling patient records
 Federated Learning, Healthcare Machine Learning, Differential Privacy, Non-IID Data, Byzantine Robustness
 \end{IEEEkeywords}
 
-\begin{figure}[t]
+\begin{table*}[t]
+\caption{Federated learning performance on MIMIC-IV. All federated results use 7 ICU clients with balanced logistic regression. The DP row reflects the corrected per-sample DP-SGD pipeline at $\epsilon = 1.0$, $\delta = 10^{-5}$.}
 \centering
-\begin{tikzpicture}[
-  node distance=0.45cm and 0.3cm,
-  icu/.style={draw, rounded corners=3pt, fill=blue!10, minimum width=1.1cm, minimum height=0.65cm, font=\scriptsize, align=center},
-  server/.style={draw, rounded corners=3pt, fill=orange!15, minimum width=1.5cm, minimum height=0.75cm, font=\scriptsize\bfseries, align=center},
-  model/.style={draw, rounded corners=3pt, fill=green!12, minimum width=1.3cm, minimum height=0.65cm, font=\scriptsize\bfseries, align=center},
-  dpbox/.style={draw=gray!60, dashed, rounded corners=3pt, fill=gray!5, minimum width=1.1cm, minimum height=0.45cm, font=\tiny, align=center},
-  arr/.style={-{Stealth[length=4pt]}, thick},
-  darr/.style={-{Stealth[length=4pt]}, thick, dashed, gray},
-]
-% ICU client nodes (left column)
-\node[icu] (icu1) {MICU\\{\tiny$n_1$ patients}};
-\node[icu, below=of icu1] (icu2) {SICU\\{\tiny$n_2$ patients}};
-\node[icu, below=of icu2] (icu3) {CCU\\{\tiny$n_3$ patients}};
-\node[font=\tiny, below=0.15cm of icu3] (dots) {$\vdots$ (7 ICUs)};
-
-% DP-SGD boxes inside each client
-\node[dpbox, right=0.2cm of icu1] (dp1) {DP-SGD\\clip+noise};
+\scriptsize
+\begin{tabularx}{\textwidth}{l c c c X}
+	oprule
+	extbf{Configuration} & \textbf{AUROC} & \textbf{Recall} & \textbf{Precision} & \textbf{Notes} \\
+\midrule
+Centralized Baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, threshold=0.39 \\
+FedAvg (Baseline, Platt-scaled) & 0.8784 & 43.5\% & 69.8\% & Platt-scaled to threshold=0.39 \\
+FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Underperforms \\
+\midrule
+FL + DP-SGD ($\epsilon = 1.0$, seed 42, Platt-scaled) & 0.8477 & 38.1\% & 65.4\% & Corrected client-side DP-SGD rerun + calibration \\
+\midrule
+Adversarial (1/7 Byzantine) & 0.8618 (N/A) & 48.9\% (N/A) & 65.7\% (N/A) & Single malicious client (1/7) \\
+\bottomrule
+\end{tabularx}
+\label{tab:performance}
+\end{table*}
 \node[dpbox, right=0.2cm of icu2] (dp2) {DP-SGD\\clip+noise};
 \node[dpbox, right=0.2cm of icu3] (dp3) {DP-SGD\\clip+noise};
 
