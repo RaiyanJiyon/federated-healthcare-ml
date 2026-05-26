@@ -407,6 +407,16 @@ Under clean conditions, raw FedAvg exhibits a massive Expected Calibration Error
 
 Under the poisoned scenario, raw FedAvg experiences catastrophic miscalibration (ECE $0.7205$) because the degenerate client’s extreme updates distort the parameter space. While calibration corrects the ECE, standard FedAvg's test AUROC drops to $0.7984$ and its AUPRC to $0.4448$. FedF2 successfully mitigates the degenerate node’s impact: because the degenerate client predicts death universally, its validation precision collapses to the class ratio ($\approx 11\%$), dropping its validation $F_2$-score. FedF2 penalizes this via local validation evaluations, mathematically reducing the compromised client's weight from $19.3\%$ (under FedAvg) to a negligible fraction, thereby preserving the clinical integrity of the global ICU network. Our results indicate that FedF2, when paired with Platt scaling, provides the optimal blend of clinical safety, formal privacy, and calibration reliability.
 
+\begin{figure*}[t]
+\centerline{
+  \includegraphics[width=0.48\textwidth]{figures/reliability_curves.png}
+  \hfill
+  \includegraphics[width=0.48\textwidth]{figures/precision_recall_curves.png}
+}
+\caption{Visual validation of model calibration and precision-recall performance. Left: Reliability Diagram (Calibration Curve) comparing uncalibrated FedAvg (exhibiting severe probability compression, ECE = 0.2338) against Platt-calibrated models (recovering to ECE $<$ 0.01). Right: Precision-Recall Curves demonstrating the utility of FedF2 ($\gamma = 0.5$) in maintaining precision-recall balance (AUPRC = 0.5999) under class-imbalanced ICU mortality scenarios.}
+\label{fig:calibration_and_pr}
+\end{figure*}
+
 \subsection{Multi-Model Architecture Comparison}
 \label{sec:multimodel}
 
