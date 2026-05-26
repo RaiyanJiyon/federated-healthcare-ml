@@ -159,6 +159,24 @@ def calculate_roc_auc(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[float, 
     return auc_score, fpr, tpr
 
 
+def calculate_pr_auc(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
+    """
+    Calculate Precision-Recall AUC (AUPRC) and curve.
+    
+    Args:
+        y_true: True binary labels
+        y_scores: Predicted probabilities/scores
+        
+    Returns:
+        Tuple of (AUPRC score, precision, recall)
+    """
+    from sklearn.metrics import precision_recall_curve, auc
+    precision, recall, _ = precision_recall_curve(y_true, y_scores)
+    pr_auc_score = auc(recall, precision)
+    
+    return float(pr_auc_score), precision, recall
+
+
 def calculate_brier_score(y_true: np.ndarray, y_proba: np.ndarray) -> float:
     """
     Calculate Brier Score: Mean Squared Error between predicted probabilities and true labels.
