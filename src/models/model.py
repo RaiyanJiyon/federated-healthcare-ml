@@ -531,3 +531,334 @@ class XGBoostModel:
             print(f"  Confusion Matrix: {cm}")
         
         return metrics
+
+
+class MLPModel:
+    """
+    Multi-Layer Perceptron (Neural Network) model wrapper for federated healthcare ML.
+    Uses PyTorch for training and inference.
+    Provides interface compatible with federated learning aggregation.
+    
+    Architecture: 31 (input) -> 64 (hidden) -> 32 (hidden) -> 1 (output)
+    """
+    
+    def __init__(self, input_dim=31, hidden_layers=None, dropout_rate=0.2, 
+                 learning_rate=0.001, batch_size=32, epochs=20, random_state=None):
+        """
+        Initialize the MLP model.
+        
+        Args:
+            input_dim (int): Number of input features (default 31 for MIMIC-IV)
+            hidden_layers (list): Hidden layer dimensions (default [64, 32])
+            dropout_rate (float): Dropout rate for regularization (default 0.2)
+            learning_rate (float): Learning rate for Adam optimizer (default 0.001)
+            batch_size (int): Batch size for training (default 32)
+            epochs (int): Number of epochs per local training (default 20)
+            random_state (int): Random seed for reproducibility
+        """
+        import torch
+        import torch.nn as nn
+        
+        self.torch = torch
+        self.nn = nn
+        self.input_dim = input_dim
+        self.hidden_layers = hidden_layers if hidden_layers is not None else [64, 32]
+        self.dropout_rate = dropout_rate
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.epochs = epochs
+        self.random_state = random_state if random_state is not None else RANDOM_SEED
+        self.decision_threshold = DECISION_THRESHOLD
+        
+        # Set random seeds for reproducibility
+        self.torch.manual_seed(self.random_state)
+        np.random.seed(self.random_state)
+        
+        # Determine device (CPU or GPU)
+        self.device = self.torch.device("cuda" if self.torch.cuda.is_available() else "cpu")
+        
+        # Build the neural network
+        self.model = self._build_network()
+        self.model.to(self.device)
+        
+        self.is_trained = False
+        self.n_features = None
+        self.scaler = None
+        self.optimizer = None
+        self.criterion = None
+    
+    def _build_network(self):
+        """Build the neural network architecture."""
+        layers = []
+        prev_dim = self.input_dim
+        
+        # Hidden layers
+        for hidden_dim in self.hidden_layers:
+            layers.append(self.nn.Linear(prev_dim, hidden_dim))
+            layers.append(self.nn.ReLU())
+            layers.append(self.nn.Dropout(self.dropout_rate))
+            prev_dim = hidden_dim
+        
+        # Output layer (sigmoid for binary classification)
+        layers.append(self.nn.Linear(prev_dim, 1))
+        layers.append(self.nn.Sigmoid())
+        
+        return self.nn.Sequential(*layers)
+    
+    def fit(self, X_train, y_train, X_val=None, y_val=None, verbose=False):
+        """
+        Train the MLP model.
+        
+        Args:
+            X_train (np.ndarray): Training feature matrix
+            y_train (np.ndarray): Training labels
+            X_val (np.ndarray): Validation feature matrix (optional)
+            y_val (np.ndarray): Validation labels (optional)
+            verbose (bool): Print training information
+            
+        Returns:
+            dict: Training metrics
+        """
+        from sklearn.preprocessing import StandardScaler
+        
+        if X_train.shape[0] == 0:
+            raise ValueError("Training data cannot be empty")
+        
+        self.n_features = X_train.shape[1]
+        if self.n_features != self.input_dim:
+            raise ValueError(f"Expected {self.input_dim} features, got {self.n_features}")
+        
+        # Standardize features
+        self.scaler = StandardScaler()
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        
+        # Convert to PyTorch tensors
+        X_train_tensor = self.torch.from_numpy(X_train_scaled).float().to(self.device)
+        y_train_tensor = self.torch.from_numpy(y_train.reshape(-1, 1)).float().to(self.device)
+        
+        # Set up optimizer and loss
+        self.optimizer = self.torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.criterion = self.nn.BCELoss()
+        
+        # Training loop
+        train_losses = []
+        for epoch in range(self.epochs):
+            epoch_loss = 0.0
+            num_batches = 0
+            
+            # Mini-batch training
+            for i in range(0, len(X_train_tensor), self.batch_size):
+                batch_X = X_train_tensor[i:i+self.batch_size]
+                batch_y = y_train_tensor[i:i+self.batch_size]
+                
+                # Forward pass
+                self.optimizer.zero_grad()
+                outputs = self.model(batch_X)
+                loss = self.criterion(outputs, batch_y)
+                
+                # Backward pass
+                loss.backward()
+                self.optimizer.step()
+                
+                epoch_loss += loss.item()
+                num_batches += 1
+            
+            avg_loss = epoch_loss / num_batches
+            train_losses.append(avg_loss)
+            
+            if verbose and (epoch + 1) % 5 == 0:
+                print(f"  Epoch {epoch+1}/{self.epochs}, Loss: {avg_loss:.4f}")
+        
+        self.is_trained = True
+        
+        # Calculate training metrics
+        y_train_pred_proba = self.predict_proba(X_train)
+        train_auroc = self._calculate_auroc(y_train, y_train_pred_proba)
+        
+        if verbose:
+            print(f"  Training complete:")
+            print(f"    - Final Loss: {train_losses[-1]:.4f}")
+            print(f"    - Train AUROC: {train_auroc:.4f}")
+        
+        return {
+            'loss': train_losses[-1],
+            'auroc': train_auroc
+        }
+    
+    def predict_proba(self, X):
+        """
+        Get prediction probabilities.
+        
+        Args:
+            X (np.ndarray): Feature matrix
+            
+        Returns:
+            np.ndarray: Probability predictions for positive class (shape: [n_samples])
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        
+        # Standardize using the same scaler
+        X_scaled = self.scaler.transform(X)
+        
+        # Convert to tensor
+        X_tensor = self.torch.from_numpy(X_scaled).float().to(self.device)
+        
+        # Get predictions
+        self.model.eval()
+        with self.torch.no_grad():
+            proba = self.model(X_tensor).cpu().numpy().flatten()
+        
+        return proba
+    
+    def predict(self, X, use_custom_threshold=True):
+        """
+        Make binary predictions using threshold.
+        
+        Args:
+            X (np.ndarray): Feature matrix
+            use_custom_threshold (bool): Use custom threshold instead of 0.5
+            
+        Returns:
+            np.ndarray: Predicted labels (0 or 1)
+        """
+        proba = self.predict_proba(X)
+        threshold = self.decision_threshold if use_custom_threshold else 0.5
+        return (proba >= threshold).astype(int)
+    
+    def set_decision_threshold(self, threshold):
+        """Set custom decision threshold."""
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError("Threshold must be between 0.0 and 1.0")
+        self.decision_threshold = threshold
+    
+    def get_weights(self):
+        """
+        Get model weights as a flattened numpy array (for federated averaging).
+        
+        Returns:
+            np.ndarray: Flattened weight vector
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before getting weights")
+        
+        weights_list = []
+        for param in self.model.parameters():
+            weights_list.append(param.data.cpu().numpy().flatten())
+        
+        return np.concatenate(weights_list)
+    
+    def set_weights(self, weights):
+        """
+        Set model weights from a flattened numpy array (federated learning).
+        
+        Args:
+            weights (np.ndarray): Flattened weight vector
+        """
+        if not isinstance(weights, np.ndarray):
+            raise ValueError("Weights must be a numpy array")
+        
+        offset = 0
+        for param in self.model.parameters():
+            param_size = param.data.cpu().numpy().size
+            param_data = weights[offset:offset+param_size]
+            param_data = param_data.reshape(param.data.shape)
+            param.data = self.torch.from_numpy(param_data).float().to(self.device)
+            offset += param_size
+        
+        self.is_trained = True
+    
+    def get_num_parameters(self):
+        """Get total number of trainable parameters."""
+        if not self.is_trained:
+            return sum(p.numel() for p in self.model.parameters())
+        return sum(p.numel() for p in self.model.parameters())
+    
+    def evaluate(self, X_test, y_test, verbose=False):
+        """
+        Evaluate model on test data.
+        
+        Args:
+            X_test (np.ndarray): Test feature matrix
+            y_test (np.ndarray): Test labels
+            verbose (bool): Print evaluation metrics
+            
+        Returns:
+            dict: Dictionary with evaluation metrics
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before evaluation")
+        
+        y_pred_proba = self.predict_proba(X_test)
+        y_pred = self.predict(X_test)
+        
+        auroc = self._calculate_auroc(y_test, y_pred_proba)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        recall = recall_score(y_test, y_pred, zero_division=0)
+        f1 = f1_score(y_test, y_pred, zero_division=0)
+        cm = confusion_matrix(y_test, y_pred)
+        
+        metrics = {
+            'auroc': auroc,
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'confusion_matrix': cm
+        }
+        
+        if verbose:
+            print(f"MLP Evaluation:")
+            print(f"  AUROC:     {auroc:.4f}")
+            print(f"  Accuracy:  {accuracy:.4f}")
+            print(f"  Precision: {precision:.4f}")
+            print(f"  Recall:    {recall:.4f}")
+            print(f"  F1-Score:  {f1:.4f}")
+            print(f"  Confusion Matrix:\n{cm}")
+        
+        return metrics
+    
+    def _calculate_auroc(self, y_true, y_scores):
+        """Calculate AUROC metric."""
+        from sklearn.metrics import roc_auc_score
+        return roc_auc_score(y_true, y_scores)
+    
+    def reset(self):
+        """Reset the model to untrained state."""
+        self.torch.manual_seed(self.random_state)
+        self.model = self._build_network()
+        self.model.to(self.device)
+        self.is_trained = False
+        self.n_features = None
+        self.scaler = None
+
+
+# ===== MODEL REGISTRY & FACTORY FUNCTION =====
+MODEL_REGISTRY = {
+    'logistic_regression': LogisticRegressionModel,
+    'mlp': MLPModel,
+    'random_forest': RandomForestModel,
+    'xgboost': XGBoostModel,
+}
+
+
+def create_model(model_type: str, **kwargs):
+    """
+    Factory function to create models by type.
+    
+    Args:
+        model_type (str): Type of model ('logistic_regression', 'mlp', 'random_forest', 'xgboost')
+        **kwargs: Arguments to pass to the model constructor
+        
+    Returns:
+        Model instance (LogisticRegressionModel, MLPModel, RandomForestModel, or XGBoostModel)
+        
+    Raises:
+        ValueError: If model_type is not in registry
+    """
+    if model_type not in MODEL_REGISTRY:
+        available = ', '.join(MODEL_REGISTRY.keys())
+        raise ValueError(f"Unknown model type: {model_type}. Available: {available}")
+    
+    return MODEL_REGISTRY[model_type](**kwargs)

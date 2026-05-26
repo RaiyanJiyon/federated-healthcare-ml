@@ -8,6 +8,7 @@ flower>=1.0.0
 
 # Machine Learning Models
 xgboost>=1.5.0
+torch>=1.9.0,<2.1.0
 
 # Visualization
 matplotlib>=3.4.0
