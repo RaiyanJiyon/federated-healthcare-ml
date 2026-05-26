@@ -124,6 +124,90 @@ class FedProxAggregator:
         return aggregated
 
 
+class ClinicalAwareAggregator:
+    """Clinical-Sensitivity-Aware Federated Aggregation (FedF2).
+    
+    Blends standard sample-size weighting with local validation F2-score
+    weighting.  The F2-score (beta=2) weights recall twice as heavily as
+    precision, making it clinically appropriate for mortality prediction
+    where missed diagnoses are far costlier than false alarms.
+    
+    Aggregation weight for client k at round t:
+        alpha_k = (1 - gamma) * (n_k / n) + gamma * (F2_k / sum(F2_j))
+    
+    When gamma = 0 this reduces to standard FedAvg.
+    When gamma > 0 clients with better clinical sensitivity receive higher
+    aggregation weight, while degenerate all-positive classifiers are
+    penalised because their precision (and therefore F2) is low.
+    """
+    
+    @staticmethod
+    def aggregate(
+        client_weights: List[Dict],
+        client_sizes: List[int],
+        client_f2_scores: List[float],
+        gamma: float = 0.3
+    ) -> Dict:
+        """Aggregate weights using a blend of sample-size and F2-score weighting.
+        
+        Args:
+            client_weights: List of weight dicts (coef, intercept, classes)
+            client_sizes:   List of local dataset sizes for each client
+            client_f2_scores: List of local validation F2-scores for each client
+            gamma: Blending factor in [0, 1). 0 = pure FedAvg.
+            
+        Returns:
+            Aggregated weights as dictionary
+        """
+        if not client_weights or not client_sizes or not client_f2_scores:
+            raise ValueError("Missing weights, sizes, or F2 scores for FedF2 aggregation")
+        
+        if len(client_weights) != len(client_sizes) or len(client_weights) != len(client_f2_scores):
+            raise ValueError(
+                f"Length mismatch: {len(client_weights)} weights, "
+                f"{len(client_sizes)} sizes, {len(client_f2_scores)} F2 scores"
+            )
+        
+        n_clients = len(client_weights)
+        total_samples = sum(client_sizes)
+        total_f2 = sum(client_f2_scores)
+        
+        # Fall back to equal F2 weighting if all scores are zero
+        if total_f2 == 0:
+            f2_weights = [1.0 / n_clients] * n_clients
+        else:
+            f2_weights = [f2 / total_f2 for f2 in client_f2_scores]
+        
+        # Combined weight: alpha_k = (1 - gamma) * (n_k / n) + gamma * (F2_k / sum(F2))
+        alpha = []
+        for idx in range(n_clients):
+            sample_w = client_sizes[idx] / total_samples
+            f2_w = f2_weights[idx]
+            alpha.append((1 - gamma) * sample_w + gamma * f2_w)
+        
+        # Normalise to sum to 1.0 (guards against floating-point drift)
+        sum_alpha = sum(alpha)
+        alpha = [a / sum_alpha for a in alpha]
+        
+        # Weighted aggregation
+        aggregated = {
+            'coef': np.zeros_like(client_weights[0]['coef'], dtype=np.float64),
+            'intercept': np.zeros_like(client_weights[0]['intercept'], dtype=np.float64)
+                        if isinstance(client_weights[0]['intercept'], np.ndarray)
+                        else 0.0,
+            'classes': client_weights[0]['classes'].copy()
+        }
+        
+        for idx, weights in enumerate(client_weights):
+            aggregated['coef'] += alpha[idx] * weights['coef']
+            if isinstance(aggregated['intercept'], np.ndarray):
+                aggregated['intercept'] += alpha[idx] * weights['intercept']
+            else:
+                aggregated['intercept'] += alpha[idx] * float(weights['intercept'])
+        
+        return aggregated
+
+
 def aggregate_weights(weights_list: List[Dict], 
     sample_counts: List[int],
     strategy: str = 'fedavg',
@@ -134,8 +218,9 @@ def aggregate_weights(weights_list: List[Dict],
     Args:
         weights_list: List of weight dictionaries from each client
         sample_counts: List of local dataset sizes for each client
-        strategy: Aggregation strategy ('fedavg' or 'fedprox')
-        **kwargs: Additional arguments for specific strategies
+        strategy: Aggregation strategy ('fedavg', 'fedprox', or 'fedf2')
+        **kwargs: Additional arguments for specific strategies.
+                  For 'fedf2': client_f2_scores (List[float]), gamma (float)
         
     Returns:
         Aggregated weights as dictionary
@@ -144,6 +229,8 @@ def aggregate_weights(weights_list: List[Dict],
         return FedAvgAggregator.aggregate(weights_list, sample_counts)
     elif strategy == 'fedprox':
         return FedProxAggregator.aggregate(weights_list, sample_counts, **kwargs)
+    elif strategy == 'fedf2':
+        return ClinicalAwareAggregator.aggregate(weights_list, sample_counts, **kwargs)
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 

@@ -8,8 +8,11 @@ from pathlib import Path
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.preprocessing import StandardScaler
 
+from sklearn.metrics import fbeta_score, precision_score, recall_score
+
 from src.config.config import (
-    RANDOM_SEED, MAX_ITER, DP_EPSILON, DP_DELTA, CLIPPING_THRESHOLD, CLASS_WEIGHT
+    RANDOM_SEED, MAX_ITER, DP_EPSILON, DP_DELTA, CLIPPING_THRESHOLD, CLASS_WEIGHT,
+    FEDF2_GAMMA, FEDF2_REFERENCE_THRESHOLD, FEDF2_LOCAL_VAL_FRACTION
 )
 from src.fl.privacy import DifferentialPrivacyMechanism
 from src.data.split import distribute_by_care_unit, get_client_summary
@@ -43,6 +46,9 @@ class FederatedTrainer:
         use_dp: bool = True,
         aggregation_strategy: str = 'fedavg',
         fedprox_mu: float = 0.01,
+        fedf2_gamma: float = FEDF2_GAMMA,
+        fedf2_ref_threshold: float = FEDF2_REFERENCE_THRESHOLD,
+        fedf2_local_val_fraction: float = FEDF2_LOCAL_VAL_FRACTION,
         random_seed: int = RANDOM_SEED
     ):
         """
@@ -55,8 +61,11 @@ class FederatedTrainer:
             num_rounds: Number of federated learning rounds
             learning_rate: Learning rate for client-side training
             use_dp: Whether to apply differential privacy
-            aggregation_strategy: 'fedavg' (default) or 'fedprox'
+            aggregation_strategy: 'fedavg', 'fedprox', or 'fedf2'
             fedprox_mu: FedProx proximal term weight (only used if aggregation_strategy='fedprox')
+            fedf2_gamma: FedF2 blending factor (0=pure FedAvg, higher=more F2 influence)
+            fedf2_ref_threshold: Uniform decision threshold for local F2-score evaluation
+            fedf2_local_val_fraction: Fraction of local client data held out for F2 eval
             random_seed: Random seed for reproducibility
         """
         self.clients = clients
@@ -67,9 +76,12 @@ class FederatedTrainer:
         self.use_dp = use_dp
         self.aggregation_strategy = aggregation_strategy.lower()
         self.fedprox_mu = fedprox_mu
+        self.fedf2_gamma = fedf2_gamma
+        self.fedf2_ref_threshold = fedf2_ref_threshold
+        self.fedf2_local_val_fraction = fedf2_local_val_fraction
         self.random_seed = random_seed
         
-        if self.aggregation_strategy not in ['fedavg', 'fedprox']:
+        if self.aggregation_strategy not in ['fedavg', 'fedprox', 'fedf2']:
             raise ValueError(f"Unknown aggregation strategy: {aggregation_strategy}")
         
         np.random.seed(random_seed)
@@ -102,6 +114,10 @@ class FederatedTrainer:
         logger.info(f"  Strategy: {aggregation_strategy.upper()}")
         if self.aggregation_strategy == 'fedprox':
             logger.info(f"  FedProx μ: {fedprox_mu}")
+        if self.aggregation_strategy == 'fedf2':
+            logger.info(f"  FedF2 γ: {fedf2_gamma}")
+            logger.info(f"  FedF2 ref threshold: {fedf2_ref_threshold}")
+            logger.info(f"  FedF2 local val fraction: {fedf2_local_val_fraction}")
         logger.info(f"  Privacy: {'Enabled (ε=1.0, δ=1e-5)' if use_dp else 'Disabled'}")
     
     def get_client_summary(self) -> pd.DataFrame:
@@ -152,7 +168,7 @@ class FederatedTrainer:
             model_dict = self._train_fedprox_client(
                 X_scaled, y_client, global_weights, epochs
             )
-        else:  # FedAvg
+        else:  # FedAvg or FedF2 (local training is identical to FedAvg)
             model_dict = self._train_fedavg_client(X_scaled, y_client, epochs)
         
         # Extract weights for aggregation
@@ -168,17 +184,24 @@ class FederatedTrainer:
         if 'dp_metadata' in model_dict:
             weights['dp_metadata'] = model_dict['dp_metadata']
         
+        # Compute local validation F2-score for FedF2 aggregation
+        local_f2 = 0.0
+        if self.aggregation_strategy == 'fedf2':
+            local_f2 = self._compute_local_f2(coef, intercept, X_client, y_client)
+        
         result = {
             'unit': unit_name,
             'n_samples': len(X_client),
             'n_deaths': int(y_client.sum()),
             'weights': weights,
-            'loss': model_dict['loss']
+            'loss': model_dict['loss'],
+            'local_f2': local_f2
         }
         
-        logger.info(
-            f"  {unit_name}: {len(X_client)} samples, loss={model_dict['loss']:.4f}"
-        )
+        log_msg = f"  {unit_name}: {len(X_client)} samples, loss={model_dict['loss']:.4f}"
+        if self.aggregation_strategy == 'fedf2':
+            log_msg += f", local_F2={local_f2:.4f}"
+        logger.info(log_msg)
         
         return result
     
@@ -386,9 +409,44 @@ class FederatedTrainer:
             'loss': loss + proximal_loss
         }
     
-    def aggregate_weights(self, client_results: List[Dict]) -> Dict:
+    def _compute_local_f2(
+        self, coef: np.ndarray, intercept: float,
+        X_local: np.ndarray, y_local: np.ndarray
+    ) -> float:
+        """Compute F2-score of a local model on local data at the reference threshold.
+        
+        Uses a stratified local holdout (fedf2_local_val_fraction) so the F2
+        is not evaluated on the same samples the model was trained on.
         """
-        Federated averaging (FedAvg) of client weights.
+        from sklearn.model_selection import train_test_split as _split
+        
+        n = len(y_local)
+        n_pos = int(y_local.sum())
+        n_neg = n - n_pos
+        
+        # Need at least 2 positive and 2 negative samples to do a stratified split
+        if n < 20 or n_pos < 2 or n_neg < 2:
+            X_eval, y_eval = X_local, y_local
+        else:
+            _, X_eval, _, y_eval = _split(
+                X_local, y_local,
+                test_size=self.fedf2_local_val_fraction,
+                random_state=self.random_seed,
+                stratify=y_local
+            )
+        
+        X_eval_scaled = self.scaler.transform(X_eval)
+        logits = X_eval_scaled @ coef + intercept
+        proba = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+        y_pred = (proba >= self.fedf2_ref_threshold).astype(int)
+        
+        return float(fbeta_score(y_eval, y_pred, beta=2, zero_division=0))
+    
+    def aggregate_weights(self, client_results: List[Dict]) -> Dict:
+        """Aggregate client weights using the configured strategy.
+        
+        For FedAvg/FedProx: standard sample-size-weighted averaging.
+        For FedF2: blends sample-size weights with local validation F2-scores.
         
         Args:
             client_results: List of client training results from train_client_local()
@@ -396,9 +454,20 @@ class FederatedTrainer:
         Returns:
             Dict: Aggregated global weights
         """
-        total_samples = sum(r['n_samples'] for r in client_results)
+        from src.fl.strategy import ClinicalAwareAggregator
         
-        # Weighted average of coefficients
+        if self.aggregation_strategy == 'fedf2':
+            client_weights = [r['weights'] for r in client_results]
+            client_sizes = [r['n_samples'] for r in client_results]
+            client_f2 = [r.get('local_f2', 0.0) for r in client_results]
+            
+            return ClinicalAwareAggregator.aggregate(
+                client_weights, client_sizes, client_f2,
+                gamma=self.fedf2_gamma
+            )
+        
+        # Default: sample-size-weighted FedAvg (also used by FedProx)
+        total_samples = sum(r['n_samples'] for r in client_results)
         avg_coef = np.zeros_like(client_results[0]['weights']['coef'])
         avg_intercept = 0.0
         
@@ -406,7 +475,6 @@ class FederatedTrainer:
             weights = result['weights']
             n_samples = result['n_samples']
             weight = n_samples / total_samples
-            
             avg_coef += weight * weights['coef']
             avg_intercept += weight * weights['intercept']
         

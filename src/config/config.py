@@ -126,8 +126,13 @@ SHAP_BACKGROUND_SAMPLES = 200  # Sample count for SHAP explainer background
 SHAP_MAX_FEATURES = 20  # Top N features to display in SHAP plots
 
 # ===== AGGREGATION STRATEGY =====
-AGGREGATION_STRATEGY = "fedavg"  # "fedavg" or "fedprox"
+AGGREGATION_STRATEGY = "fedavg"  # "fedavg", "fedprox", or "fedf2"
 FEDPROX_MU = 0.01  # Proximal term weight for FedProx
+
+# FedF2: Clinical-Sensitivity-Aware Federated Aggregation
+FEDF2_GAMMA = 0.3  # Blending factor: 0 = pure FedAvg, 1 = pure F2-weighted
+FEDF2_REFERENCE_THRESHOLD = 0.30  # Uniform threshold for local F2-score evaluation
+FEDF2_LOCAL_VAL_FRACTION = 0.2  # Fraction of local client data held out for F2 evaluation
 
 # ===== EXPERIMENT PARAMETERS =====
 BASELINE_NUM_CLIENTS = 7
