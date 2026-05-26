@@ -409,9 +409,9 @@ Under the poisoned scenario, raw FedAvg experiences catastrophic miscalibration 
 
 \begin{figure*}[t]
 \centerline{
-  \includegraphics[width=0.48\textwidth]{figures/reliability_curves.png}
+  \includegraphics[width=0.48\textwidth]{figures/reliability_curves.pdf}
   \hfill
-  \includegraphics[width=0.48\textwidth]{figures/precision_recall_curves.png}
+  \includegraphics[width=0.48\textwidth]{figures/precision_recall_curves.pdf}
 }
 \caption{Visual validation of model calibration and precision-recall performance. Left: Reliability Diagram (Calibration Curve) comparing uncalibrated FedAvg (exhibiting severe probability compression, ECE = 0.2338) against Platt-calibrated models (recovering to ECE $<$ 0.01). Right: Precision-Recall Curves demonstrating the utility of FedF2 ($\gamma = 0.5$) in maintaining precision-recall balance (AUPRC = 0.5999) under class-imbalanced ICU mortality scenarios.}
 \label{fig:calibration_and_pr}

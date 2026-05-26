@@ -67,6 +67,29 @@ def main():
     logger.info("EXPERIMENT 8: Advanced Professional Ablation & Calibration")
     logger.info("=" * 70)
 
+    # Configure publication quality plots
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.serif': ['Times New Roman', 'DejaVu Serif', 'Liberation Serif'],
+        'font.size': 10,
+        'axes.labelsize': 10,
+        'axes.titlesize': 11,
+        'axes.titleweight': 'bold',
+        'xtick.labelsize': 9,
+        'ytick.labelsize': 9,
+        'legend.fontsize': 8.5,
+        'pdf.fonttype': 42,
+        'ps.fonttype': 42
+    })
+
+    # Curated publication color scheme
+    color_map = {
+        'FedAvg (Raw)': '#718096',             # Muted grey
+        'FedAvg (Calibrated)': '#1A365D',      # Deep Navy
+        'FedProx (Calibrated)': '#2C7A7B',     # Teal/Sage
+        'FedF2 (Calibrated, γ=0.5)': '#D69E2E' # Muted Gold
+    }
+
     # ── 1. Load data ──────────────────────────────────────────────────────
     logger.info("\n[1/5] Loading cohort...")
     df, X, y = load_dataset_with_df(use_cache=True)
@@ -110,8 +133,9 @@ def main():
     results = []
     plot_data = {}
 
-    plt.figure(figsize=(10, 8))
-    plt.plot([0, 1], [0, 1], 'k--', label='Perfect Calibration')
+    # Initialize calibration plot
+    fig_cal, ax_cal = plt.subplots(figsize=(6, 5))
+    ax_cal.plot([0, 1], [0, 1], color='#4A5568', linestyle='--', linewidth=1.2, label='Perfect Calibration')
 
     logger.info("\n[3/5] Executing ablation models...")
     for scenario, strategy, cls_set, use_dp, calibrate, label, extra in runs:
@@ -173,35 +197,63 @@ def main():
         if scenario == 'clean':
             # Calibration reliability curve
             mpv, fop = compute_calibration_curve(y_test, final_test_proba, n_bins=10)
-            plt.plot(mpv, fop, marker='o', label=f"{label} (ECE={ece:.3f})")
+            color = color_map.get(label, '#2D3748')
+            ax_cal.plot(mpv, fop, marker='o', markersize=4, color=color, linewidth=1.2, label=f"{label} (ECE={ece:.3f})")
             plot_data[label] = (prec_c, rec_c, auprc)
 
-    # Save Reliability Diagram
+    # Save Reliability Diagram (Calibration Curves)
+    ax_cal.set_xlabel('Mean Predicted Probability')
+    ax_cal.set_ylabel('Fraction of Positives')
+    ax_cal.set_title('Reliability Diagram (Calibration Curves)')
+    ax_cal.legend(loc='lower right', frameon=True, facecolor='white', edgecolor='none')
+    
+    # Beautify reliability axes
+    ax_cal.grid(True, color="#E2E8F0", linestyle="--", linewidth=0.5, alpha=0.7)
+    ax_cal.spines['top'].set_visible(False)
+    ax_cal.spines['right'].set_visible(False)
+    ax_cal.spines['left'].set_linewidth(0.8)
+    ax_cal.spines['bottom'].set_linewidth(0.8)
+    ax_cal.spines['left'].set_color('#4A5568')
+    ax_cal.spines['bottom'].set_color('#4A5568')
+    
     plot_dir = Path('results/plots')
+    paper_dir = Path('paper/figures')
     plot_dir.mkdir(parents=True, exist_ok=True)
-    plt.xlabel('Mean Predicted Probability')
-    plt.ylabel('Fraction of Positives')
-    plt.title('Reliability Diagram (Calibration Curves)')
-    plt.legend(loc='lower right')
-    plt.grid(True)
-    cal_plot_file = plot_dir / 'reliability_curves.png'
-    plt.savefig(cal_plot_file, dpi=300, bbox_inches='tight')
-    plt.close()
-    logger.info(f"\n✓ Calibration curves saved to {cal_plot_file}")
+    paper_dir.mkdir(parents=True, exist_ok=True)
+    
+    fig_cal.savefig(plot_dir / 'reliability_curves.png', dpi=300, bbox_inches='tight')
+    fig_cal.savefig(plot_dir / 'reliability_curves.pdf', bbox_inches='tight')
+    fig_cal.savefig(paper_dir / 'reliability_curves.png', dpi=300, bbox_inches='tight')
+    fig_cal.savefig(paper_dir / 'reliability_curves.pdf', bbox_inches='tight')
+    plt.close(fig_cal)
+    logger.info("✓ Reliability curves saved (PNG/PDF).")
 
     # Generate PR Curves Plot
-    plt.figure(figsize=(10, 8))
+    fig_pr, ax_pr = plt.subplots(figsize=(6, 5))
     for name, (prec, rec, auprc_val) in plot_data.items():
-        plt.plot(rec, prec, label=f"{name} (AUPRC={auprc_val:.3f})")
-    plt.xlabel('Recall (Sensitivity)')
-    plt.ylabel('Precision (PPV)')
-    plt.title('Precision-Recall Curves')
-    plt.legend(loc='lower left')
-    plt.grid(True)
-    pr_plot_file = plot_dir / 'precision_recall_curves.png'
-    plt.savefig(pr_plot_file, dpi=300, bbox_inches='tight')
-    plt.close()
-    logger.info(f"✓ Precision-Recall curves saved to {pr_plot_file}")
+        color = color_map.get(name, '#2D3748')
+        ax_pr.plot(rec, prec, color=color, linewidth=1.2, label=f"{name} (AUPRC={auprc_val:.3f})")
+        
+    ax_pr.set_xlabel('Recall (Sensitivity)')
+    ax_pr.set_ylabel('Precision (PPV)')
+    ax_pr.set_title('Precision-Recall Curves')
+    ax_pr.legend(loc='lower left', frameon=True, facecolor='white', edgecolor='none')
+    
+    # Beautify PR axes
+    ax_pr.grid(True, color="#E2E8F0", linestyle="--", linewidth=0.5, alpha=0.7)
+    ax_pr.spines['top'].set_visible(False)
+    ax_pr.spines['right'].set_visible(False)
+    ax_pr.spines['left'].set_linewidth(0.8)
+    ax_pr.spines['bottom'].set_linewidth(0.8)
+    ax_pr.spines['left'].set_color('#4A5568')
+    ax_pr.spines['bottom'].set_color('#4A5568')
+    
+    fig_pr.savefig(plot_dir / 'precision_recall_curves.png', dpi=300, bbox_inches='tight')
+    fig_pr.savefig(plot_dir / 'precision_recall_curves.pdf', bbox_inches='tight')
+    fig_pr.savefig(paper_dir / 'precision_recall_curves.png', dpi=300, bbox_inches='tight')
+    fig_pr.savefig(paper_dir / 'precision_recall_curves.pdf', bbox_inches='tight')
+    plt.close(fig_pr)
+    logger.info("✓ Precision-Recall curves saved (PNG/PDF).")
 
     # Save ablation stats to CSV
     results_df = pd.DataFrame(results)
