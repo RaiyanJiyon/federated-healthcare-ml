@@ -1,2 +1,14 @@
 \begin{table}[h!]
 \centering
+\caption{Model Robustness under Byzantine Client Failure Scenarios}
+\label{tab:robustness}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Attack Scenario} & \textbf{Byzantine Clients} & \textbf{Fraction} & \textbf{AUROC} & \textbf{Recall} & \textbf{Status} \\
+\midrule
+Clean (Baseline) & 0 & 0\% & 0.8850 & 41.7\% & \checkmark Baseline \\
+Light Attack (1/7 Byzantine) & 1 & 14.3\% & 0.8618 & 48.9\% & \checkmark Resilient \\
+Severe Attack (2/7 Byzantine) & 2 & 28.6\% & 0.8268 & 41.2\% & $\triangle$ Degraded \\
+\bottomrule
+\end{tabular}
+\end{table}

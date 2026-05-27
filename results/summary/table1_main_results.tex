@@ -1,2 +1,16 @@
 \begin{table}[h!]
 \centering
+\caption{Main Experimental Results of Centralized vs. Federated Learning Configurations on MIMIC-IV}
+\label{tab:main_results}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{AUROC} & \textbf{Brier Score} & \textbf{ECE} & \textbf{Recall} & \textbf{Precision} & \textbf{Clinical Status} \\
+\midrule
+Centralized LR & 0.8920 & 0.0617 & 0.0088 & 85.2\% & 30.2\% & \checkmark Safe \\
+FedAvg (Baseline) & 0.8784 & 0.0617 & 0.0088 & 43.5\% & 69.8\% & \checkmark Safe \\
+FedProx (μ=0.01) & 0.8591 & 0.0841 & 0.0832 & 38.0\% & 63.0\% & $\times$ Underperforms \\
+With DP-SGD (ε=1.0) & 0.8477 & 0.3874 & --- & 38.1\% & 65.4\% & \checkmark Utility Preserved \\
+With Byzantine Attack (1/7) & 0.8618 & 0.0617 & 0.0088 & 48.9\% & 64.5\% & $\triangle$ Degraded \\
+\bottomrule
+\end{tabular}
+\end{table}

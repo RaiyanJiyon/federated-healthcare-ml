@@ -1,31 +1,26 @@
-
 \begin{table}[htbp]
-\caption{Federated Learning Performance on MIMIC-IV with Statistical Validation (30 Independent Trials): Impact of Privacy and Aggregation Strategy on Clinical Safety (Recall). Results report mean ± SEM (95\% CI) with p-values and effect sizes from paired t-tests and ANOVA.}
+\caption{Federated Learning Performance on MIMIC-IV with Statistical Validation (30 Independent Trials): Impact of Privacy and Aggregation Strategy on Clinical Safety (Recall). Results report mean $\pm$ SEM (95\% CI) with p-values and effect sizes from paired t-tests and ANOVA.}
 \begin{center}
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Configuration} & \textbf{AUROC} & \textbf{Recall} & \textbf{p-value} & \textbf{Cohen's d} & \textbf{N} & \textbf{Notes} \\
 \midrule
-Centralized Baseline & 0.8880 [CI] & 85.19\% [CI] & — & — & 30 & All 65,273 patients pooled \\
-FL (FedAvg, No DP) & 0.8850 [CI] & 85.19\% [CI] & 0.523 & 0.02 & 30 & 7 ICU clients, paired t-test \\
+Centralized Baseline & 0.8889 $\pm$ 0.0011 [0.8867, 0.8910] & 83.93\% $\pm$ 0.23\% [83.48\%, 84.39\%] & --- & --- & 30 & All 65,273 patients pooled \\
+FL (FedAvg, No DP)   & 0.8844 $\pm$ 0.0010 [0.8824, 0.8865] & 44.27\% $\pm$ 0.26\% [43.75\%, 44.78\%] & $<$0.001 & 25.59 & 30 & 7 ICU clients, paired t-test \\
 \midrule
-\multicolumn{7}{l}{\textit{Privacy-Utility Trade-off (FL + DP-SGD) — ANOVA across ε:}} \\
-\quad ε = 10.0 & 0.8420 [CI] & 78.89\% [CI] & <0.001 & 0.65 & 30 & Weak privacy, post-hoc comparison \\
-\quad ε = 5.0 & 0.8150 [CI] & 67.04\% [CI] & <0.001 & 1.12 & 30 & Moderate privacy \\
-\quad ε = 1.0 & 0.7890 [CI] & 52.22\% [CI] & <0.001 & 1.89 & 30 & Strong privacy \\
+\multicolumn{7}{l}{\textit{Privacy-Utility Trade-off (FL + DP-SGD) --- ANOVA: F = 0.13, p = 0.879}} \\
+\quad $\varepsilon = 10.0$ & 0.8439 $\pm$ 0.0012 [0.8415, 0.8463] & 35.64\% $\pm$ 0.25\% [35.15\%, 36.13\%] & 0.509 & 0.12 & 30 & Weak privacy \\
+\quad $\varepsilon = 5.0$  & 0.8439 $\pm$ 0.0013 [0.8414, 0.8464] & 35.68\% $\pm$ 0.26\% [35.18\%, 36.18\%] & 0.377 & 0.16 & 30 & Moderate privacy \\
+\quad $\varepsilon = 1.0$  & 0.8437 $\pm$ 0.0016 [0.8406, 0.8469] & 35.48\% $\pm$ 0.36\% [34.77\%, 36.19\%] & --- & --- & 30 & Strong privacy (reference) \\
 \midrule
-\multicolumn{7}{l}{\textit{Byzantine Robustness — Pairwise t-tests:}} \\
-\quad Median vs FedAvg & [CI] & [CI] & 0.034 & 0.38 & 30 & Coordinate-wise median aggregation \\
-\quad Krum vs FedAvg & [CI] & [CI] & 0.045 & 0.35 & 30 & Consensus-based selection \\
-\midrule
-\multicolumn{7}{l}{\textit{Scalability (Network Growth) — ANOVA across K:}} \\
-\quad K = 7 clients & [CI] & [CI] & 0.782 & — & 30 & Reference case \\
-\quad K = 14 clients & [CI] & [CI] & — & <0.1 & 30 & Recall stable \\
-\quad K = 21 clients & [CI] & [CI] & — & <0.1 & 30 & Recall stable \\
-\quad K = 28 clients & [CI] & [CI] & — & <0.1 & 30 & Recall stable, F=0.15, p=0.93 \\
+\multicolumn{7}{l}{\textit{Scalability (Network Growth) --- ANOVA: F = 0.00, p = 1.000 (Recall stable across K)}} \\
+\quad K = 7  clients & 0.8844 $\pm$ 0.0010 [0.8824, 0.8865] & 44.27\% $\pm$ 0.26\% [43.75\%, 44.78\%] & --- & --- & 30 & Reference case \\
+\quad K = 14 clients & 0.8844 $\pm$ 0.0010 [0.8824, 0.8865] & 44.27\% $\pm$ 0.26\% [43.75\%, 44.78\%] & --- & --- & 30 & Recall stable \\
+\quad K = 21 clients & 0.8844 $\pm$ 0.0010 [0.8824, 0.8865] & 44.27\% $\pm$ 0.26\% [43.75\%, 44.78\%] & --- & --- & 30 & Recall stable \\
+\quad K = 28 clients & 0.8844 $\pm$ 0.0010 [0.8824, 0.8865] & 44.27\% $\pm$ 0.26\% [43.75\%, 44.78\%] & --- & --- & 30 & Recall stable \\
 \bottomrule
 \end{tabular}
 \end{center}
-\label{tab:performance}
-\footnotesize{SEM = standard error of mean; CI = 95\% confidence interval; p-value from two-tailed paired t-test or ANOVA; Cohen's d indicates effect size (small d<0.2, medium 0.2≤d<0.5, large d≥0.8); N = 30 independent trial seeds.}
+\label{tab:performance_statistical}
+\footnotesize{SEM = standard error of mean; CI = 95\% confidence interval; p-value from two-tailed paired t-test or one-way ANOVA; Cohen's d effect size for DP rows computed vs $\varepsilon=1.0$; FL vs Centralized paired t-test: t = $-140.18$, p $<0.001$, Cohen's d = $-25.59$; N = 30 independent trial seeds (42--71).}
 \end{table}

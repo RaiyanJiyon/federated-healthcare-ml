@@ -1,2 +1,17 @@
 \begin{table}[h!]
 \centering
+\caption{Privacy Budget (\$\varepsilon\$) vs. Model Utility and Calibration Trade-offs}
+\label{tab:privacy}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Privacy Budget (\$\varepsilon\$)} & \textbf{AUROC} & \textbf{Recall} & \textbf{Brier Score} & \textbf{Clinical Viability} \\
+\midrule
+0.5 & 0.550 & 42.0\% & 0.250 & $\times$ No \\
+1.0 & 0.450 & 35.0\% & 0.350 & $\times$ No \\
+2.0 & 0.620 & 50.0\% & 0.180 & $\triangle$ Marginal \\
+5.0 & 0.780 & 68.0\% & 0.080 & $\triangle$ Marginal \\
+10.0 & 0.840 & 76.0\% & 0.064 & \checkmark Yes \\
+$\infty$ (Non-private) & 0.885 & 83.0\% & 0.062 & \checkmark Yes \\
+\bottomrule
+\end{tabular}
+\end{table}

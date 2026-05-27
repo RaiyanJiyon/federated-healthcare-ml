@@ -1,2 +1,15 @@
 \begin{table}[h!]
 \centering
+\caption{Comparison of Federated Aggregation Strategies on Test AUROC}
+\label{tab:aggregation}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Aggregation Strategy} & \textbf{Test AUROC} & \textbf{AUROC Loss (\%)} \\
+\midrule
+FedAvg & 0.8850 & 0.00\% \\
+FedProx (μ=0.001) & 0.8591 & 2.58\% \\
+FedProx (μ=0.01) & 0.8591 & 2.58\% \\
+FedProx (μ=0.1) & 0.8591 & 2.58\% \\
+\bottomrule
+\end{tabular}
+\end{table}

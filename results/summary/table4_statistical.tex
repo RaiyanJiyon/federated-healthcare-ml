@@ -1,2 +1,20 @@
 \begin{table}[h!]
 \centering
+\caption{Statistical Validation Across Independent Trials}
+\label{tab:statistical_validation}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Configuration} & \textbf{N} & \textbf{AUROC (Mean)} & \textbf{AUROC (SEM)} & \textbf{Recall (Mean)} & \textbf{Recall (SEM)} \\
+\midrule
+Centralized Baseline & 30 & 0.8889 & 0.0011 & 83.93\% & 0.23\% \\
+FL FedAvg (No DP) & 30 & 0.8844 & 0.0010 & 44.27\% & 0.26\% \\
+FL Scalability (K=7) & 30 & 0.8844 & 0.0010 & 44.27\% & 0.26\% \\
+FL Scalability (K=14) & 30 & 0.8844 & 0.0010 & 44.27\% & 0.26\% \\
+FL Scalability (K=21) & 30 & 0.8844 & 0.0010 & 44.27\% & 0.26\% \\
+FL Scalability (K=28) & 30 & 0.8844 & 0.0010 & 44.27\% & 0.26\% \\
+FL + DP-SGD (ε=10.0) & 30 & 0.8439 & 0.0012 & 35.64\% & 0.25\% \\
+FL + DP-SGD (ε=5.0) & 30 & 0.8439 & 0.0013 & 35.68\% & 0.26\% \\
+FL + DP-SGD (ε=1.0) & 30 & 0.8437 & 0.0016 & 35.48\% & 0.36\% \\
+\bottomrule
+\end{tabular}
+\end{table}
