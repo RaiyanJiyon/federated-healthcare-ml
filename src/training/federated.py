@@ -81,7 +81,7 @@ class FederatedTrainer:
         self.fedf2_local_val_fraction = fedf2_local_val_fraction
         self.random_seed = random_seed
         
-        if self.aggregation_strategy not in ['fedavg', 'fedprox', 'fedf2']:
+        if self.aggregation_strategy not in ['fedavg', 'fedprox', 'fedf2', 'median', 'krum']:
             raise ValueError(f"Unknown aggregation strategy: {aggregation_strategy}")
         
         np.random.seed(random_seed)
@@ -447,6 +447,8 @@ class FederatedTrainer:
         
         For FedAvg/FedProx: standard sample-size-weighted averaging.
         For FedF2: blends sample-size weights with local validation F2-scores.
+        For Median: coordinate-wise median (Byzantine-robust).
+        For Krum: select update closest to consensus (Byzantine-robust).
         
         Args:
             client_results: List of client training results from train_client_local()
@@ -455,6 +457,7 @@ class FederatedTrainer:
             Dict: Aggregated global weights
         """
         from src.fl.strategy import ClinicalAwareAggregator
+        from src.fl.robust_aggregation import RobustAggregator
         
         if self.aggregation_strategy == 'fedf2':
             client_weights = [r['weights'] for r in client_results]
@@ -465,6 +468,48 @@ class FederatedTrainer:
                 client_weights, client_sizes, client_f2,
                 gamma=self.fedf2_gamma
             )
+        
+        elif self.aggregation_strategy == 'median':
+            # Coordinate-wise median aggregation (Byzantine-robust)
+            coefs = np.array([r['weights']['coef'] for r in client_results])
+            intercepts = np.array([r['weights']['intercept'] for r in client_results])
+            
+            avg_coef = np.median(coefs, axis=0)
+            avg_intercept = np.median(intercepts)
+            
+            return {
+                'coef': avg_coef,
+                'intercept': avg_intercept,
+                'classes': client_results[0]['weights']['classes']
+            }
+        
+        elif self.aggregation_strategy == 'krum':
+            # Krum aggregation: select update closest to consensus
+            coefs = np.array([r['weights']['coef'] for r in client_results])
+            intercepts = np.array([r['weights']['intercept'] for r in client_results])
+            
+            # Compute pairwise distances between coefficient vectors
+            n_clients = len(coefs)
+            distances = np.zeros((n_clients, n_clients))
+            for i in range(n_clients):
+                for j in range(i + 1, n_clients):
+                    dist = np.linalg.norm(coefs[i] - coefs[j])
+                    distances[i, j] = dist
+                    distances[j, i] = dist
+            
+            # Select the client with smallest average distance to neighbors
+            f = max(0, int(n_clients / 2) - 1)  # Number of neighbors to consider
+            avg_distances = np.sum(np.sort(distances, axis=1)[:, :f+1], axis=1) / (f + 1)
+            selected_idx = np.argmin(avg_distances)
+            
+            avg_coef = coefs[selected_idx]
+            avg_intercept = intercepts[selected_idx]
+            
+            return {
+                'coef': avg_coef,
+                'intercept': avg_intercept,
+                'classes': client_results[0]['weights']['classes']
+            }
         
         # Default: sample-size-weighted FedAvg (also used by FedProx)
         total_samples = sum(r['n_samples'] for r in client_results)
