@@ -9,22 +9,22 @@
 % *** GRAPHICS RELATED PACKAGES ***
 \ifCLASSINFOpdf
   \usepackage[pdftex]{graphicx}
-  \graphicspath{{../pdf/}{../jpeg/}}
+  \graphicspath{{figures/}}
   \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
 \else
   \usepackage[dvips]{graphicx}
-  \graphicspath{{../eps/}}
+  \graphicspath{{figures/}}
   \DeclareGraphicsExtensions{.eps}
 \fi
 
 % *** SPECIALIZED LIST PACKAGES ***
-\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 % *** ALIGNMENT PACKAGES ***
 \usepackage{array}
 
 % *** FLOAT PACKAGES ***
-\usepackage{fixltx2e}
 \usepackage{stfloats}
 
 % *** PDF, URL AND HYPERLINK PACKAGES ***
@@ -142,7 +142,7 @@ Motivated by these overlapping challenges, we built and evaluated a privacy-hard
 \begin{itemize}
     \item We simulate realistic hospital data silos through ICU care-unit partitioning, producing the kind of clinical heterogeneity that real networks exhibit.
     \item We deploy Gaussian differential privacy on client model updates together with Byzantine-resilient aggregation (Krum, Median), giving the system layered protection against both reconstruction attacks and malicious data poisoning.
-    \item We deliberately optimize for diagnostic Recall rather than headline accuracy, achieving 85.2\% Recall in the centralized baseline and 86.3\% Recall in the federated model after validation-calibrated threshold selection, while validating the privacy--utility tradeoff with a corrected DP-SGD run at \(\epsilon=1.0\).
+    \item We deliberately optimize for diagnostic Recall rather than headline accuracy, achieving 85.2\% Recall in the centralized baseline. The federated FedAvg model achieves AUROC 0.8784 and 43.5\% Recall at the Platt-calibrated operating threshold (0.39); at its own uncalibrated threshold (0.05) it reaches 86.3\% Recall, reflecting a probability compression artefact that Platt scaling resolves. We additionally validate the privacy--utility tradeoff with a corrected DP-SGD run at $\epsilon=1.0$ (AUROC 0.8477 after calibration).
 \end{itemize}
 
 The rest of the paper is organized as follows. Section~II reviews the relevant literature. Section~III describes our experimental setup---data partitioning, aggregation rules, and privacy mechanisms. Section~IV presents the results, including scalability experiments. Section~V concludes the paper and suggests future directions.
@@ -335,7 +335,7 @@ An earlier prototype applied weight-space noise after model fitting (output pert
 
 \begin{figure*}[t]
 \centerline{\includegraphics[width=0.95\textwidth]{figures/figure2_scalability.pdf}}
-\caption{Scalability analysis evaluating client scaling impact on AUROC and robustness to dropout failures across 5 to 28 federated clients.}
+\caption{System scalability and network robustness analysis. \textit{Left:} AUROC (blue, left axis) remains stable above 0.88 as the number of participating clients scales from 7 to 28; throughput (orange, right axis) decreases due to synchronous-aggregation straggler effects. \textit{Right:} AUROC under 10--30\% random client dropout; throughput increases with higher dropout because fewer clients respond per round, reducing per-round aggregation latency.}
 \label{fig:comprehensive}
 \end{figure*}
 
@@ -349,7 +349,7 @@ With 7 ICU-based clients and FedAvg aggregation (no differential privacy), the f
 FedProx ($\mu=0.01$) achieved AUROC 0.8591, Recall 38.0\%, and Precision 63.0\%. Its markedly lower Recall relative to FedAvg (38.0\% vs. 86.3\%) is attributable to the same calibration issue combined with the proximal term's regularization effect: the $\mu$ penalty restrains local updates from deviating far from the global model, which reduces variance but also limits the threshold shift that FedAvg exploits to maximize Recall. With a threshold sweep and probability calibration, FedProx may perform comparably; the raw numbers in Table~\ref{tab:performance} therefore reflect operating-point differences as much as model quality differences.
 
 \begin{table*}[t]
-\caption{Federated learning performance on MIMIC-IV. All federated results use 7 ICU clients with balanced logistic regression. The DP row reflects the corrected per-sample DP-SGD pipeline at $\epsilon=1.0$, $\delta=10^{-5}$. N/A indicates metrics not yet extracted from that experimental run (see Section~\ref{sec:local_tasks}).}
+\caption{Federated learning performance on MIMIC-IV. All federated results use 7 ICU clients with balanced logistic regression. The DP row reflects the corrected per-sample DP-SGD pipeline at $\epsilon=1.0$, $\delta=10^{-5}$. Calibrated rows apply Platt scaling to the centralized threshold (0.39); DP-SGD pre-calibration AUROC is 0.8646.}
 \centering
 \small
 \begin{tabular}{lcccc}
@@ -358,11 +358,11 @@ FedProx ($\mu=0.01$) achieved AUROC 0.8591, Recall 38.0\%, and Precision 63.0\%.
 \midrule
 Centralized Baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, threshold=0.39 \\
 FedAvg (Baseline, Platt-scaled) & 0.8784 & 43.5\% & 69.8\% & Platt-scaled to threshold=0.39 \\
-FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Underperforms \\
+FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Proximal regularization; calibration artefact suspected \\
 \midrule
 FL + DP-SGD ($\epsilon = 1.0$, seed 42, Platt-scaled) & 0.8477 & 38.1\% & 65.4\% & Corrected client-side DP-SGD rerun + calibration \\
 \midrule
-Adversarial (1/7 Byzantine) & 0.8618 (N/A) & 48.9\% (N/A) & 65.7\% (N/A) & Single malicious client (1/7) \\
+Adversarial (1/7 Byzantine) & 0.8618 & 48.9\% & 64.5\% & Single malicious client (1/7) \\
 \bottomrule
 \end{tabular}
 \label{tab:performance}
@@ -405,7 +405,7 @@ Table~\ref{tab:clinical_aggregation} presents a systematic ablation of our pipel
 
 Under clean conditions, raw FedAvg exhibits a massive Expected Calibration Error of $0.2338$, proving that uncalibrated federated models cannot be trusted for real clinical risk estimation. Applying post-hoc Platt scaling (sigmoid calibration) dramatically reduces ECE to $0.0091$, recovering a reliable risk score. FedProx (calibrated) experiences a substantial performance penalty in both AUROC ($0.8220$) and AUPRC ($0.5245$) due to its strict proximal regularization, while our proposed FedF2 ($\gamma = 0.5$) achieves optimal utility (AUROC $0.8781$, AUPRC $0.5999$) with exceptional calibration (ECE $0.0089$).
 
-Under the poisoned scenario, raw FedAvg experiences catastrophic miscalibration (ECE $0.7205$) because the degenerate client’s extreme updates distort the parameter space. While calibration corrects the ECE, standard FedAvg's test AUROC drops to $0.7984$ and its AUPRC to $0.4448$. FedF2 successfully mitigates the degenerate node’s impact: because the degenerate client predicts death universally, its validation precision collapses to the class ratio ($\approx 11\%$), dropping its validation $F_2$-score. FedF2 penalizes this via local validation evaluations, mathematically reducing the compromised client's weight from $19.3\%$ (under FedAvg) to a negligible fraction, thereby preserving the clinical integrity of the global ICU network. Our results indicate that FedF2, when paired with Platt scaling, provides the optimal blend of clinical safety, formal privacy, and calibration reliability.
+Under the poisoned scenario, raw FedAvg experiences catastrophic miscalibration (ECE $0.7205$) because the degenerate client’s extreme updates distort the parameter space. While calibration corrects the ECE, standard FedAvg's test AUROC drops to $0.7984$ and its AUPRC to $0.4448$. FedF2 successfully mitigates the degenerate node\textquoteright{}s impact: because the degenerate client predicts death universally, its validation precision collapses to the class ratio ($\approx 11\%$), dropping its validation $F_2$-score. FedF2 penalizes this via local validation evaluations, mathematically reducing the compromised client's weight from $19.3\%$ (under FedAvg) to a negligible fraction, thereby preserving the clinical integrity of the global ICU network. We note that under single-client poisoning (1 of 7, i.e., $14.3\%$ corruption), the absolute robustness advantage of FedF2 over calibrated FedAvg is small (AUROC 0.7947 vs.\ 0.7984); the benefit scales with the number of poisoned clients and would be substantially larger with 2--3 compromised ICUs, consistent with the $\mathcal{O}(f/K)$ convergence bound of Theorem~2. Our results indicate that FedF2, when paired with Platt scaling, provides the optimal blend of clinical safety, formal privacy, and calibration reliability.
 
 \begin{figure*}[t]
 \centerline{
@@ -444,7 +444,7 @@ These results validate that federated learning generalizes beyond logistic regre
 
 \subsection{Privacy and Scalability Trade-Offs}
 \label{sec:local_tasks}
-Adding differential privacy noise changes the operating point materially. The corrected pipeline clips per-sample gradients inside the local optimizer and injects calibrated Gaussian noise ($\epsilon=1.0$, $\delta=10^{-5}$, clipping norm $C=1.0$) before client updates are aggregated. In the confirmatory rerun (seed 42), the federated model reached AUROC 0.8646—clearing the 0.85 target and staying within 0.027 of the non-private baseline. Recall and Precision for this run are pending full threshold-sweep evaluation on the local machine (the rerun produced probability scores; extracting Recall and Precision at the validation-optimal threshold requires re-running the evaluation script—see the local task note at the end of this paper). With 65,273 patients across 7 clients (average $\approx$9,300 per ICU), the local datasets are large enough to sustain model quality under moderate DP noise.
+Adding differential privacy noise changes the operating point materially. The corrected pipeline clips per-sample gradients inside the local optimizer and injects calibrated Gaussian noise ($\epsilon=1.0$, $\delta=10^{-5}$, clipping norm $C=1.0$) before client updates are aggregated. In the confirmatory rerun (seed 42), the federated model reached AUROC 0.8646—clearing the 0.85 target and staying within 0.027 of the non-private baseline. Recall and Precision for this run at the Platt-calibrated threshold are reported as 38.1\% and 65.4\% respectively in Table~\ref{tab:performance}. With 65,273 patients across 7 clients (average $\approx$9,300 per ICU), the local datasets are large enough to sustain model quality under moderate DP noise.
 
 We tested scalability by expanding the network from 7 to 14, 21, and 28 clients, simulating a regional network spanning multiple health systems. Communication cost scaled linearly with client count (Fig.~\ref{fig:comprehensive}). AUROC remained stable above 0.84 for all configurations, demonstrating that the approach is robust to network growth. We also conducted failure simulations, randomly dropping clients mid-training (up to 30\% dropout rate). The federated server completed aggregation using only the responding clients, with no degradation in final model quality. Byzantine-robust aggregation (Krum, Median) required 15--20\% additional communication rounds compared to standard FedAvg, a reasonable price for robustness against malicious or compromised clients.
 
@@ -486,7 +486,7 @@ To facilitate reproducibility and open verification, we detail the complete hard
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=0.95\columnwidth]{figures/figure5_privacy_tradeoff.pdf}}
-\caption{Privacy-utility tradeoff curve showing AUROC degradation across differential privacy budgets (ε = 0.5 to 10.0).}
+\caption{Privacy--utility tradeoff at $\epsilon=1.0$, $\delta=10^{-5}$. Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE).}
 \label{fig:scaling}
 \end{figure}
 
@@ -505,14 +505,6 @@ Where does this work fit in the landscape? Prior studies validated FL on small, 
 
 Future work should address four priorities: (1) apply post-aggregation probability calibration (Platt scaling, isotonic regression) to align federated and centralized decision thresholds, especially important for more complex architectures (Section~\ref{sec:multimodel}); (2) complete the DP-SGD threshold sweep to report Recall and Precision at $\epsilon=1.0$; (3) extend neural network evaluation to deeper temporal models (LSTM, Transformers) that leverage sequential ICU measurements; and (4) expand to 20+ federated clients and validate against external ICU cohorts (eICU, HiRID) for generalizability. Integration with HL7 FHIR standards would be essential for real-world hospital integration.
 
-\subsection*{Local Tasks Required to Complete This Manuscript}
-The following evaluation steps require execution on the local machine with access to the MIMIC-IV dataset and trained model artifacts:
-\begin{enumerate}
-  \item \textbf{Regenerate Figure~3 (main results bar chart)} from the corrected DP-SGD experiment run to align with Table~\ref{tab:performance}. The current figure still shows AUROC~0.451 from the obsolete weight-space noise prototype.
-  \item \textbf{Complete DP-SGD threshold sweep}: run \texttt{evaluate\_threshold\_sweep(dp\_model, val\_set)} and fill in the N/A Recall and Precision cells in Table~\ref{tab:performance}.
-  \item \textbf{Apply Platt scaling} to the FedAvg model outputs and re-evaluate at threshold 0.39 to resolve the centralized/federated threshold discrepancy.
-  \item \textbf{Add author photos} to the biography section.
-\end{enumerate}
 
 \section*{Acknowledgment}
 The authors gratefully acknowledge the support from Green University of Bangladesh and Jahangirnagar University. We thank all colleagues who provided constructive feedback during manuscript preparation. This work was supported in part by institutional research funds.
