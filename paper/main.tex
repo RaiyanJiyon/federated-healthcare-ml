@@ -310,7 +310,7 @@ We analyze the computational burden and communication cost of each aggregation s
   Byzantine resilience: Tolerates up to $(K-1)/2$ corrupted clients; selection is computationally heavier than Median but geometrically robust.
 \end{description}
 
-In practice, on MIMIC-IV with $K=7$ ICU clients and $d=31$ clinical features, the aggregation overhead is negligible: FedAvg takes <0.1 ms, Median takes ~0.5 ms, and Krum takes ~2 ms. Communication dominates: each round transmits ~8.6 KB per client (7 clients × 31 features × 8 bytes per float32). Over 10 convergence rounds, total communication is ~600 KB per experiment---well within typical hospital network capacity.
+In practice, on MIMIC-IV with $K=7$ ICU clients and $d=31$ clinical features, the aggregation overhead is negligible: FedAvg takes $<$0.1 ms, Median takes ~0.5 ms, and Krum takes ~2 ms. Communication dominates: each round transmits ~8.6 KB per client (7 clients × 31 features × 8 bytes per float32). Over 10 convergence rounds, total communication is ~600 KB per experiment---well within typical hospital network capacity.
 
 \subsubsection{Formal Guarantees}
 
