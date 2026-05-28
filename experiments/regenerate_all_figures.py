@@ -262,32 +262,86 @@ def figure3_aggregation() -> None:
 
 
 def figure4_feature_drift() -> None:
-    aggregated = load_csv("exp5_feature_importance_aggregated.csv")
-    drift = load_csv("exp5_high_drift_features.csv")
+    # Load with feature names as index
+    aggregated = pd.read_csv(PLOTS_DIR / "exp5_feature_importance_aggregated.csv", index_col=0)
+    drift = pd.read_csv(PLOTS_DIR / "exp5_high_drift_features.csv", index_col=0)
+
+    # Complete mapping of Feature indices to clinical names from config
+    feature_names = {
+        "Feature_0": "Age",
+        "Feature_1": "Gender (Male)",
+        "Feature_2": "Emergency Admission",
+        "Feature_3": "Medicare Insurance",
+        "Feature_4": "Heart Rate (Mean)",
+        "Feature_5": "Heart Rate (Min)",
+        "Feature_6": "Heart Rate (Max)",
+        "Feature_7": "Systolic BP (Mean)",
+        "Feature_8": "Systolic BP (Min)",
+        "Feature_9": "Mean Arterial Pressure (Mean)",
+        "Feature_10": "Mean Arterial Pressure (Min)",
+        "Feature_11": "Respiratory Rate (Mean)",
+        "Feature_12": "Respiratory Rate (Max)",
+        "Feature_13": "Temperature (Mean)",
+        "Feature_14": "SpO₂ (Mean)",
+        "Feature_15": "SpO₂ (Min)",
+        "Feature_16": "Glucose (Mean)",
+        "Feature_17": "Creatinine (Max)",
+        "Feature_18": "BUN (Max)",
+        "Feature_19": "Sodium (Min)",
+        "Feature_20": "Sodium (Max)",
+        "Feature_21": "Potassium (Max)",
+        "Feature_22": "Bicarbonate (Min)",
+        "Feature_23": "Hemoglobin (Min)",
+        "Feature_24": "WBC (Max)",
+        "Feature_25": "Platelets (Min)",
+        "Feature_26": "Lactate (Max)",
+        "Feature_27": "Bilirubin (Max)",
+        "Feature_28": "INR (Max)",
+        "Feature_29": "SOFA Score",
+        "Feature_30": "SAPS II Score",
+        "Feature_31": "Charlson Index",
+    }
 
     sns.set_theme(style="white")
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
+    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
 
     top_mean = aggregated.head(10).iloc[::-1]
-    axes[0].barh(top_mean.index, top_mean["mean"], color=COLOR_PRIMARY, edgecolor="#2D3748", linewidth=0.5, height=0.6)
-    axes[0].set_title("Mean Feature Importance Across Sites")
-    axes[0].set_xlabel("Mean SHAP/Weight Importance")
+    # Rename features in the index
+    top_mean_labels = [feature_names.get(label, label) for label in top_mean.index]
+    axes[0].barh(range(len(top_mean)), top_mean["mean"], color=COLOR_PRIMARY, edgecolor="#2D3748", linewidth=0.5, height=0.7)
+    
+    # Explicitly set y-tick labels with proper encoding
+    axes[0].set_yticks(range(len(top_mean)), labels=top_mean_labels, fontsize=10)
+    axes[0].tick_params(axis='y', labelsize=10)
+    
+    axes[0].set_title("Mean Feature Importance Across Sites", fontsize=12, fontweight='bold')
+    axes[0].set_xlabel("Mean SHAP/Weight Importance", fontsize=11)
+    axes[0].margins(y=0.01)
     # Horizontal grid
     axes[0].grid(True, axis="x", color="#E2E8F0", linestyle="--", linewidth=0.5, alpha=0.7)
     axes[0].spines['top'].set_visible(False)
     axes[0].spines['right'].set_visible(False)
 
     top_drift = drift.head(10).iloc[::-1]
-    axes[1].barh(top_drift.index, top_drift["cv"], color=COLOR_ACCENT, edgecolor="#2D3748", linewidth=0.5, height=0.6)
-    axes[1].set_title("High-Drift Clinical Features")
-    axes[1].set_xlabel("Coefficient of Variation (CV)")
+    # Rename features in the index
+    top_drift_labels = [feature_names.get(label, label) for label in top_drift.index]
+    axes[1].barh(range(len(top_drift)), top_drift["cv"], color=COLOR_ACCENT, edgecolor="#2D3748", linewidth=0.5, height=0.7)
+    
+    # Explicitly set y-tick labels with proper encoding
+    axes[1].set_yticks(range(len(top_drift)), labels=top_drift_labels, fontsize=10)
+    axes[1].tick_params(axis='y', labelsize=10)
+    
+    axes[1].set_title("High-Drift Clinical Features", fontsize=12, fontweight='bold')
+    axes[1].set_xlabel("Coefficient of Variation (CV)", fontsize=11)
+    axes[1].margins(y=0.01)
     # Horizontal grid
     axes[1].grid(True, axis="x", color="#E2E8F0", linestyle="--", linewidth=0.5, alpha=0.7)
     axes[1].spines['top'].set_visible(False)
     axes[1].spines['right'].set_visible(False)
 
-    fig.suptitle("Clinical Feature Drift & Importance Across ICUs", y=1.02)
-    fig.tight_layout()
+    fig.suptitle("Clinical Feature Drift & Importance Across ICUs", y=0.99, fontsize=13, fontweight='bold')
+    # Use subplots_adjust with left margin to accommodate y-labels and space for title
+    plt.subplots_adjust(left=0.25, right=0.98, top=0.88, bottom=0.12, wspace=0.35)
     save_figure(fig, "figure4_feature_drift")
     plt.close(fig)
 
