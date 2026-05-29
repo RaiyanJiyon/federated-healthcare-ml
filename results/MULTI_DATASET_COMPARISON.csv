@@ -1,0 +1,15 @@
+Metric,MIMIC-IV,eICU-CRD
+Hospital/Care Units,7 care units,7 hospitals
+Training Samples,~45K,~15.5K
+Mortality Rate,10.8%,9.2%
+,,
+Centralized AUROC,0.8816,0.8441
+Federated AUROC,0.8783,0.8337
+AUROC Loss (%),0.38%,1.23%
+,,
+ECE (Original),0.2106,0.2635
+ECE (Calibrated),0.0191,0.0134
+ECE Improvement,0.1915,0.2501
+,,
+Test Recall,100.00%,100.00%
+Test Precision,10.83%,9.17%

@@ -17,17 +17,52 @@ PLOTS_DIR = RESULTS_DIR / "plots"
 for directory in [DATA_RAW_DIR, DATA_CACHE_DIR, DATA_PROCESSED_DIR, LOGS_DIR, PLOTS_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-# ===== GOOGLE BIGQUERY & MIMIC-IV SETUP =====
+# ===== GOOGLE BIGQUERY & DATASET SETUP =====
 GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID', 'mimic-iv-research-496704')
 BQ_BILLING_PROJECT = GCP_PROJECT_ID
-MIMIC_VERSION = "3.1"
 BQ_PROJECT_PHYSIONET = "physionet-data"
+
+# MIMIC-IV BigQuery settings
+MIMIC_VERSION = "3.1"
 BQ_DATASET_HOSP = f"{BQ_PROJECT_PHYSIONET}.mimiciv_{MIMIC_VERSION.replace('.', '_')}_hosp"
 BQ_DATASET_ICU = f"{BQ_PROJECT_PHYSIONET}.mimiciv_{MIMIC_VERSION.replace('.', '_')}_icu"
 BQ_DATASET_DERIVED = f"{BQ_PROJECT_PHYSIONET}.mimiciv_{MIMIC_VERSION.replace('.', '_')}_derived"
 
-# Local cache path for cohort
+# eICU-CRD BigQuery settings
+BQ_DATASET_EICU = f"{BQ_PROJECT_PHYSIONET}.eicu_crd"
+BQ_DATASET_EICU_DERIVED = f"{BQ_PROJECT_PHYSIONET}.eicu_crd_derived"
+
+# Dataset-specific cache paths
 COHORT_CACHE_PATH = DATA_CACHE_DIR / "mimic_iv_cohort.csv"
+EICU_COHORT_CACHE_PATH = DATA_CACHE_DIR / "eicu_cohort.csv"
+
+# ===== DATASET CONFIGURATION =====
+ACTIVE_DATASET = os.getenv('ACTIVE_DATASET', 'mimic_iv')  # 'mimic_iv' or 'eicu_crd'
+
+DATASET_CONFIG = {
+    'mimic_iv': {
+        'name': 'MIMIC-IV',
+        'cohort_cache': COHORT_CACHE_PATH,
+        'loader_module': 'src.data.loader',
+        'num_clients': 7,
+        'client_partition_strategy': 'care_unit',
+        'partition_key': 'first_careunit',
+        'client_key': 'stay_id',
+        'hospitals': None,
+        'default_hospitals': ['MICU', 'SICU', 'CCU', 'CVICU', 'Neuro SICU', 'TSICU', 'MICU/SICU'],
+    },
+    'eicu_crd': {
+        'name': 'eICU-CRD',
+        'cohort_cache': EICU_COHORT_CACHE_PATH,
+        'loader_module': 'src.data.eicu_loader',
+        'num_clients': 7,
+        'client_partition_strategy': 'hospital_id',
+        'partition_key': 'hospitalid',
+        'client_key': 'patientunitstayid',
+        'hospitals': None,  # Will be populated with top 7 hospitals by patient count
+        'default_hospitals': [],
+    }
+}
 
 # ===== DATASET CONFIGURATION =====
 PREDICTION_TASK = "mortality"
