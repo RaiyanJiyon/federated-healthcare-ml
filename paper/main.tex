@@ -623,9 +623,75 @@ We conducted a comprehensive Byzantine robustness evaluation (Section~\ref{sec:b
 
 FedProx ($\mu=0.01$) underperformed FedAvg on Recall in the current evaluation (38.0\% vs. 86.3\%), primarily due to probability calibration differences under weight averaging—a known artefact that post-hoc Platt scaling can correct. Byzantine-robust aggregation (Krum, Median) added resilience against malicious clients at the expense of 15--20\% additional communication overhead, which practitioners must weigh against their threat model.
 
-Three limitations bound these conclusions. First, the federated model requires a much lower decision threshold (0.05 vs. 0.39) to match centralized Recall, indicating uncalibrated probability outputs---post-aggregation Platt calibration is therefore a prerequisite for clinical application, as demonstrated in Table~\ref{tab:performance}. Second, while we validate our approach on two independent ICU datasets (MIMIC-IV, single institution; eICU-CRD, 7 hospitals), further validation on additional cohorts with different data characteristics (HiRID, AmsterdamUMCdb) would strengthen generalization claims. Third, we have completed initial neural network evaluation (MLP in Table~\ref{tab:multimodel_comparison}), showing comparable federated performance across architectures; deeper temporal models (LSTM, Transformers) that exploit sequential ICU measurements remain future work.
+\section*{Limitations}
 
-\subsection*{Implications for Healthcare Information Systems}
+\subsection*{Simulation vs. Real-World Network Deployment}
+
+This study is a \textbf{centralized simulation} of federated learning, not a deployed distributed system. All experiments run on a single CPU machine with data partitioned by array indices. This fundamental design choice limits generalizability in several ways:
+
+\paragraph{1. No Actual Network Communication.} 
+The current pipeline simulates aggregation without modeling actual network transmission. We estimated 600 KB communication per experiment based on parameter serialization alone. However, real-world hospital networks incur substantial overhead not captured here:
+\begin{itemize}
+    \item \textbf{Transport Layer:} TLS 1.3 handshakes (multi-round negotiation), certificate validation, and symmetric encryption add 5--15\% overhead.
+    \item \textbf{Serialization:} Python pickle, JSON, or Protocol Buffers introduce 10--40\% expansion depending on format; gzip compression helps but requires CPU cycles on resource-constrained hospital servers.
+    \item \textbf{Reliability:} Automatic retries, exponential backoff on failure, and timeout handling can triple latency under congestion or packet loss.
+    \item \textbf{Hospital Network Constraints:} Many healthcare institutions route traffic through VPN tunnels, firewalls, and intrusion detection systems that impose additional queuing delays. Bandwidth is often throttled to 10--100 Mbps on clinical networks, compared to gigabit or higher in research labs.
+\end{itemize}
+A realistic estimate: \textbf{actual per-round communication could be 6--60 MB} (10--100x our theoretical minimum), translating to minutes rather than milliseconds per aggregation round. For a 10-round FL training loop, this could mean hours of network time on constrained hospital infrastructure.
+
+\paragraph{2. Synchronous Aggregation Assumption.} 
+Our implementation requires all 7 clients to submit updates before aggregation proceeds (bulk synchronous parallel, BSP). Real federated systems handle asynchronous behavior: some hospitals may be offline, experiencing outages, or running training on older hardware that is slower. A production system must implement:
+\begin{itemize}
+    \item Timeout logic: wait $T$ seconds for client responses, then aggregate with responding participants.
+    \item Stragglers: clients with slow networks or old CPUs may lag behind, causing global delays.
+    \item Fault tolerance: clients joining or leaving mid-training; partial update recovery if a client crashes.
+\end{itemize}
+Our current architecture does not model these. Asynchronous aggregation methods (e.g., FedAsync \cite{yang2020federated}) are left to future work.
+
+\paragraph{3. No Hardware Heterogeneity.}
+We assume all 7 ICU clients have identical computational capacity and network connectivity. In reality, hospital IT infrastructure varies dramatically: a large academic medical center may have modern servers and gigabit connectivity, while a rural or community hospital operates older workstations on constrained bandwidth. This heterogeneity affects:
+\begin{itemize}
+    \item Local training time: a client on old hardware may take 10--50x longer to complete local epochs.
+    \item Dropout impact: when clients are slow or go offline, global model convergence can be severely degraded if not handled explicitly.
+\end{itemize}
+Our scalability analysis (Fig.~\ref{fig:comprehensive}) shows robustness to client dropout, but the computational delays of heterogeneous hardware remain unmodeled.
+
+\subsection*{Clinical and Methodological Limitations}
+
+Beyond network assumptions, several clinical and modeling factors constrain the scope of conclusions:
+
+\paragraph{1. Probability Calibration Requirement.}
+The federated model produces uncalibrated probability outputs, with decision thresholds shifting from 0.39 (centralized) to 0.05 (federated) to maximize Recall. Post-aggregation Platt scaling is a prerequisite for clinical application. While calibration is mathematically sound and widely used \cite{saito2015precision}, it introduces an additional hyperparameter that must be tuned on validation data at each deployment site. In practice, clinicians expect confidence scores to be reliable without post-hoc correction; misalignment between predicted probabilities and actual risk is a known barrier to clinical adoption of ML systems \cite{hripcsak2013opportunities}.
+
+\paragraph{2. Limited External Validation Scope.}
+We validate on two ICU cohorts: MIMIC-IV (single US institution, 65,273 patients) and eICU-CRD (seven US hospitals, 131,464 patients). Both are US-based and reflect North American ICU populations and EHR practices. Generalization to non-US healthcare systems (European, Asian, African settings with different EHR vocabularies, clinical workflows, and population characteristics) is unvalidated. Additionally, MIMIC-IV and eICU-CRD were collected in 2008--2015; modern ICUs may have different disease prevalence, treatment protocols, and measurement practices.
+
+\paragraph{3. Temporal and Sequential Information Unused.}
+Our 31-feature clinical input set is static: demographic and vital signs aggregated over the first 24 hours, plus laboratory values, but without temporal sequencing or trends. Modern deep learning and sequential models (LSTM, Transformer) often outperform tabular approaches on clinical time-series data \cite{rajkomar2018scalable}. We evaluated a basic MLP (Table~\ref{tab:multimodel_comparison}) but did not extend to recurrent or attention-based architectures. This omission means our federated performance estimates may be conservative; conversely, sequential models are substantially harder to federate (weight sharing is more complex), and their federated performance is unknown.
+
+\paragraph{4. Single-Outcome Task.}
+We focus on hospital mortality prediction. Federated learning in real healthcare networks will likely handle multiple tasks: length of stay prediction, readmission risk, sepsis onset detection, etc. Cross-task and multi-task federated learning are active research areas with unresolved challenges around model architecture heterogeneity and label scarcity \cite{bonawitz2019towards}.
+
+\paragraph{5. Data Heterogeneity Simulation.}
+Our Non-IID partitioning is realistic in terms of \emph{data distribution} (different ICUs have different patient populations), but not in terms of \emph{feature representation}. Real hospitals use different EHR systems (Epic, Cerner, Medidata, etc.), which map the same clinical concept to different vocabularies, units, and measurement protocols. For example, hemoglobin might be reported in g/dL in one system and g/L in another; temperature in Fahrenheit vs. Celsius. Our study assumes all 7 ICUs report identical 31 features in identical units---a strong assumption that real hospital networks must relax via semantic mapping and feature harmonization \cite{antunes2022federated}.
+
+\subsection*{Bridge to Real-World Deployment}
+
+Despite these limitations, this work provides a solid foundation for real-world federated learning in healthcare. To progress from simulation to actual deployment, the following steps are recommended:
+
+\begin{enumerate}
+    \item \textbf{Network Testbed (Pilot Phase):} Integrate the federated pipeline with 2--3 real hospital EHR systems (starting with FHIR-compliant APIs or HL7 standards) to measure actual communication overhead, identify serialization bottlenecks, and validate asynchronous aggregation logic under real network conditions.
+    \item \textbf{Asynchronous Aggregation:} Implement FedAsync or similar methods that tolerate stragglers and dropouts, moving away from the current bulk synchronous paradigm.
+    \item \textbf{Hardware Heterogeneity:} Extend the framework to handle clients with different computational capacities, using adaptive batch sizing or model compression techniques.
+    \item \textbf{Semantic Interoperability:} Develop automated feature harmonization and vocabulary mapping to bridge EHR system differences.
+    \item \textbf{Multi-Outcome Models:} Extend to clinically relevant multi-task scenarios (mortality, LOS, readmission) and measure federated performance on complex clinical workflows.
+\end{enumerate}
+
+\subsection*{Summary of Current Study's Scope}
+
+To be precise about our contribution: this study \textbf{validates that federated learning can preserve clinical utility under realistic data heterogeneity as simulated on a single machine}. We demonstrate that Byzantine-robust aggregation and differential privacy can be integrated into a practical federated pipeline, and that gradient-boosting models (XGBoost) may be better suited to federated learning than neural networks on healthcare tabular data. The gap between this simulation and a deployed 20-hospital network is substantial but bridgeable; the algorithmic foundations are sound, and the primary remaining challenges are operational (network integration, asynchronous coordination, EHR interoperability) rather than fundamental limitations on federated learning itself.
+
+\section*{Implications for Healthcare Information Systems}
 Our findings have direct implications for hospital information technology (IT) infrastructure and health information exchange networks. Most healthcare institutions today operate in data silos, unable to leverage multi-institutional datasets for model development due to regulatory and security concerns. Federated learning offers one option: hospitals can train collaborative models using only local computational resources and low-bandwidth updates, without implementing expensive secure data enclaves or third-party data intermediaries. The Byzantine-robust aggregation methods (Median, Krum) provide additional protection against compromised client sites---a realistic concern in healthcare environments vulnerable to ransomware and insider threats. With 15--20\% additional communication overhead, Byzantine defenses are a reasonable investment in multi-hospital networks where client integrity cannot be guaranteed.
 
 Where does this work fit in the landscape? Prior studies validated FL on small, synthetic, or heavily engineered datasets. Our contribution is evaluating the approach on large, messy, real-world intensive care databases with heterogeneous federated partitioning—scenarios similar to those hospitals face in practice. We extend prior work by providing the first comprehensive empirical evaluation of Byzantine robustness under multiple attack types and attacker counts, and the first multi-dataset federated validation across independent hospital systems (MIMIC-IV single institution vs. eICU-CRD 7 hospitals). The 31 clinical features (vitals, labs, risk scores) reflect what clinicians actually have access to, not toy problems. Our results suggest that privacy-preserving federated learning, when paired with robust aggregation, is a viable candidate for deployment in multi-hospital healthcare networks.
