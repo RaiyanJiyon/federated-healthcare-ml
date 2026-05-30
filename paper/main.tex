@@ -317,7 +317,7 @@ With 7 ICU-based clients and FedAvg aggregation (no differential privacy), the f
 FedProx ($\mu=0.01$) achieved AUROC 0.8591, Recall 38.0\%, and Precision 63.0\%. Its lower Recall versus FedAvg is a calibration/operating-point artefact: the $\mu$ penalty restrains local updates, limiting the threshold shift FedAvg exploits at threshold 0.05. With consistent calibration, FedProx may perform comparably; Table~\ref{tab:performance} numbers reflect operating-point differences as much as model quality.
 
 \begin{table*}[t]
-\caption{Federated learning performance on MIMIC-IV. All federated results use 7 ICU clients with balanced logistic regression. The DP row reflects the corrected per-sample DP-SGD pipeline at $\epsilon=4.36$, $\delta=10^{-5}$ (verified via moments accountant for $T=20$ rounds). Calibrated rows apply Platt scaling to the centralized threshold (0.39); DP-SGD pre-calibration AUROC is 0.8646.}
+\caption{Federated learning performance on MIMIC-IV baseline validation (5 rounds, 7 ICU clients). All federated results use balanced logistic regression with Platt calibration applied to decision threshold (0.39). The DP row reflects the corrected per-sample DP-SGD pipeline at $\epsilon=4.36$, $\delta=10^{-5}$ (verified via moments accountant for $T=20$ rounds, then evaluated at 5 rounds with Platt calibration); DP-SGD pre-calibration AUROC at 5 rounds is 0.8646.}
 \centering
 \small
 \begin{tabular}{lcccc}
@@ -462,10 +462,12 @@ Aggregation strategies compared:
     \item \textbf{FedF2} ($\gamma=0.5$): Clinical F2-score weighted aggregation (proposed).
 \end{itemize}
 
+To measure convergence behavior and robustness across training dynamics, we run all aggregation methods for 20 rounds (vs.\ the 5-round baseline in Table~\ref{tab:performance}) without Platt calibration, allowing each algorithm's natural behavior to emerge under attack. This extended study reveals how different aggregation strategies generalize across longer training horizons.
+
 \subsubsection{Results and Key Findings}
 
 \begin{table*}[t]
-\caption{Comprehensive Byzantine robustness evaluation on MIMIC-IV. All results show test AUROC under clean and adversarial conditions with 1, 2, or 3 malicious clients. FedF2 is vulnerable to severe label-flip attacks (3+ malicious), while Median aggregation provides the strongest empirical robustness.}
+\caption{Byzantine robustness on MIMIC-IV convergence study (20 rounds, 7 ICU clients, raw model outputs without Platt calibration). Each aggregation method (FedAvg, FedProx, Median, Krum, FedF2) runs for 20 rounds without recalibration to test convergence under adversarial conditions. Results show test AUROC under clean conditions and label-flip attacks with 1, 2, or 3 malicious clients. Note: FedProx AUROC differs from Table~\ref{tab:performance} (0.7721 vs 0.8591) due to 20 rounds vs 5 rounds and absence of Platt calibration.}
 \centering
 \small
 \begin{tabular}{lccccc}
