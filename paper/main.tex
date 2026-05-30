@@ -274,7 +274,7 @@ Krum~\cite{blanchard2017machine} selects the update closest to the group consens
 
 We implement a Gaussian mechanism inside the client optimizer rather than after model fitting. At each communication round, the client (1) clips per-sample gradients to the configured norm bound, (2) adds calibrated Gaussian noise to the averaged clipped gradient, (3) sends the privatized update to the server for aggregation, while (4) tracking the configured $(\epsilon, \delta)$ budget per run.
 
-With our settings ($\epsilon = 1.0, \delta = 10^{-5}$), the noise magnitude is large enough to produce the privacy--utility tradeoff observed in Table~\ref{tab:performance}.
+With our verified settings ($\epsilon = 4.36, \delta = 10^{-5}$), the noise magnitude is calibrated to provide formal privacy guarantees while maintaining utility, producing the privacy--utility tradeoff observed in Table~\ref{tab:performance}.
 
 \subsubsection{Convergence Analysis and Non-IID Heterogeneity}
 
@@ -290,7 +290,7 @@ FedAvg runs in $O(K \cdot d)$ per round. Median adds a $\log K$ factor ($O(K d \
 
 \subsubsection{Formal Guarantees}
 
-While full proofs are beyond journal scope, three guarantees underpin our design. \textbf{(T1 Convergence)} Under strong convexity and bounded gradients, FedAvg converges at $\mathcal{O}(1/\sqrt{T})$; with Non-IID data the constant factor scales with $\sigma^2_{\text{het}}$ but the rate is preserved \cite{li2020convergence}. \textbf{(T2 Byzantine Robustness)} If $f < K/2$ clients are Byzantine, Median or Krum converges to within $\mathcal{O}(f/K)$ of the optimum \cite{blanchard2017machine,chen2019draco}; with $K=7$ we tolerate up to $f=3$ malicious ICUs. \textbf{(T3 Differential Privacy)} Per-sample gradient clipping plus Gaussian noise at $(\epsilon{=}1.0,\delta{=}10^{-5})$ yields the measurable privacy--utility tradeoff in Table~\ref{tab:performance}, consistent with the Gaussian mechanism \cite{abadi2016deep,dwork2014algorithmic}. Each defense layer has a clear operational role and does not alter the $\mathcal{O}(1/\sqrt{T})$ scaling beyond a constant factor.
+While full proofs are beyond journal scope, three guarantees underpin our design. \textbf{(T1 Convergence)} Under strong convexity and bounded gradients, FedAvg converges at $\mathcal{O}(1/\sqrt{T})$; with Non-IID data the constant factor scales with $\sigma^2_{\text{het}}$ but the rate is preserved \cite{li2020convergence}. \textbf{(T2 Byzantine Robustness)} If $f < K/2$ clients are Byzantine, Median or Krum converges to within $\mathcal{O}(f/K)$ of the optimum \cite{blanchard2017machine,chen2019draco}; with $K=7$ we tolerate up to $f=3$ malicious ICUs. \textbf{(T3 Differential Privacy)} Per-sample gradient clipping plus Gaussian noise at $(\epsilon{=}4.36,\delta{=}10^{-5})$ (verified via moments accountant) yields the measurable privacy--utility tradeoff in Table~\ref{tab:performance}, consistent with the Gaussian mechanism \cite{abadi2016deep,dwork2014algorithmic}. Each defense layer has a clear operational role and does not alter the $\mathcal{O}(1/\sqrt{T})$ scaling beyond a constant factor.
 
 \subsection{Differential Privacy Constraints}
 We implement differential privacy at the client level using the Gaussian mechanism of Abadi et al.\ \cite{abadi2016deep} applied \emph{inside} the local optimizer. Before transmitting any update to the server, each client: (1) computes per-sample gradients on a mini-batch, (2) clips each sample gradient to $\ell_2$ norm $C=1.0$, (3) averages the clipped gradients across the batch, and (4) adds zero-mean Gaussian noise calibrated to $(\epsilon, \delta) = (4.36, 10^{-5})$ (verified via moments accountant) before applying the stochastic gradient step. This per-sample clipping-and-noise procedure is applied at every local training step, so the transmitted weight update $\Delta w_k^t$ carries the formal DP guarantee of the Gaussian mechanism \cite{dwork2014algorithmic}.
@@ -328,7 +328,7 @@ Centralized Baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, threshold=0.39 \\
 FedAvg (Baseline, Platt-scaled) & 0.8784 & 43.5\% & 69.8\% & Platt-scaled to threshold=0.39 \\
 FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Proximal regularization; Recall gap is operating-point/calibration artefact \\
 \midrule
-FL + DP-SGD ($\epsilon = 1.0$, seed 42, Platt-scaled) & 0.8477 & 38.1\% & 65.4\% & Corrected client-side DP-SGD rerun + calibration \\
+FL + DP-SGD ($\epsilon = 4.36$, seed 42, Platt-scaled) & 0.8477 & 38.1\% & 65.4\% & Corrected per-sample DP-SGD rerun + calibration \\
 \midrule
 Adversarial (1/7 Byzantine) & 0.8618 & 48.9\% & 64.5\% & Single malicious client (1/7) \\
 \bottomrule
