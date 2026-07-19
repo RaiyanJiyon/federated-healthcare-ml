@@ -21,11 +21,6 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
-\bibitem{nguyen2022federated}
-D.~C. Nguyen, Q.-V. Pham, P.~N. Pathirana, M.~Ding, A.~Seneviratne, Z.~Lin,
-  O.~Dobre, and W.-J. Hwang, ``Federated learning for smart healthcare: A
-  survey,'' \emph{ACM Computing Surveys}, vol.~55, no.~3, pp. 1--37, 2022.
-
 \bibitem{price2019privacy}
 W.~N. Price and I.~G. Cohen, ``Privacy in the age of medical big data,''
   \emph{Nature medicine}, vol.~25, no.~1, pp. 37--43, 2019.
@@ -40,6 +35,11 @@ J.~Wiens, S.~Saria, M.~Sendak, M.~Ghassemi, V.~X. Liu, F.~Doshi-Velez,
 V.~Mothukuri, R.~M. Parizi, S.~Pouriyeh, Y.~Huang, A.~Dehghantanha, and
   G.~Srivastava, ``A survey on security and privacy of federated learning,''
   \emph{Future Generation Computer Systems}, vol. 115, pp. 619--640, 2021.
+
+\bibitem{nguyen2022federated}
+D.~C. Nguyen, Q.-V. Pham, P.~N. Pathirana, M.~Ding, A.~Seneviratne, Z.~Lin,
+  O.~Dobre, and W.-J. Hwang, ``Federated learning for smart healthcare: A
+  survey,'' \emph{ACM Computing Surveys}, vol.~55, no.~3, pp. 1--37, 2022.
 
 \bibitem{mcmahan2017communication}
 B.~McMahan, E.~Moore, D.~Ramage, S.~Hampson, and B.~A. y~Arcas,
@@ -149,6 +149,14 @@ G.~A. Kaissis, M.~R. Makowski, D.~R{\"u}ckert, and R.~F. Braren, ``Secure,
   privacy-preserving and federated machine learning in medical imaging,''
   \emph{Nature Machine Intelligence}, vol.~2, no.~6, pp. 305--311, 2020.
 
+\bibitem{zhao2025privacy}
+\BIBentryALTinterwordspacing
+H.~Zhao, D.~Sui, Y.~Wang, L.~Ma, and L.~Wang, ``Privacy-preserving federated
+  learning framework for multi-source electronic health records prognosis
+  prediction,'' \emph{Sensors}, vol.~25, no.~8, p. 2374, 2025. [Online].
+  Available: \url{https://www.mdpi.com/1424-8220/25/8/2374}
+\BIBentrySTDinterwordspacing
+
 \bibitem{li2020convergence}
 \BIBentryALTinterwordspacing
 X.~Li, K.~Huang, W.~Yang, S.~Wang, and Z.~Zhang, ``On the convergence of fedavg
@@ -157,23 +165,17 @@ X.~Li, K.~Huang, W.~Yang, S.~Wang, and Z.~Zhang, ``On the convergence of fedavg
   \url{https://openreview.net/forum?id=HJxNAnVtDS}
 \BIBentrySTDinterwordspacing
 
-\bibitem{fallah2020personalized}
-A.~Fallah, A.~Mokhtari, and A.~Ozdaglar, ``Personalized federated learning with
-  theoretical guarantees: A model-agnostic meta-learning approach,'' in
-  \emph{Advances in Neural Information Processing Systems}, vol.~33, 2020, pp.
-  3557--3568.
-
 \bibitem{li2021ditto}
 T.~Li, S.~Hu, A.~Beirami, and V.~Smith, ``Ditto: Fair and robust federated
   personalization,'' in \emph{Proceedings of the 38th International Conference
   on Machine Learning (ICML)}.\hskip 1em plus 0.5em minus 0.4em\relax PMLR,
   2021, pp. 6357--6368.
 
-\bibitem{hsieh2020non}
-K.~Hsieh, A.~Phanishayee, O.~Mutlu, and P.~B. Gibbons, ``The non-{IID} data
-  quagmire of decentralized machine learning,'' in \emph{Proceedings of the
-  37th International Conference on Machine Learning ({ICML})}.\hskip 1em plus
-  0.5em minus 0.4em\relax PMLR, 2020, pp. 4387--4398.
+\bibitem{fallah2020personalized}
+A.~Fallah, A.~Mokhtari, and A.~Ozdaglar, ``Personalized federated learning with
+  theoretical guarantees: A model-agnostic meta-learning approach,'' in
+  \emph{Advances in Neural Information Processing Systems}, vol.~33, 2020, pp.
+  3557--3568.
 
 \bibitem{shokri2016membership}
 R.~Shokri, M.~Stronati, C.~Song, and V.~Shmatikov, ``Membership inference
@@ -188,23 +190,6 @@ M.~Fredrikson, S.~Jha, and T.~Ristenpart, ``Model inversion attacks that
   Communications Security}.\hskip 1em plus 0.5em minus 0.4em\relax ACM, 2015,
   pp. 1322--1333.
 
-\bibitem{mhamdi2018bulyan}
-E.~M.~E. Mhamdi, R.~Guerraoui, and S.~Rouault, ``The hidden vulnerability of
-  distributed learning in byzantium,'' in \emph{International Conference on
-  Machine Learning}.\hskip 1em plus 0.5em minus 0.4em\relax PMLR, 2018, pp.
-  3521--3530.
-
-\bibitem{chen2019draco}
-L.~Chen, H.~Wang, Z.~Charles, and D.~Papailiopoulos, ``{DRACO}:
-  Byzantine-resilient distributed training via redundant gradients,'' in
-  \emph{Proceedings of the 35th International Conference on Machine Learning
-  ({ICML})}.\hskip 1em plus 0.5em minus 0.4em\relax PMLR, 2018, pp. 912--921.
-
-\bibitem{damaskinos2020byzantine}
-G.~Damaskinos, E.~M. El~Mhamdi, R.~Guerraoui, R.~Pawan, and A.~Singla,
-  ``Byzantine-resilient federated machine learning through adaptive
-  f-divergence regularization,'' arXiv preprint arXiv:2003.00254, 2020.
-
 \bibitem{blanchard2017machine}
 P.~Blanchard, R.~El~Mghari, R.~Guerraoui, and J.~Stainer, ``Machine learning
   with adversaries: Byzantine tolerant gradient descent,'' in \emph{Advances in
@@ -216,42 +201,27 @@ D.~Yin, Y.~Chen, R.~Kannan, and P.~Bartlett, ``Byzantine-robust distributed
   Conference on Machine Learning}.\hskip 1em plus 0.5em minus 0.4em\relax PMLR,
   2018, pp. 5650--5659.
 
-\bibitem{bonawitz2019towards}
-K.~Bonawitz, H.~Eichner, W.~Grieskamp, D.~Huba, A.~Ingerman, V.~Ivanov
-  \emph{et~al.}, ``Towards federated learning at scale: System design,''
-  \emph{Proceedings of Machine Learning and Systems}, vol.~1, pp. 374--388,
-  2019.
+\bibitem{rajkomar2018scalable}
+A.~Rajkomar, E.~Oren, K.~Chen, A.~M. Dai, N.~Hajaj, M.~Hardt \emph{et~al.},
+  ``Scalable and accurate deep learning with electronic health records,''
+  \emph{NPJ Digital Medicine}, vol.~1, no.~1, p.~18, 2018.
 
-\bibitem{bell2020secure}
-J.~H. Bell, K.~A. Bonawitz, A.~Gasc{\'o}n, T.~Lepoint, and M.~Raykova, ``Secure
-  single-server aggregation with sublinear overhead,'' in \emph{Proceedings of
-  the 2020 ACM SIGSAC Conference on Computer and Communications
-  Security}.\hskip 1em plus 0.5em minus 0.4em\relax ACM, 2020, pp. 1253--1269.
-
-\bibitem{wang2020fedavg}
-J.~Wang, Q.~Liu, H.~Liang, G.~Joshi, and H.~V. Poor, ``Tackling the objective
-  inconsistency problem in heterogeneous federated optimization,'' in
-  \emph{Advances in Neural Information Processing Systems}, vol.~33, 2020, pp.
-  7611--7623.
+\bibitem{mujtaba2019clinical}
+G.~Mujtaba, L.~Shuib, R.~G. Raj, R.~Rajandram, S.~Khan \emph{et~al.},
+  ``Clinical decision support systems: A systematic literature review and
+  meta-analysis,'' \emph{Journal of Medical Systems}, vol.~41, no.~4, pp.
+  1--12, 2017.
 
 \bibitem{saito2015precision}
 T.~Saito and M.~Rehmsmeier, ``The precision-recall plot is more informative
   than the roc plot when evaluating binary classifiers on imbalanced
   datasets,'' \emph{PloS one}, vol.~10, no.~3, p. e0118432, 2015.
 
-\bibitem{pristrom2020hipaa}
-{U.S. Department of Health and Human Services}, ``Modifications to the {HIPAA}
-  privacy, security, enforcement, and breach notification rules under the
-  {Health Information Technology for Economic and Clinical Health Act} and the
-  {Genetic Information Nondiscrimination Act},'' Office for Civil Rights, U.S.
-  Department of Health and Human Services, Tech. Rep. 78 FR 5566, 2013, federal
-  Register, Vol. 78, No. 17. Effective March 26, 2013; compliance required by
-  September 23, 2013.
-
-\bibitem{politou2019handling}
-E.~Politou, E.~Alepis, and C.~Patsakis, ``Handling healthcare data with gdpr
-  compliance,'' \emph{International Journal of Medical Informatics}, vol. 131,
-  p. 103995, 2019.
+\bibitem{hripcsak2013opportunities}
+G.~Hripcsak and D.~J. Albers, ``Opportunities for ehr-enabled health
+  research,'' in \emph{Health Informatics: Practical Guide to Designing and
+  Implementing EHR Systems}.\hskip 1em plus 0.5em minus 0.4em\relax Springer,
+  2013, pp. 178--198.
 
 \bibitem{PhysioNet-mimiciv-3.1}
 \BIBentryALTinterwordspacing
@@ -290,22 +260,11 @@ H.~Wang, M.~Yurochkin, Y.~Sun, D.~Papailiopoulos, and Y.~Khazaeni, ``Federated
   \url{https://openreview.net/forum?id=BkluqlSFDS}
 \BIBentrySTDinterwordspacing
 
-\bibitem{rajkomar2018scalable}
-A.~Rajkomar, E.~Oren, K.~Chen, A.~M. Dai, N.~Hajaj, M.~Hardt \emph{et~al.},
-  ``Scalable and accurate deep learning with electronic health records,''
-  \emph{NPJ Digital Medicine}, vol.~1, no.~1, p.~18, 2018.
-
-\bibitem{mujtaba2019clinical}
-G.~Mujtaba, L.~Shuib, R.~G. Raj, R.~Rajandram, S.~Khan \emph{et~al.},
-  ``Clinical decision support systems: A systematic literature review and
-  meta-analysis,'' \emph{Journal of Medical Systems}, vol.~41, no.~4, pp.
-  1--12, 2017.
-
-\bibitem{hripcsak2013opportunities}
-G.~Hripcsak and D.~J. Albers, ``Opportunities for ehr-enabled health
-  research,'' in \emph{Health Informatics: Practical Guide to Designing and
-  Implementing EHR Systems}.\hskip 1em plus 0.5em minus 0.4em\relax Springer,
-  2013, pp. 178--198.
+\bibitem{wang2020fedavg}
+J.~Wang, Q.~Liu, H.~Liang, G.~Joshi, and H.~V. Poor, ``Tackling the objective
+  inconsistency problem in heterogeneous federated optimization,'' in
+  \emph{Advances in Neural Information Processing Systems}, vol.~33, 2020, pp.
+  7611--7623.
 
 \bibitem{delong1988comparing}
 E.~R. DeLong, D.~M. DeLong, and D.~L. Clarke-Pearson, ``Comparing the areas
@@ -318,12 +277,5 @@ T.~J. Pollard, A.~E.~W. Johnson, J.~D. Raffa, L.~A. Celi, R.~G. Mark, and
   O.~Badawi, ``The {eICU} collaborative research database, a freely available
   multi-center database for critical care research,'' \emph{Scientific Data},
   vol.~5, no.~1, p. 180178, 2018.
-
-\bibitem{yang2020federated}
-J.~Nguyen, K.~Malik, H.~Zhan, A.~Yousefpour, M.~Rabbat, M.~Malek, and D.~Huba,
-  ``Federated learning with buffered asynchronous aggregation,'' in
-  \emph{International Conference on Artificial Intelligence and
-  Statistics}.\hskip 1em plus 0.5em minus 0.4em\relax PMLR, 2022, pp.
-  3581--3607.
 
 \end{thebibliography}
