@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.5.27)  19 JUL 2026 16:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.5.27)  19 JUL 2026 16:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -842,6 +842,11 @@ File: fig.png Graphic file (type png)
 <use fig.png>
 Package pdftex.def Info: fig.png  used on input line 91.
 (pdftex.def)             Requested size: 490.19843pt x 221.72772pt.
+
+Underfull \hbox (badness 1917) in paragraph at lines 102--103
+[]\OT1/ptm/m/n/10 Moving from con-trolled ex-per-i-ments to ac-tual hos-pi-
+ []
+
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-
 dist/fonts/enc/dvips/base/8r.enc}
 
@@ -858,81 +863,70 @@ Underfull \hbox (badness 2707) in paragraph at lines 149--150
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
 put line 228.
 
-Underfull \hbox (badness 1946) in paragraph at lines 251--254
+Underfull \hbox (badness 1946) in paragraph at lines 251--256
 \OT1/ptm/m/n/10 works: We pro-pose performance-weighting, an ap-proach
  []
 
 [4]
-Underfull \hbox (badness 1424) in paragraph at lines 262--272
+Underfull \hbox (badness 1424) in paragraph at lines 257--267
 []\OT1/ptm/m/n/10 Motivation and Scope. The use of performance-based
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 295--296
+Underfull \hbox (badness 10000) in paragraph at lines 289--290
  \OT1/ptm/m/it/10 2) Coordinate-Wise Me-dian Ag-gre-ga-tion: [][][] \OT1/ptm/m/
 n/10 Let
  []
 
 [5]
-<figures/figure2_scalability.pdf, id=290, 846.41219pt x 309.5501pt>
+<figures/figure2_scalability.pdf, id=291, 846.41219pt x 309.5501pt>
 File: figures/figure2_scalability.pdf Graphic file (type pdf)
 <use figures/figure2_scalability.pdf>
-Package pdftex.def Info: figures/figure2_scalability.pdf  used on input line 35
-1.
+Package pdftex.def Info: figures/figure2_scalability.pdf  used on input line 34
+5.
 (pdftex.def)             Requested size: 490.19843pt x 179.27466pt.
  [6 <./figures/figure2_scalability.pdf>]
-Overfull \hbox (82.16684pt too wide) in paragraph at lines 386--400
+Overfull \hbox (82.16684pt too wide) in paragraph at lines 378--392
  [][] 
  []
 
 
-Overfull \hbox (116.12173pt too wide) in paragraph at lines 421--436
+Overfull \hbox (116.12173pt too wide) in paragraph at lines 412--427
  [][] 
  []
 
-
-Underfull \hbox (badness 3088) in paragraph at lines 414--441
-\OT1/ptm/m/n/10 client. The ar-ti-fi-cial de-gen-er-ate client is sim-u-lated b
-y
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 414--441
-
- []
-
-<figures/reliability_curves.pdf, id=325, 385.64076pt x 336.74872pt>
+<figures/reliability_curves.pdf, id=326, 385.64076pt x 336.74872pt>
 File: figures/reliability_curves.pdf Graphic file (type pdf)
 <use figures/reliability_curves.pdf>
-Package pdftex.def Info: figures/reliability_curves.pdf  used on input line 453
+Package pdftex.def Info: figures/reliability_curves.pdf  used on input line 442
 .
 (pdftex.def)             Requested size: 247.6778pt x 216.28404pt.
-<figures/precision_recall_curves.pdf, id=326, 385.64076pt x 336.74872pt>
+<figures/precision_recall_curves.pdf, id=327, 385.64076pt x 336.74872pt>
 File: figures/precision_recall_curves.pdf Graphic file (type pdf)
 <use figures/precision_recall_curves.pdf>
 Package pdftex.def Info: figures/precision_recall_curves.pdf  used on input lin
-e 453.
+e 442.
 (pdftex.def)             Requested size: 247.6778pt x 216.28404pt.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 463.
+            Default family used instead on input line 452.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 463.
+            Default family used instead on input line 452.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 463.
+            Default family used instead on input line 452.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 464.
+            Default family used instead on input line 453.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 464.
+            Default family used instead on input line 453.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 464.
+            Default family used instead on input line 453.
 
-Overfull \hbox (18.8297pt too wide) in paragraph at lines 473--483
+Overfull \hbox (18.8297pt too wide) in paragraph at lines 462--472
  [][] 
  []
 
@@ -945,17 +939,17 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
  [8 <./figures/reliability_curves.pdf> <./figures/precision_recall_curves.pdf>]
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 500.
+            Default family used instead on input line 488.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 501.
+            Default family used instead on input line 489.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 502.
+            Default family used instead on input line 490.
 <figures/xgboost_comparison.pdf, id=382, 1004.1791pt x 711.68694pt>
 File: figures/xgboost_comparison.pdf Graphic file (type pdf)
 <use figures/xgboost_comparison.pdf>
-Package pdftex.def Info: figures/xgboost_comparison.pdf  used on input line 512
+Package pdftex.def Info: figures/xgboost_comparison.pdf  used on input line 500
 .
 (pdftex.def)             Requested size: 490.19843pt x 347.41565pt.
 <figures/robustness_comprehensive_comparison.pdf, id=383, 1148.61984pt x 852.94
@@ -963,16 +957,16 @@ Package pdftex.def Info: figures/xgboost_comparison.pdf  used on input line 512
 File: figures/robustness_comprehensive_comparison.pdf Graphic file (type pdf)
 <use figures/robustness_comprehensive_comparison.pdf>
 Package pdftex.def Info: figures/robustness_comprehensive_comparison.pdf  used 
-on input line 520.
+on input line 508.
 (pdftex.def)             Requested size: 490.19843pt x 364.01349pt.
 
-Underfull \vbox (badness 1152) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 <figures/figure4_feature_drift.pdf, id=387, 1010.5573pt x 489.48999pt>
 File: figures/figure4_feature_drift.pdf Graphic file (type pdf)
 <use figures/figure4_feature_drift.pdf>
 Package pdftex.def Info: figures/figure4_feature_drift.pdf  used on input line 
-540.
+528.
 (pdftex.def)             Requested size: 490.19843pt x 237.4397pt.
  [9 <./figures/xgboost_comparison.pdf>]
 
@@ -985,43 +979,43 @@ Underfull \vbox (badness 4582) has occurred while \output is active []
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [10 <./figures/robustness_comprehensive_comparison.pdf>]
-Overfull \hbox (7.26462pt too wide) in paragraph at lines 638--638
+Overfull \hbox (7.26462pt too wide) in paragraph at lines 626--626
 []|\OT1/ptm/b/n/9 Recommended 
  []
 
 
-Overfull \hbox (20.18822pt too wide) in paragraph at lines 638--638
+Overfull \hbox (20.18822pt too wide) in paragraph at lines 626--626
 []|\OT1/ptm/b/n/9 Adversarial/High- 
  []
 
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 6
-64.
+52.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-) [11 <./figures/figure4_feature_drift.pdf>]
-<figures/figure1_main_results.pdf, id=625, 852.98495pt x 310.94606pt>
+)
+<figures/figure1_main_results.pdf, id=602, 852.98495pt x 310.94606pt>
 File: figures/figure1_main_results.pdf Graphic file (type pdf)
 <use figures/figure1_main_results.pdf>
 Package pdftex.def Info: figures/figure1_main_results.pdf  used on input line 6
-67.
+55.
 (pdftex.def)             Requested size: 239.39923pt x 87.26831pt.
-<figures/figure5_privacy_tradeoff.pdf, id=628, 926.78748pt x 313.92545pt>
+<figures/figure5_privacy_tradeoff.pdf, id=605, 926.78748pt x 313.92545pt>
 File: figures/figure5_privacy_tradeoff.pdf Graphic file (type pdf)
 <use figures/figure5_privacy_tradeoff.pdf>
 Package pdftex.def Info: figures/figure5_privacy_tradeoff.pdf  used on input li
-ne 673.
+ne 661.
 (pdftex.def)             Requested size: 239.39923pt x 81.08698pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
+ [11 <./figures/figure4_feature_drift.pdf>]
+Underfull \vbox (badness 6380) has occurred while \output is active []
 
  [12]
-(./main.bbl [13 <./figures/figure1_main_results.pdf> <./figures/figure5_privacy
-_tradeoff.pdf>]
+(./main.bbl
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
 4.
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-))
+) [13 <./figures/figure1_main_results.pdf> <./figures/figure5_privacy_tradeoff.
+pdf>])
 [14] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
@@ -1033,7 +1027,7 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 Here is how much of TeX's memory you used:
  23384 strings out of 469438
  438363 string characters out of 5468410
- 856655 words of memory out of 5000000
+ 854655 words of memory out of 5000000
  51513 multiletter control sequences out of 15000+600000
  677953 words of font info for 145 fonts, out of 8000000 for 9000
  62 hyphenation exceptions out of 8191
@@ -1061,7 +1055,7 @@ w/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8
 a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (14 pages, 1223487 bytes).
+Output written on main.pdf (14 pages, 1223404 bytes).
 PDF statistics:
  824 PDF objects out of 1000 (max. 8388607)
  516 compressed objects within 6 object streams

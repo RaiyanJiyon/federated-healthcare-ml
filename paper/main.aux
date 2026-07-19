@@ -104,6 +104,7 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comprehensive Byzantine robustness evaluation. Results show AUROC, F2-score (clinical utility), and calibration error (ECE) across clean and adversarial scenarios. Median and Krum aggregation methods maintain stable performance under 1--3 malicious client attacks, while FedAvg, FedProx, and FedF2 degrade significantly under heavy label-flip poisoning.}}{10}{figure.5}\protected@file@percent }
 \newlabel{fig:byzantine_robustness}{{5}{10}{Comprehensive Byzantine robustness evaluation. Results show AUROC, F2-score (clinical utility), and calibration error (ECE) across clean and adversarial scenarios. Median and Krum aggregation methods maintain stable performance under 1--3 malicious client attacks, while FedAvg, FedProx, and FedF2 degrade significantly under heavy label-flip poisoning}{figure.5}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-D}2}Results and Key Findings}{10}{table.4}\protected@file@percent }
+\citation{eicu2018}
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Federated feature drift across ICU sites. Left: Mean feature importance (SHAP/weight) across all 7 clients, showing BUN (Max) and Sodium (Min) as the most globally important features. Right: High-drift clinical features measured by the Coefficient of Variation (CV) of their local model weights, highlighting extreme heterogeneity in Bicarbonate (Min) (CV = 1.46) and BUN (Max) (CV = 1.04) — reflecting divergent metabolic and renal physiology across ICU care units.}}{11}{figure.6}\protected@file@percent }
 \newlabel{fig:feature_drift}{{6}{11}{Federated feature drift across ICU sites. Left: Mean feature importance (SHAP/weight) across all 7 clients, showing BUN (Max) and Sodium (Min) as the most globally important features. Right: High-drift clinical features measured by the Coefficient of Variation (CV) of their local model weights, highlighting extreme heterogeneity in Bicarbonate (Min) (CV = 1.46) and BUN (Max) (CV = 1.04) — reflecting divergent metabolic and renal physiology across ICU care units}{figure.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Practitioner Guidance: Aggregation Method Selection}{11}{subsection.4.5}\protected@file@percent }
@@ -113,7 +114,6 @@
 \newlabel{sec:clinical_interpretation}{{\mbox  {IV-G}}{11}{Clinical Interpretation of Federated Feature Drift}{subsection.4.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-H}}Reproducibility and Experimental Setup}{11}{subsection.4.8}\protected@file@percent }
 \newlabel{sec:reproducibility}{{\mbox  {IV-H}}{11}{Reproducibility and Experimental Setup}{subsection.4.8}{}}
-\citation{eicu2018}
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU patients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Important: FedProx AUROC differs from Table~\ref {tab:performance} (0.7721 vs 0.8591) due to 20 rounds vs 5 rounds and absence of Platt calibration.}}{12}{table.4}\protected@file@percent }
 \newlabel{tab:byzantine_robustness}{{IV}{12}{Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU patients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Important: FedProx AUROC differs from Table~\ref {tab:performance} (0.7721 vs 0.8591) due to 20 rounds vs 5 rounds and absence of Platt calibration}{table.4}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario.}}{12}{table.5}\protected@file@percent }
@@ -126,15 +126,15 @@
 \bibcite{wiens2019do}{2}
 \bibcite{mothukuri2021survey}{3}
 \bibcite{nguyen2022federated}{4}
+\bibcite{mcmahan2017communication}{5}
+\bibcite{kairouz2021advances}{6}
+\bibcite{xu2021federated}{7}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details.}}{13}{figure.7}\protected@file@percent }
 \newlabel{fig:bottleneck}{{7}{13}{Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details}{figure.7}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE).}}{13}{figure.8}\protected@file@percent }
 \newlabel{fig:scaling}{{8}{13}{Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE)}{figure.8}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion}{13}{section.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{References}{13}{section*.2}\protected@file@percent }
-\bibcite{mcmahan2017communication}{5}
-\bibcite{kairouz2021advances}{6}
-\bibcite{xu2021federated}{7}
 \bibcite{antunes2022federated}{8}
 \bibcite{sheller2020federated}{9}
 \bibcite{li2020federated_challenges}{10}
