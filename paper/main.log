@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.5.27)  28 JUL 2026 21:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.5.27)  28 JUL 2026 21:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1016,10 +1016,6 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 5E072D166B52D7F28F80B98D8F7CA343;6496.
  ) 
@@ -1054,7 +1050,7 @@ w/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8
 a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (14 pages, 1222856 bytes).
+Output written on main.pdf (14 pages, 1223084 bytes).
 PDF statistics:
  824 PDF objects out of 1000 (max. 8388607)
  516 compressed objects within 6 object streams
