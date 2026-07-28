@@ -53,7 +53,7 @@
 
 \begin{document}
 
-\title{Privacy-Preserving and Byzantine-Robust Federated Learning for Heterogeneous ICU Mortality Prediction}
+\title{Federated Learning for ICU Mortality Prediction on Heterogeneous Clinical Data}
 
 \author{
     \IEEEauthorblockN{
@@ -76,10 +76,10 @@
 \maketitle
 
 \begin{abstract}
- Privacy laws (such as HIPAA (Health Insurance Portability and Accountability Act) and GDPR (General Data Protection Regulation)) do not allow hospitals to consolidate data to train models collaboratively, but isolated data sets cannot be used to build an effective predictive model. The research aims to determine whether it is possible to use Federated Learning (FL) to develop a clinically usable ICU (Intensive Care Unit) mortality prediction model without revealing sensitive information, and also whether Byzantine robust aggregation can maintain the quality of the model even when hospitals are compromised.
- In this research, the MIMIC-IV (Medical Information Mart for Intensive Care IV) data set containing 65,273 hospitalizations and 31 clinical parameters is partitioned into seven care units for simulating the heterogeneous multi-client environment with realistic non-iid distribution. Among various aggregation techniques, FedAvg, FedProx, Median, Krum, and F2-score weighted aggregation (FedF2) methods are compared. Differential privacy on client data is achieved by DP-SGD (Differentially Private Stochastic Gradient Descent) technique (with $\epsilon=4.36$ and $\delta=10^{-5}$). Clinical costs-based optimal decision threshold is computed.
- Baseline centralized approach results in an AUROC (Area Under the Receiver Operating Characteristic Curve) of 0.8920, which means that the method produces a recall of 85.2\%. Federated XGBoost approach using soft voting leads to an AUROC of 0.9155 (-1\% difference), while federated logistic regression using Platt scaling produces an AUROC of 0.8784. Robustness to the presence of Byzantine faults with Median and Krum algorithms allows obtaining AUROC $>$ 0.8594 under a 3-of-7 adversarial client attack, compared to the AUROC of 0.5011 obtained with FedAvg ($-$43\% difference). DP-SGD algorithm results in an AUROC value of 0.8477 after applying scaling operations. Federated learning algorithms can generalize as external validation using eICU-CRD (eICU Collaborative Research Database) dataset produces an AUROC of 0.8.
- Privacy-preserving federated learning using Byzantine-robust aggregations is feasible for clinical use in multi-hospital critical care networks. Byzantine-robust algorithms such as Median and Krum must be used in cases where client reliability cannot be assured, while FedAvg is sufficient in scenarios where clients can be fully trusted.
+ Privacy laws (such as HIPAA (Health Insurance Portability and Accountability Act) and GDPR (General Data Protection Regulation)) prevent hospitals from consolidating data, while isolated datasets fail to build effective predictive models. This research uses Federated Learning (FL) to develop a clinically usable ICU (Intensive Care Unit) mortality prediction model without revealing sensitive information, evaluating whether Byzantine-robust aggregation maintains model quality when hospitals are compromised.
+ The MIMIC-IV (Medical Information Mart for Intensive Care IV) dataset containing 65,273 hospitalizations and 31 clinical parameters is partitioned into seven care units to simulate a heterogeneous multi-client Non-IID environment. We compare FedAvg, FedProx, Median, Krum, and F2-score weighted aggregation (FedF2). Differential privacy is enforced via DP-SGD (Differentially Private Stochastic Gradient Descent) with $\epsilon=4.36$ and $\delta=10^{-5}$.
+ Centralized baseline achieves an AUROC (Area Under the Receiver Operating Characteristic Curve) of 0.8920 (85.2\% recall), while federated XGBoost yields 0.9155 AUROC and Platt-scaled federated logistic regression produces 0.8784. Under a 3-of-7 adversarial client attack, Median and Krum maintain AUROC $>$ 0.8594, whereas FedAvg drops to 0.5011. DP-SGD achieves 0.8477 AUROC after scaling, and external validation on the eICU-CRD (eICU Collaborative Research Database) dataset yields 0.8337 AUROC.
+ Privacy-preserving federated learning with Byzantine-robust aggregations is clinically feasible for multi-hospital networks. Byzantine-robust algorithms such as Median and Krum must be used when client reliability cannot be assured, while FedAvg suffices when clients are fully trusted.
 \end{abstract}
 
 \begin{IEEEkeywords}
