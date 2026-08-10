@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Phase 2.2 Core Experiments: Baseline + Federated + Calibration on Multi-Dataset
+eICU External Validation: Baseline + Federated + Calibration on External Cohort
 
-Runs three core experiments to address reviewer's concern about single-dataset evaluation:
+Runs three core validation experiments on eICU-CRD:
 1. Centralized logistic regression baseline
-2. Federated FedAvg across clients  
+2. Federated FedAvg across 7 independent hospitals
 3. Calibration validation (ECE, Platt scaling)
 
 Supports both MIMIC-IV and eICU-CRD datasets.
 
 Usage:
-    python scripts/phase2_core_experiments.py --dataset eicu_crd [--seed 42]
-    python scripts/phase2_core_experiments.py --dataset mimic_iv
+    python scripts/eicu_external_validation.py --dataset eicu_crd [--seed 42]
+    python scripts/eicu_external_validation.py --dataset mimic_iv
 """
 
 import sys
@@ -282,7 +282,7 @@ def validate_calibration(model, scaler, X_val, y_val, X_test, y_test, seed=42):
 def run_experiments(dataset_name='mimic_iv', seed=42, num_rounds=5):
     """Run all three experiments"""
     logger.info(f"\n{'='*80}")
-    logger.info(f"PHASE 2.2: CORE EXPERIMENTS ON {dataset_name.upper()}")
+    logger.info(f"EXTERNAL VALIDATION EXPERIMENTS ON {dataset_name.upper()}")
     logger.info(f"{'='*80}")
     
     # Load dataset
@@ -371,10 +371,10 @@ def run_experiments(dataset_name='mimic_iv', seed=42, num_rounds=5):
         'calibration': cal_metrics,
     }
     
-    output_dir = Path(__file__).parent.parent / "results" / "phase2"
+    output_dir = Path(__file__).parent.parent / "results" / "external_validation"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    output_path = output_dir / f"phase2_core_{dataset_name}_{int(datetime.now().timestamp())}.json"
+    output_path = output_dir / f"external_val_{dataset_name}_{int(datetime.now().timestamp())}.json"
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
     
@@ -402,7 +402,7 @@ def run_experiments(dataset_name='mimic_iv', seed=42, num_rounds=5):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Phase 2.2 Core Experiments')
+    parser = argparse.ArgumentParser(description='External Validation Experiments')
     parser.add_argument('--dataset', choices=['mimic_iv', 'eicu_crd'], default='eicu_crd',
                         help='Dataset to run experiments on')
     parser.add_argument('--seed', type=int, default=42,

@@ -250,7 +250,7 @@ python experiments/exp5_dropout_simulation.py
 
 Execute 7-hospital eICU-CRD external validation:
 ```bash
-python scripts/phase2_core_experiments.py --dataset eicu_crd
+python scripts/eicu_external_validation.py --dataset eicu_crd
 ```
 
 ### 8. Regenerate Manuscript Vector Figures & Tables
@@ -375,7 +375,6 @@ federated-healthcare-ml/
 │
 ├── experiments/                           # Executable Experiment Suite
 │   ├── exp1_baseline.py                   # Exp 1: Centralized baseline
-│   ├── exp1_baseline_multimodel.py        # Exp 1b: LR vs MLP vs XGBoost
 │   ├── exp2_noniid.py                     # Exp 2: Non-IID care-unit FL
 │   ├── exp3_clients.py                    # Exp 3: Client count scalability (3 to 28)
 │   ├── exp4_aggregation_comparison.py     # Exp 4: FedAvg vs FedProx comparison
@@ -385,7 +384,9 @@ federated-healthcare-ml/
 │   ├── exp7_differential_privacy.py       # Exp 7b: DP-SGD noise sweep
 │   ├── exp8_calibration_and_pr.py         # Exp 8: Platt scaling & PR curves
 │   ├── exp_robustness_fedf2.py            # Exp 9: FedF2 vs Median/Krum Byzantine sweep
-│   ├── phase5_dp_sweep.py                 # DP moments accountant budget sweep
+│   ├── exp_xgboost_federated.py           # Exp 10: Federated XGBoost soft voting
+│   ├── exp_dp_sweep.py                    # DP moments accountant budget sweep
+│   ├── exp_statistical_aggregation.py     # Multi-seed statistical significance validation
 │   └── regenerate_all_figures.py          # Upgrade & export vector PDF figures
 │
 ├── results/                               # Output Artifacts & Reports
@@ -465,7 +466,7 @@ Reviewers and engineers can verify the full pipeline and reproduce manuscript re
 
 3. **External Multi-Hospital Validation (eICU-CRD):**
    ```bash
-   python scripts/phase2_core_experiments.py --dataset eicu_crd
+   python scripts/eicu_external_validation.py --dataset eicu_crd
    ```
    *Verifies external generalizability on 7 independent hospital sites reported in Section IV-I.*
 
