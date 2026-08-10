@@ -169,16 +169,21 @@ A research-grade federated learning framework designed to train clinically relia
 
 **MIMIC-IV Dataset Setup:**
 1. Request access via PhysioNet for [MIMIC-IV (v3.1)](https://physionet.org/content/mimiciv/3.1/).
-2. Extract or query the 31 clinical features (demographics, first 24h vitals, first 24h labs, SOFA/SAPS II/Charlson scores).
-3. Place the preprocessed cohort file at:
+2. Place the preprocessed cohort file at:
    ```text
-   data/processed/mimic_preprocessed.csv
+   data/cache/mimic_iv_cohort.csv
    ```
-   *(The dataset contains 65,273 ICU admissions partitioned across 7 care units).*
+   *(Contains 65,273 ICU admissions partitioned across 7 care units).*
 
-**eICU-CRD External Dataset Setup (Optional):**
-1. Extract adult ICU admissions from [eICU Collaborative Research Database](https://physionet.org/content/eicu-crd/).
-2. Cache cohort to `data/cache/eicu_cohort.csv` for external validation runs.
+**eICU-CRD External Dataset Setup & BigQuery Pipeline:**
+1. Request access for [eICU Collaborative Research Database](https://physionet.org/content/eicu-crd/).
+2. Place preprocessed cohort at `data/cache/eicu_cohort_processed.csv` (or extract directly from BigQuery):
+   ```bash
+   python scripts/test_eicu_bigquery.py
+   python scripts/extract_eicu_cohort.py
+   python scripts/preprocess_eicu_data.py
+   python scripts/partition_eicu_hospitals.py
+   ```
 
 ---
 
@@ -212,7 +217,8 @@ Recalibrated ECE: 0.0091 | Test AUROC: 0.8784 | Test Precision: 69.85% | Test Re
 
 Compare Logistic Regression, MLP, and Federated XGBoost (Soft Voting):
 ```bash
-python experiments/exp1_baseline_multimodel.py
+python experiments/exp1_baseline.py
+python experiments/exp_xgboost_federated.py
 ```
 
 ### 4. Aggregation & Clinical Sensitivity Sweep (FedF2)
@@ -226,11 +232,10 @@ python experiments/exp_robustness_fedf2.py
 
 ### 5. Privacy (DP-SGD) & Calibration Sweeps
 
-Run DP-SGD moments accountant sweep and Platt scaling evaluation:
+Run DP-SGD privacy analysis and Platt scaling evaluation:
 ```bash
 python experiments/exp7_differential_privacy.py
 python experiments/exp8_calibration_and_pr.py
-python experiments/phase5_dp_sweep.py
 ```
 
 ### 6. Scalability & Network Dropout Sweeps
@@ -241,11 +246,19 @@ python experiments/exp3_clients.py
 python experiments/exp5_dropout_simulation.py
 ```
 
-### 7. Regenerate Manuscript Vector Figures
+### 7. External Multi-Hospital Validation (Section IV-I)
 
-Recompile all vector graphics embedded in `paper/main.tex`:
+Execute 7-hospital eICU-CRD external validation:
+```bash
+python scripts/phase2_core_experiments.py --dataset eicu_crd
+```
+
+### 8. Regenerate Manuscript Vector Figures & Tables
+
+Recompile all vector graphics and TeX tables embedded in `paper/main.tex`:
 ```bash
 python experiments/regenerate_all_figures.py
+python experiments/generate_latex_tables.py
 ```
 
 ---
@@ -434,21 +447,34 @@ RANDOM_SEED = 42
 <a id="testing--reproducibility"></a>
 ## 🧪 Testing & Reproducibility
 
-### Reproducibility Protocol
+### Reviewer Verification Protocol
 
-All experiments adhere to strict IEEE reproducibility standards:
-- **Global Determinism:** Fixed random seed `RANDOM_SEED = 42` applied across NumPy, PyTorch, and Scikit-Learn.
-- **Hardware Reference:** Benchmarked on an Intel Xeon E-2286M CPU @ 2.40GHz with 32 GB RAM (GPU not required).
-- **Execution Times:**
-  - 5-Round Baseline FedAvg: $\approx 42$ seconds.
-  - DP-SGD Privatized Run (clip + noise per sample): $\approx 3.2$ minutes.
+Reviewers and engineers can verify the full pipeline and reproduce manuscript results using the following steps:
 
-### Statistical Validation
+1. **Quick System Smoke Test (2 Rounds):**
+   ```bash
+   python run.py --rounds 2 --seed 42
+   ```
+   *Verifies dataset loading, Non-IID care-unit splitting, local training, and Platt scaling evaluation in ~10 seconds.*
 
-Execute 5-seed randomized validation runs:
-```bash
-python experiments/phase5_statistical_aggregation.py
-```
+2. **Full Pipeline Execution (20 Rounds):**
+   ```bash
+   python run.py --dataset mimic_iv --rounds 20 --seed 42
+   ```
+   *Executes the complete baseline, FedAvg, FedProx, and Platt recalibration suite reported in Table I.*
+
+3. **External Multi-Hospital Validation (eICU-CRD):**
+   ```bash
+   python scripts/phase2_core_experiments.py --dataset eicu_crd
+   ```
+   *Verifies external generalizability on 7 independent hospital sites reported in Section IV-I.*
+
+4. **Regenerate Manuscript Vector Figures & LaTeX Tables:**
+   ```bash
+   python experiments/regenerate_all_figures.py
+   python experiments/generate_latex_tables.py
+   ```
+   *Recompiles all 8 publication vector plots in `paper/figures/` and formatted TeX tables in `results/summary/`.*
 
 ---
 

@@ -88,7 +88,7 @@ ICU_CARE_UNITS = [
 # ===== FEATURE DEFINITIONS (32 raw MIMIC features) =====
 # Demographics (4 features)
 DEMOGRAPHICS_FEATURES = [
-    'age', 'gender_M', 'admission_type_emergency', 'insurance_medicare'
+    'age', 'gender_M', 'admission_emergency', 'insurance_medicare'
 ]
 
 # Vital Signs - First 24h (13 features)
