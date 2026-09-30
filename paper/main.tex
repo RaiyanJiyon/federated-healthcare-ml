@@ -46,6 +46,20 @@
 \patchcmd{\@makecaption}{\scshape}{}{}{}
 \makeatother
 
+% *** ORCID SUPPORT ***
+\definecolor{orcidlime}{HTML}{A6CE39}
+\DeclareRobustCommand{\orcidicon}[1]{%
+  \href{https://orcid.org/#1}{\begingroup%
+  \hypersetup{pdfborder={0 0 0}}%
+  \begin{tikzpicture}[yscale=-1,transform shape,baseline=-0.4ex]
+    \filldraw[color=orcidlime] (0,0) circle [radius=0.14];
+    \filldraw[fill=white,draw=none] (-0.05,0.07) rectangle (-0.02,-0.07);
+    \filldraw[fill=white,draw=none] (-0.035,-0.10) circle [radius=0.018];
+    \draw[color=white,line width=0.35pt] (0.005,-0.07) -- (0.005,0.07);
+    \draw[color=white,line width=0.35pt] (0.005,-0.07) arc [start angle=90, end angle=-90, radius=0.035];
+  \end{tikzpicture}\endgroup}%
+}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -57,8 +71,9 @@
 
 \author{
     \IEEEauthorblockN{
-      Md. Raiyan Ur Rahman Jiyon\textsuperscript{1},
-        Md. Naimul Islam\textsuperscript{1}, Mohammad Shorif Uddin\textsuperscript{1,2}, \\
+      Md. Raiyan Ur Rahman Jiyon\textsuperscript{1}\,\orcidicon{0000-0000-0000-0000},
+      Md. Naimul Islam\textsuperscript{1}\,\orcidicon{0000-0000-0000-0000},
+      Mohammad Shorif Uddin\textsuperscript{1,2}\,\orcidicon{0000-0000-0000-0000} \\
     }
 
     \IEEEauthorblockA{\textsuperscript{1}Department of Computer Science and Engineering, Green University of Bangladesh, Dhaka, Bangladesh\\
