@@ -363,7 +363,7 @@ def figure5_privacy_tradeoff() -> None:
         ax.set_xlabel("")
         _beautify_axes(ax)
 
-    fig.suptitle("Privacy-Utility Trade-off under DP-SGD (ε=1.0, δ=10^-5)", y=1.03)
+    fig.suptitle("Privacy-Utility Trade-off under DP-SGD (ε=4.36, δ=10^-5)", y=1.03)
     fig.tight_layout()
     save_figure(fig, "figure5_privacy_tradeoff")
     plt.close(fig)

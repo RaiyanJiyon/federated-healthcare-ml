@@ -149,7 +149,7 @@ clients. In the baseline validation, the hospitals' models are
 trained for five rounds; for testing the aggregations, twenty
 rounds were used to allow for convergence.
 
-All experiments use random seed 42 with stratified train–validation–test splits. We replicate chosen measurements five times using five random seeds (FedAvg: 0.8860 $\pm$ 0.0065).
+All primary benchmark evaluations use random seed 42 with stratified train–validation–test splits (yielding the headline FedAvg AUROC of 0.8784 reported in Table~\ref{tab:performance}). To assess statistical stability across cohort shuffles, we replicate measurements across five independent random seeds (42, 123, 456, 789, 1000), obtaining a mean FedAvg AUROC of 0.8860 $\pm$ 0.0065.
 
 \subsection{Distributed Patient Cohorts (Care-Unit Modeling)}
 
@@ -332,7 +332,7 @@ We ensure differential privacy at the client side through the application of the
 mini-batch, (2) clips each sample gradient according to $\ell_2$ norm $C = 1.0$, (3) averages the clipped sample gradients within the batch, and then (4) adds Gaussian noise with zero mean based on the $(\epsilon, \delta) = (4.36, 10^{-5})$ (calculated by the moments
 accountant) before conducting the stochastic gradient step.This entire process of clipping and adding noise per sample is conducted during each local training iteration, and hence the weight update $\Delta w_k^t$ sent to the server ensures the guarantee of differential privacy for the Gaussian mechanism \cite{dwork2014algorithmic}.
 
-\textbf{Privacy budget composition.} For $T = 20$ iterations of global training (with training conducted over $E$ epochs within each iteration), the privacy budget will compose across each of these steps via the moments accountant \cite{abadi2016deep}. In our particular setup ($T = 20$, batch size 32, $\approx 9{,}300$ patients per client, $C = 1.0$, $\sigma \approx 4.80$), the per-client cumulative privacy budget across all iterations is calculated by the autodp moments accountant using only once in most cases, the privacy cost per participant would be equivalent to that of a single federated study instead of multiple training runs.
+\textbf{Privacy budget composition.} Across federated training rounds, the per-client privacy loss is accumulated and tracked using the moments accountant \cite{abadi2016deep}. In our experimental configuration (batch size 32, local training partitions averaging $\approx 5{,}967$ samples per client drawn from unit cohorts averaging $\approx 9{,}325$ admissions, clipping threshold $C = 1.0$, noise multiplier $\sigma \approx 4.80$, and failure probability $\delta = 10^{-5}$), the composition across local stochastic gradient steps yields an accumulated privacy expenditure bounded at $(\epsilon = 4.36, \delta = 10^{-5})$.
 The prior proof-of-concept design applied output perturbation, where weights were subjected to noise post-training, yielding unstable convergence due to sensitivity scaling with model dimensionality. Per-sample DP-SGD addresses this by clipping local gradients prior to perturbation, bounding sensitivity independently of parameter count. With calibrated parameters $(\epsilon = 4.36, \delta = 10^{-5})$, federated DP-SGD training achieves 0.8477 AUROC (Table~\ref{tab:performance}), demonstrating that formal differential privacy can be guaranteed while preserving practical clinical utility on MIMIC-IV. Post-hoc Platt scaling is applied to calibrate predicted probabilities without modifying the rank-order discriminative capability of the model.
 
 \section{Results and Evaluation}
@@ -398,10 +398,10 @@ For evaluation of the performance-weighted aggregation strategy under clean and 
     \end{equation}
 \end{enumerate}
 
-Table~\ref{tab:clinical_aggregation} presents the systematic ablation of our pipeline under standard (non-adversarial) conditions and in an adversarial environment with the presence of an artificial degenerate client. The artificial degenerate client is simulated by corrupting the labels of the largest unit, Cardiac Vascular ICU ($n = 8,068$), to contain $99.9\%$ positive values. This represents a hospital node that fails to train correctly and instead classifies all clients as de-
+Table~\ref{tab:clinical_aggregation} presents the systematic ablation of our pipeline under standard (non-adversarial) conditions and in an adversarial environment with the presence of an artificial degenerate client. The artificial degenerate client is simulated by corrupting the labels of the second-largest unit, Cardiac Vascular ICU ($n = 8,118$; MICU is largest with $n = 8,791$), to contain $99.9\%$ positive values. This represents a hospital node that fails to train correctly and instead classifies all clients as de-
 ceased. This trivially ensures perfect recall but no precision.
 \begin{table*}[t]
-\caption{Systematic ablation and calibration evaluation of FedF2 vs. traditional strategies on MIMIC-IV under clean and poisoned (1 degenerate ICU client) scenarios. ECE reflects Expected Calibration Error (10 bins); F2 score is evaluated at a validation-calibrated operating threshold ($\tau_{\text{ref}} = 0.39$ for calibrated models, $\tau_{\text{ref}} = 0.05$ for uncalibrated models).}
+\caption{Systematic ablation and calibration evaluation of FedF2 vs. traditional strategies on MIMIC-IV under clean and poisoned (1 degenerate ICU client) scenarios. ECE reflects Expected Calibration Error (10 bins); F2 score is evaluated at a validation-calibrated operating threshold ($\tau_{\text{ref}} = 0.39$ for calibrated models, $\tau_{\text{ref}} = 0.05$ for uncalibrated models). (Note on FedProx: Table~\ref{tab:performance} reports the calibrated 5-round baseline at 0.8591 AUROC, Table~\ref{tab:clinical_aggregation} reports the 5-round ablation sweep at 0.8174 AUROC, and Table~\ref{tab:byzantine_robustness} evaluates 20 rounds of uncalibrated adversarial training at 0.7721 AUROC.)}
 \centering
 \small
 \begin{tabular}{lcccccc}
@@ -451,7 +451,7 @@ estimators=200 and max depth =6. The MLP network em-
 ploys ReLU activation, dropout regularization (rate 0.2), and Adam optimization (learning rate 0.001). The XGBoost model is trained locally by each client through soft voting. This is particularly important since it has been noted by a reviewer that health tabular data is better suited for gradient boosting.
 
 \begin{table*}[t]
-\caption{Multi-model federated learning comparison on MIMIC-IV. Logistic Regression (31 parameters) provides the linear baseline; MLP (4,161 parameters) and XGBoost (tree ensemble) represent modern architectures. XGBoost achieves the highest centralized AUROC (0.9243), but federated ensemble averaging preserves 99.0\% of this performance (AUROC 0.9155, loss 0.95\%). All use 7 ICU clients. Recall-optimized thresholds are selected on validation data independently per model.}
+\caption{Multi-model federated learning comparison on MIMIC-IV. Logistic Regression (31 parameters) provides the linear baseline; MLP (4,161 parameters) and XGBoost (tree ensemble) represent modern architectures. XGBoost achieves the highest centralized AUROC (0.9243), but federated ensemble averaging preserves 99.0\% of this performance (AUROC 0.9155, loss 0.95\%). All use 7 ICU clients. Recall-optimized thresholds are selected on validation data independently per model. (In this multi-architecture benchmark run, centralized LR achieved 0.8914 vs. 0.8920 in the primary single-model benchmark in Table~\ref{tab:performance}.)}
 \centering
 \small
 \begin{tabular}{lcccccc}
@@ -554,13 +554,13 @@ In order to evaluate the convergence performance and resiliency with regard to t
   2 malicious clients & 0.8255 & 0.4728 & 0.8353 & 0.8511 & 0.8182 \\
   \hspace{2em} (avg AUROC loss) & (4.3\%) & (36.0\%) & (3.2\%) & (1.6\%) & (4.6\%) \\
 \midrule
-\textbf{AVERAGE ROBUSTNESS (all attacks, \% AUROC loss)} & \textbf{8.5\%} & \textbf{33.5\%} & \textbf{1.4\%} & \textbf{1.6\%} & \textbf{12.6\%} \\
+\textbf{AVERAGE ROBUSTNESS (all attacks, \% AUROC loss)} & \textbf{9.3\%} & \textbf{34.3\%} & \textbf{0.6\%} & \textbf{0.9\%} & \textbf{11.2\%} \\
 \bottomrule
 \end{tabular}
 \label{tab:byzantine_robustness}
 \end{table*}
 
-\textbf{Median and Krum both exhibit better empirical robustness} (see Table~\ref{tab:byzantine_robustness} and Fig.~\ref{fig:byzantine_robustness}). While median aggregation keeps AUROC $\geq 0.8594$ when subject to three label flip attacks (0.4\% degradation), Krum exhibits stable AUROC $\approx 0.851$ for all possible label flips (1.6\% degradation). This proves Byzantine robustness: coordinate median minimizes the effect of outliers, and Krum's agreement selects up to $(K - 1)/2 = 3$ malicious clients out of 7.
+\textbf{Median and Krum both exhibit better empirical robustness} (see Table~\ref{tab:byzantine_robustness} and Fig.~\ref{fig:byzantine_robustness}). While median aggregation keeps AUROC $\geq 0.8594$ when subject to three label flip attacks (0.4\% degradation), Krum exhibits stable AUROC $\approx 0.851$ across all multi-attacker scenarios (1.6\% degradation). Because Krum deterministically selects a single geometric medoid client update rather than computing a linear combination, it reliably selects the central uncompromised client (AUROC = 0.8653) across all 1-attacker variants, and shifts to the nearest alternative honest medoid (AUROC = 0.8511) under 2- and 3-attacker conditions, resulting in identical invariant scores across attack types with matching attacker counts. This confirms theoretical Byzantine tolerance: coordinate median minimizes the effect of outliers, and Krum selects from honest consensus clients for up to $(K - 1)/2 = 3$ malicious nodes out of 7.
 
 \textbf{Federated Average} is highly sensitive to label flip attacks.
 Federated Average AUROC goes down to 0.5011 (43.0\%
