@@ -1,13 +1,10 @@
 \documentclass[journal]{IEEEtran}
 
-% *** CITATION PACKAGES ***
 \usepackage{cite}
 \usepackage{float}
 \usepackage{tabularx}
-% *** MATH PACKAGES ***
 \usepackage{amsmath,amssymb,amsfonts}
 
-% *** GRAPHICS RELATED PACKAGES ***
 \ifCLASSINFOpdf
   \usepackage[pdftex]{graphicx}
   \graphicspath{{figures/}}
@@ -18,20 +15,15 @@
   \DeclareGraphicsExtensions{.eps}
 \fi
 
-% *** SPECIALIZED LIST PACKAGES ***
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
-% *** ALIGNMENT PACKAGES ***
 \usepackage{array}
 
-% *** FLOAT PACKAGES ***
 \usepackage{stfloats}
 
-% *** PDF, URL AND HYPERLINK PACKAGES ***
 \usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=blue]{hyperref}
 
-% *** ADDITIONAL PACKAGES ***
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -46,7 +38,6 @@
 \patchcmd{\@makecaption}{\scshape}{}{}{}
 \makeatother
 
-% *** ORCID SUPPORT ***
 \definecolor{orcidlime}{HTML}{A6CE39}
 \DeclareRobustCommand{\orcidicon}[1]{%
   \href{https://orcid.org/#1}{\begingroup%
@@ -79,12 +70,10 @@
     \IEEEauthorblockA{\textsuperscript{1}Department of Computer Science and Engineering, Green University of Bangladesh, Dhaka, Bangladesh\\
     \textsuperscript{2}Department of Computer Science and Engineering, Jahangirnagar University, Savar, Dhaka, Bangladesh}
     
-    
     \IEEEauthorblockN{Emails: 
     raiyanjiyon@gmail.com, nayemhasan1314@gmail.com, shorifuddin@juniv.edu}   
 }
 
-% The paper headers
 \markboth{IEEE Journal of Biomedical and Health Informatics,~Vol.~XX, No.~XX, June~2026}%
 {Jiyon et al.: Privacy-Preserving and Byzantine-Robust Federated Learning}
 
@@ -138,7 +127,6 @@ One of the most significant challenges in healthcare FL is the presence of Non-I
 Security and privacy remain equally important challenges because model updates themselves may leak sensitive patient information. Zhu et al.~\cite{zhu2019deep} demonstrated that original training samples can be reconstructed from shared gradients, while membership inference and model inversion attacks further expose patient information without direct access to the underlying datasets~\cite{shokri2016membership,fredrikson2014privacy}. Differential Privacy (DP), particularly DP-SGD~\cite{abadi2016deep,dwork2014algorithmic}, has therefore become a standard mechanism for providing formal privacy guarantees, although stronger privacy often reduces predictive performance. In parallel, Byzantine-resilient aggregation methods such as Krum~\cite{blanchard2017machine} and coordinate-wise Median~\cite{yin2018byzantine} have been proposed to defend against malicious client updates with relatively low computational overhead. However, previous studies generally investigate privacy preservation, Byzantine robustness, and optimization independently, while most evaluations rely on synthetic benchmark datasets rather than realistic healthcare environments. Consequently, the combined impact of heterogeneous data, differential privacy, and Byzantine attacks on clinical prediction remains insufficiently understood. Our work addresses this gap by jointly evaluating DP-SGD, Krum, and coordinate-wise Median under realistic poisoning attacks and heterogeneous ICU federated learning settings.
 
 Reliable evaluation is equally important for clinical decision support systems. ICU mortality datasets such as MIMIC-IV and eICU-CRD are inherently imbalanced, making overall accuracy an inadequate indicator of clinical usefulness. Previous studies have emphasized that Recall and Precision--Recall analysis are more appropriate because failing to identify critically ill patients (false negatives) has substantially greater clinical consequences than generating false alarms~\cite{rajkomar2018scalable,mujtaba2019clinical,saito2015precision,hripcsak2013opportunities}. Moreover, trustworthy deployment requires external validation, reliable probability estimates, and robustness across heterogeneous hospital populations~\cite{wiens2019do}. Motivated by these limitations, this work presents an integrated federated learning framework that combines realistic Non-IID partitioning using MIMIC-IV, external validation on eICU-CRD, DP-SGD for formal privacy protection, lightweight Byzantine-resilient aggregation through Krum and coordinate-wise Median, and calibration-aware evaluation emphasizing clinically significant Recall. By jointly addressing optimization, privacy, security, and clinical reliability within a unified experimental framework, this study advances federated healthcare learning toward secure and trustworthy deployment in real-world critical care environments.
-
 
 \section{Methodology}
 
@@ -337,12 +325,7 @@ we provide formal privacy guarantees but with a sacrifice
 in utility, leading to the privacy--utility tradeoff shown in Table~
 \ref{tab:performance}.
 
-
-
-
-
 FedAvg converges at $O(1/\sqrt{T})$ under strong convexity \cite{li2020convergence}. Byzantine methods (Median, Krum) tolerate up to $f \leq K/2$ malicious clients with $O(f/K)$ utility degradation \cite{blanchard2017machine,yin2018byzantine}. DP-SGD with $(\epsilon=4.36, \delta=10^{-5})$ maintains privacy-utility balance via Gaussian mechanism theory \cite{abadi2016deep,dwork2014algorithmic}.
-
 
 \subsection{Differential Privacy Constraints}
 We ensure differential privacy at the client side through the application of the Gaussian mechanism introduced by Abadi et al. \cite{abadi2016deep} within the local optimizer. At each update sent to the server, each client: (1) computes per-sample gradients for a
@@ -363,7 +346,6 @@ the updates regardless of the parameter dimension. In the re-run with the same $
 \end{figure*}
 
 We evaluate our federated learning framework using two large-scale clinical datasets: the Medical Information Mart for Intensive Care IV (MIMIC-IV) dataset is used for model development, Byzantine robustness testing, and internal validation; the eICU Collaborative Research Database (eICU-CRD) serves as an independent cohort for external generalizability. In a clinical setting, overlooking a disease is highly perilous. While a false positive---an indication that the patient is seriously ill even though he/she is healthy---means more testing, an annoyance, it does not have serious implications. However, a false negative implies that a seriously ill patient is discharged without any treatment, and this is why all evaluations in this study prioritize Recall over accuracy \cite{rajkomar2018scalable, mujtaba2019clinical}. The clinicians and decision support system designers \cite{hripcsak2013opportunities} understand this distinction.
-
 
 \subsection{Clinical Baseline vs. Federated Optimization}
 
@@ -654,14 +636,6 @@ DP-SGD with $(\epsilon=4.36, \delta=10^{-5}$, $\sigma=4.80$) achieves AUROC 0.84
 \label{sec:clinical_interpretation}
 Feature importance analysis reveals significant heterogeneity across ICU care units. Bicarbonate (Min) and BUN (Max) exhibit the highest coefficient of variation (CV = 1.46 and 1.04 respectively), reflecting divergent metabolic pathways across unit types (Figure~\ref{fig:feature_drift}). This heterogeneity impacts federated averaging through probability compression effects.
 
-% \begin{figure*}[!h]
-% \centerline{
-% \includegraphics[width=0.95\textwidth]{figures/figure4_feature_drift.pdf}
-% }
-% \caption{Federated feature drift across ICU sites. Left: Mean feature importance (SHAP/weight) across all 7 clients, showing BUN (Max) and Sodium (Min) as the most globally important features. Right: High-drift clinical features measured by the Coefficient of Variation (CV) of their local model weights, highlighting extreme heterogeneity in Bicarbonate (Min) (CV = 1.46) and BUN (Max) (CV = 1.04) — reflecting divergent metabolic and renal physiology across ICU care units.}
-% \label{fig:feature_drift}
-% \end{figure*}
-
 \subsection{Reproducibility and Experimental Setup}
 \label{sec:reproducibility}
 All experiments were performed on one computer equipped with an Intel Xeon E-2286M processor (32 GB RAM), \texttt{RANDOM\_SEED=42}, without the use of a GPU. Our approach utilizes Python 3.14, NumPy 2.2, Pandas 2.2, and Scikit-Learn 1.6. A 5-round training using FedAvg is completed within $\approx$42 seconds; adding DP-SGD results in $\approx$3 minutes.
@@ -704,33 +678,9 @@ A full Byzantine-robustness evaluation for aggregation strategies against 1, 2, 
 
 However, FedProx ($\mu = 0.01$) performed worse than FedAvg in Recall (38.0\% vs. 86.3\%) due to issues associated with probability calibration caused by weight averaging, which can be solved by applying post hoc Platt scaling. Byzantine-robust aggregation such as Krum or Median was resilient to adversarial clients while increasing the communication costs by 15--20\%.
 
-% \section{Limitations and Future Directions}
-% \label{sec:limitations}
-
-% \subsection*{Simulation Limitations}
-% This study is a centralized simulation, not a deployed distributed system. Three gaps warrant acknowledgment. \textbf{(1) No real network:} our 600 KB/experiment communication estimate ignores TLS handshakes, serialization overhead, VPN tunneling, and hospital firewall latency; realistic per-round transfer could be 6--60 MB, translating to minutes per round on constrained clinical networks. \textbf{(2) Synchronous aggregation:} bulk synchronous aggregation assumes all 7 clients respond each round; production systems need timeout logic, straggler handling, and fault tolerance for mid-training dropouts—asynchronous methods (e.g., FedAsync \cite{yang2020federated}) are left to future work. \textbf{(3) Homogeneous hardware:} we assume identical compute and connectivity across clients; real hospital networks span academic centers with gigabit servers to rural clinics on constrained workstations.
-
-% \subsection*{Clinical and Methodological Limitations}
-% \textbf{Statistical inference:} AUROC comparisons are reported across 5 seeded runs. We did not perform formal DeLong paired significance tests \cite{delong1988comparing} or bootstrap confidence interval estimation for all pairwise method comparisons. Differences below $\approx$0.01 AUROC should be treated as practically equivalent without further statistical validation. Future work should precompute bootstrap CIs across more seeds and larger client counts.
-
-% \textbf{Single-institution MIMIC-IV partition:} All 7 MIMIC-IV clients derive from a single hospital. While ICU care units produce meaningful Non-IID heterogeneity, this does not replicate the EHR vocabulary differences (Epic vs.\ Cerner unit mappings), coding variation, and institutional culture differences present in true multi-hospital federation. The eICU-CRD validation addresses this partially.
-
-% \textbf{XGBoost privacy gap:} Formal DP-SGD bounds are provided only for logistic regression. Federated XGBoost via soft voting lacks verified differential privacy guarantees in this study.
-
-% \textbf{FedProx $\mu$ sensitivity:} The catastrophic FedProx collapse under label-flip attacks is specific to $\mu=0.01$; a $\mu$ sweep is required before generalizing this finding.
-
-% \textbf{Calibration prerequisite:} Platt scaling is required before clinical use; the federated threshold shifts from 0.39 to 0.05 uncalibrated, which is a known barrier to clinical adoption \cite{hripcsak2013opportunities}. \textbf{External validation scope:} both cohorts (MIMIC-IV, eICU-CRD) are US-based and pre-2015; generalization to non-US healthcare systems and modern ICU practice is unvalidated. \textbf{Static features:} our 31 features are aggregated over 24 hours without temporal sequencing; LSTM or Transformer architectures that exploit ICU time-series may outperform tabular models but are substantially harder to federate \cite{rajkomar2018scalable}. \textbf{Single outcome:} multi-task federated learning (mortality, LOS, readmission jointly) introduces architecture heterogeneity challenges beyond this study \cite{bonawitz2019towards}.
-
-% \subsection{Implications and Future Work}
-% \label{sec:implications}
-% Our results demonstrate that Byzantine-robust FL (Median, Krum) provides a pragmatic safeguard for multi-hospital networks vulnerable to ransomware, at only 15--20\% additional communication overhead. This work provides the first comprehensive empirical Byzantine robustness evaluation under multiple attack types and attacker counts in a clinical FL setting, and the first multi-dataset federated validation (MIMIC-IV + eICU-CRD) for ICU mortality prediction. Future priorities are: (1) conduct DeLong paired significance tests and bootstrap CIs across all AUROC comparisons; (2) ablate FedProx $\mu \in \{0.001, 0.01, 0.1\}$ to characterize collapse conditions; (3) formally bound differential privacy for federated XGBoost via prediction-vector sensitivity analysis; (4) expand validation to HiRID and AmsterdamUMCdb; (5) evaluate LightGBM and CatBoost federated ensembles; (6) benchmark SCAFFOLD \cite{scaffold} and personalized FL \cite{fallah2020personalized,li2021ditto} under the same ICU partition; (7) develop asynchronous aggregation for straggler-tolerant hospital networks; and (8) pilot integration with HL7 FHIR APIs across 2--3 real hospital EHR systems.
-
-
-
 \section*{Acknowledgment}
 The authors gratefully acknowledge the support from Green University of Bangladesh and Jahangirnagar University. We thank all colleagues who provided constructive feedback during manuscript preparation. This work was supported in part by institutional research funds.
 
-% Can use something like this to put references on a page by themselves when using endfloat and the captionsoff option.
 \ifCLASSOPTIONcaptionsoff
   \newpage
 \fi
@@ -739,12 +689,4 @@ The authors gratefully acknowledge the support from Green University of Banglade
 
 \bibliography{references}
 
-
-
-% \end{IEEEbiography}
- 
-% % \begin{IEEEbiography}{Mohammad Shorif Uddin}
-% is a Professor at Jahangirnagar University, Dhaka, Bangladesh, with research interests in machine learning, data mining, and distributed systems. He has authored numerous papers on federated learning applications in healthcare and privacy-preserving analytics.
-% % \end{IEEEbiography}
- 
 \end{document}
