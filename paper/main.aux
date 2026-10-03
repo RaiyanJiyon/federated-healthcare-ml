@@ -43,7 +43,7 @@
 \citation{rajkomar2018scalable,mujtaba2019clinical,saito2015precision,hripcsak2013opportunities}
 \citation{wiens2019do}
 \citation{PhysioNet-mimiciv-3.1,johnson2023mimic}
-\citation{knaus1985apache}
+\citation{legall1993saps2}
 \citation{charlson1987new}
 \citation{nishio2019client}
 \@writefile{toc}{\contentsline {section}{\numberline {III}Methodology}{3}{section.3}\protected@file@percent }
@@ -83,21 +83,23 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Clinical Baseline vs. Federated Optimization}{6}{subsection.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Performance-Weighted Aggregation in Trusted Networks}{6}{subsection.4.2}\protected@file@percent }
 \newlabel{sec:fedf2_results}{{\mbox  {IV-B}}{6}{Performance-Weighted Aggregation in Trusted Networks}{subsection.4.2}{}}
+\citation{blanchard2017machine,yin2018byzantine}
+\citation{shickel2017deep}
 \@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Performance of federated learning algorithms in benchmark test on MIMIC-IV data set using 5 rounds and 7 ICU clients. For federated learning, all results are from balanced logistic regression with Platt's calibration performed on the decision threshold (0.39). The DP row corresponds to the calculated DP-SGD training approach with accurate $\epsilon $, $\delta $ (which are 4.36, $10^{-5}$ respectively for the MIMIC-IV dataset) calculated.}}{7}{table.1}\protected@file@percent }
 \newlabel{tab:performance}{{I}{7}{Performance of federated learning algorithms in benchmark test on MIMIC-IV data set using 5 rounds and 7 ICU clients. For federated learning, all results are from balanced logistic regression with Platt's calibration performed on the decision threshold (0.39). The DP row corresponds to the calculated DP-SGD training approach with accurate $\epsilon $, $\delta $ (which are 4.36, $10^{-5}$ respectively for the MIMIC-IV dataset) calculated}{table.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Systematic ablation and calibration evaluation of FedF2 vs. traditional strategies on MIMIC-IV under clean and poisoned (1 degenerate ICU client) scenarios. ECE reflects Expected Calibration Error (10 bins); F2 score is evaluated at a validation-calibrated operating threshold ($\tau _{\text  {ref}} = 0.39$ for calibrated models, $\tau _{\text  {ref}} = 0.05$ for uncalibrated models). (Note on FedProx: Table~\ref {tab:performance} reports the calibrated 5-round baseline at 0.8591 AUROC, Table~\ref {tab:clinical_aggregation} reports the 5-round ablation sweep at 0.8174 AUROC, and Table~\ref {tab:byzantine_robustness} evaluates 20 rounds of uncalibrated adversarial training at 0.7721 AUROC.)}}{7}{table.2}\protected@file@percent }
 \newlabel{tab:clinical_aggregation}{{II}{7}{Systematic ablation and calibration evaluation of FedF2 vs. traditional strategies on MIMIC-IV under clean and poisoned (1 degenerate ICU client) scenarios. ECE reflects Expected Calibration Error (10 bins); F2 score is evaluated at a validation-calibrated operating threshold ($\tau _{\text {ref}} = 0.39$ for calibrated models, $\tau _{\text {ref}} = 0.05$ for uncalibrated models). (Note on FedProx: Table~\ref {tab:performance} reports the calibrated 5-round baseline at 0.8591 AUROC, Table~\ref {tab:clinical_aggregation} reports the 5-round ablation sweep at 0.8174 AUROC, and Table~\ref {tab:byzantine_robustness} evaluates 20 rounds of uncalibrated adversarial training at 0.7721 AUROC.)}{table.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Multi-Model Architecture Comparison}{7}{subsection.4.3}\protected@file@percent }
-\newlabel{sec:multimodel}{{\mbox  {IV-C}}{7}{Multi-Model Architecture Comparison}{subsection.4.3}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Calibration and precision-recall analysis. Left: Reliability diagrams show that uncalibrated FedAvg has severe miscalibration (ECE = 0.2338), while Platt scaling recovers reliability (ECE $<$ 0.01) across all aggregation methods. Right: Precision-Recall curves demonstrate that calibrated methods maintain similar diagnostic utility (AUPRC $\approx 0.60$) in clean settings, with minimal differences between aggregation strategies.}}{8}{figure.3}\protected@file@percent }
 \newlabel{fig:calibration_and_pr}{{3}{8}{Calibration and precision-recall analysis. Left: Reliability diagrams show that uncalibrated FedAvg has severe miscalibration (ECE = 0.2338), while Platt scaling recovers reliability (ECE $<$ 0.01) across all aggregation methods. Right: Precision-Recall curves demonstrate that calibrated methods maintain similar diagnostic utility (AUPRC $\approx 0.60$) in clean settings, with minimal differences between aggregation strategies}{figure.3}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Multi-model federated learning comparison on MIMIC-IV. Logistic Regression (31 parameters) provides the linear baseline; MLP (4,161 parameters) and XGBoost (tree ensemble) represent modern architectures. XGBoost achieves the highest centralized AUROC (0.9243), but federated ensemble averaging preserves 99.0\% of this performance (AUROC 0.9155, loss 0.95\%). All use 7 ICU clients. Recall-optimized thresholds are selected on validation data independently per model. (In this multi-architecture benchmark run, centralized LR achieved 0.8914 vs. 0.8920 in the primary single-model benchmark in Table~\ref {tab:performance}.)}}{8}{table.3}\protected@file@percent }
 \newlabel{tab:multimodel_comparison}{{III}{8}{Multi-model federated learning comparison on MIMIC-IV. Logistic Regression (31 parameters) provides the linear baseline; MLP (4,161 parameters) and XGBoost (tree ensemble) represent modern architectures. XGBoost achieves the highest centralized AUROC (0.9243), but federated ensemble averaging preserves 99.0\% of this performance (AUROC 0.9155, loss 0.95\%). All use 7 ICU clients. Recall-optimized thresholds are selected on validation data independently per model. (In this multi-architecture benchmark run, centralized LR achieved 0.8914 vs. 0.8920 in the primary single-model benchmark in Table~\ref {tab:performance}.)}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Multi-Model Architecture Comparison}{8}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:multimodel}{{\mbox  {IV-C}}{8}{Multi-Model Architecture Comparison}{subsection.4.3}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}1}XGBoost: Gradient Boosting in Federated Settings}{8}{subsubsection.4.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}2}Comparison: LR, MLP, XGBoost}{8}{subsubsection.4.3.2}\protected@file@percent }
 \citation{blanchard2017machine,yin2018byzantine}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Comparison of Federated Learning Multi-model Approach on MIMIC-IV Dataset. The XGBoost algorithm (gradient boosting) gets the largest centralized AUROC (0.9243), and it retains 99.0\% of its performance through federated soft voting method (AUROC = 0.9155, loss = 0.95\%). The MLP exhibits higher federated degradation performance (loss of 5.3\%) because of weight averaging in high dimensions. The Logistic Regression (LR) model is relatively stable.}}{9}{figure.4}\protected@file@percent }
 \newlabel{fig:xgboost_comparison}{{4}{9}{Comparison of Federated Learning Multi-model Approach on MIMIC-IV Dataset. The XGBoost algorithm (gradient boosting) gets the largest centralized AUROC (0.9243), and it retains 99.0\% of its performance through federated soft voting method (AUROC = 0.9155, loss = 0.95\%). The MLP exhibits higher federated degradation performance (loss of 5.3\%) because of weight averaging in high dimensions. The Logistic Regression (LR) model is relatively stable}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}2}Comparison: LR, MLP, XGBoost}{9}{subsubsection.4.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Byzantine Robustness under Diverse Attack Scenarios}{9}{subsection.4.4}\protected@file@percent }
 \newlabel{sec:byzantine_robustness}{{\mbox  {IV-D}}{9}{Byzantine Robustness under Diverse Attack Scenarios}{subsection.4.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-D}1}Attack Scenarios and Baselines}{9}{subsubsection.4.4.1}\protected@file@percent }
@@ -114,20 +116,14 @@
 \newlabel{sec:clinical_interpretation}{{\mbox  {IV-G}}{11}{Clinical Interpretation of Federated Feature Drift}{subsection.4.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-H}}Reproducibility and Experimental Setup}{11}{subsection.4.8}\protected@file@percent }
 \newlabel{sec:reproducibility}{{\mbox  {IV-H}}{11}{Reproducibility and Experimental Setup}{subsection.4.8}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU patients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Important: FedProx AUROC differs from Table~\ref {tab:performance} (0.7721 vs 0.8591) due to 20 rounds vs 5 rounds and absence of Platt calibration.}}{12}{table.4}\protected@file@percent }
-\newlabel{tab:byzantine_robustness}{{IV}{12}{Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU patients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Important: FedProx AUROC differs from Table~\ref {tab:performance} (0.7721 vs 0.8591) due to 20 rounds vs 5 rounds and absence of Platt calibration}{table.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario.}}{12}{table.5}\protected@file@percent }
-\newlabel{tab:deployment_guidance}{{V}{12}{Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario}{table.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-I}}Cross-Dataset Federated Replication on eICU-CRD}{12}{subsection.4.9}\protected@file@percent }
-\newlabel{subsec:eicu_validation}{{\mbox  {IV-I}}{12}{Cross-Dataset Federated Replication on eICU-CRD}{subsection.4.9}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details.}}{13}{figure.7}\protected@file@percent }
-\newlabel{fig:bottleneck}{{7}{13}{Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details}{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE).}}{13}{figure.8}\protected@file@percent }
-\newlabel{fig:scaling}{{8}{13}{Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE)}{figure.8}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Discussion and Limitations}{13}{section.5}\protected@file@percent }
-\newlabel{sec:limitations}{{V}{13}{Discussion and Limitations}{section.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{13}{section.6}\protected@file@percent }
-\newlabel{sec:conclusion}{{VI}{13}{Conclusion}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-I}}Cross-Dataset Federated Replication on eICU-CRD}{11}{subsection.4.9}\protected@file@percent }
+\newlabel{subsec:eicu_validation}{{\mbox  {IV-I}}{11}{Cross-Dataset Federated Replication on eICU-CRD}{subsection.4.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU care units as clients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Note: FedProx AUROC here (0.7721) differs from Table~\ref {tab:performance} (0.8591) due to 20 training rounds without recalibration. Since AUROC is a rank-based metric, the absence of Platt scaling cannot account for this gap; the likely cause is $\mu =0.01$ over-regularisation under extended adversarial training.}}{12}{table.4}\protected@file@percent }
+\newlabel{tab:byzantine_robustness}{{IV}{12}{Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU care units as clients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Note: FedProx AUROC here (0.7721) differs from Table~\ref {tab:performance} (0.8591) due to 20 training rounds without recalibration. Since AUROC is a rank-based metric, the absence of Platt scaling cannot account for this gap; the likely cause is $\mu =0.01$ over-regularisation under extended adversarial training}{table.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details.}}{12}{figure.7}\protected@file@percent }
+\newlabel{fig:bottleneck}{{7}{12}{Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref {tab:performance} for full details}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE).}}{12}{figure.8}\protected@file@percent }
+\newlabel{fig:scaling}{{8}{12}{Privacy--utility tradeoff at $\epsilon =4.36$, $\delta =10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE)}{figure.8}{}}
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{price2019privacy}{1}
@@ -135,6 +131,10 @@
 \bibcite{mothukuri2021survey}{3}
 \bibcite{nguyen2022federated}{4}
 \bibcite{mcmahan2017communication}{5}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario.}}{13}{table.5}\protected@file@percent }
+\newlabel{tab:deployment_guidance}{{V}{13}{Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario}{table.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion}{13}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{13}{section*.2}\protected@file@percent }
 \bibcite{kairouz2021advances}{6}
 \bibcite{xu2021federated}{7}
 \bibcite{antunes2022federated}{8}
@@ -151,7 +151,6 @@
 \bibcite{sheller2020brain}{19}
 \bibcite{biswas2025flpnexainet}{20}
 \bibcite{dayan2021federated}{21}
-\@writefile{toc}{\contentsline {section}{References}{14}{section*.4}\protected@file@percent }
 \bibcite{pati2022federated}{22}
 \bibcite{kaissis2020secure}{23}
 \bibcite{zhao2025privacy}{24}
@@ -168,11 +167,12 @@
 \bibcite{hripcsak2013opportunities}{35}
 \bibcite{PhysioNet-mimiciv-3.1}{36}
 \bibcite{johnson2023mimic}{37}
-\bibcite{knaus1985apache}{38}
+\bibcite{legall1993saps2}{38}
 \bibcite{charlson1987new}{39}
 \bibcite{nishio2019client}{40}
 \bibcite{wang2020federated}{41}
 \bibcite{wang2020fedavg}{42}
 \bibcite{delong1988comparing}{43}
-\bibcite{eicu2018}{44}
-\gdef \@abspage@last{15}
+\bibcite{shickel2017deep}{44}
+\bibcite{eicu2018}{45}
+\gdef \@abspage@last{14}

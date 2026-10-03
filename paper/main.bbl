@@ -236,10 +236,10 @@ A.~E.~W. Johnson, L.~Bulgarelli, L.~Shen, A.~Gayles, A.~Hajj-Ali, T.~J.
   freely accessible electronic health record dataset,'' \emph{Scientific Data},
   vol.~10, no.~1, p.~1, 2023.
 
-\bibitem{knaus1985apache}
-W.~A. Knaus, E.~A. Draper, D.~P. Wagner, and J.~E. Zimmerman, ``Apache ii: A
-  severity of disease classification system,'' \emph{Critical Care Medicine},
-  vol.~13, no.~10, pp. 818--829, 1985.
+\bibitem{legall1993saps2}
+J.-R. Le~Gall, S.~Lemeshow, and F.~Saulnier, ``A new {Simplified Acute
+  Physiology Score} ({SAPS II}) based on a european/north american multicenter
+  study,'' \emph{JAMA}, vol. 270, no.~24, pp. 2957--2963, 1993.
 
 \bibitem{charlson1987new}
 M.~E. Charlson, P.~Pompei, K.~L. Ales, and C.~R. MacKenzie, ``A new method of
@@ -271,6 +271,12 @@ E.~R. DeLong, D.~M. DeLong, and D.~L. Clarke-Pearson, ``Comparing the areas
   under two or more correlated receiver operating characteristic curves: A
   nonparametric approach,'' \emph{Biometrics}, vol.~44, no.~3, pp. 837--845,
   1988.
+
+\bibitem{shickel2017deep}
+B.~Shickel, P.~J. Tighe, A.~Bihorac, and P.~Rashidi, ``Deep {EHR}: a survey of
+  recent advances in deep learning techniques for electronic health record
+  ({EHR}) analysis,'' \emph{IEEE Journal of Biomedical and Health Informatics},
+  vol.~22, no.~5, pp. 1589--1604, 2017.
 
 \bibitem{eicu2018}
 T.~J. Pollard, A.~E.~W. Johnson, J.~D. Raffa, L.~A. Celi, R.~G. Mark, and
