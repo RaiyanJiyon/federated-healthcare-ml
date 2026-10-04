@@ -63,7 +63,7 @@
 \author{
     \IEEEauthorblockN{
       Md. Raiyan Ur Rahman Jiyon\textsuperscript{1}\,\orcidicon{0009-0000-4845-2813},
-      Md. Naimul Islam\textsuperscript{1}\,\orcidicon{0000-0000-0000-0000},
+      Md. Naimul Islam\textsuperscript{1}\,\orcidicon{0009-0000-7074-9031},
       Mohammad Shorif Uddin\textsuperscript{1,2}\,\orcidicon{0000-0002-7184-2809} \\
     }
 
@@ -74,16 +74,13 @@
     221902113@student.green.ac.bd, 221902056@student.green.edu.bd, shorifuddin@juniv.edu}   
 }
 
-\markboth{IEEE Journal of Biomedical and Health Informatics,~Vol.~XX, No.~XX, June~2026}%
+\markboth{IEEE Journal of Biomedical and Health Informatics,~Vol.~XX, No.~XX, October~2026}%
 {Jiyon et al.: Privacy-Preserving and Byzantine-Robust Federated Learning}
 
 \maketitle
 
 \begin{abstract}
- Privacy regulations such as HIPAA and GDPR restrict multi-center pooling of raw electronic health records, while institutional datasets are often insufficient for robust clinical predictive modeling. This research evaluates privacy-preserving and Byzantine-robust Federated Learning (FL) for Intensive Care Unit (ICU) mortality prediction under realistic Non-IID conditions.
- Using the MIMIC-IV dataset (65,273 hospitalizations, 31 clinical features) partitioned into seven distinct care units, we benchmark server aggregation schemes (FedAvg, FedProx, coordinate-wise Median, Krum, and validation-calibrated FedF2) alongside per-sample differential privacy via DP-SGD ($\epsilon=4.36, \delta=10^{-5}$).
- The centralized logistic regression baseline attains 0.8920 AUROC (85.2\% recall at $\tau=0.39$). In the federated setting, Platt-scaled logistic regression achieves competitive performance at 0.8784 AUROC (1.52\% relative loss), while exploratory federated XGBoost via ensemble voting yields 0.9155 AUROC. Under a 3-of-7 adversarial client attack, Median maintains AUROC $\geq 0.8353$ across all tested attack scenarios (and $\geq 0.8594$ specifically under label-flip attacks), while Krum maintains $\approx 0.851$; FedAvg collapses to 0.5011. Formally private DP-SGD achieves 0.8477 AUROC. Cross-dataset federated replication on eICU-CRD across seven independent hospitals achieves 0.8349 AUROC (1.09\% relative loss vs.\ centralized).
- These findings show that federated learning is clinically feasible across hospital networks, provided Byzantine-robust aggregation is deployed when client trust cannot be guaranteed and decision thresholds are calibrated to clinical operating requirements.
+Privacy regulations such as HIPAA and GDPR restrict multi-center pooling of raw electronic health records, while single-institution datasets are often insufficient for robust clinical prediction. This paper presents an empirical benchmark of federated learning (FL) for Intensive Care Unit (ICU) mortality prediction under Non-IID conditions. We compare server-side aggregation rules (FedAvg, FedProx, coordinate-wise Median, Krum, and a validation-weighted variant, FedF2), per-sample differential privacy (DP-SGD, $\epsilon=4.36$, $\delta=10^{-5}$), and data-poisoning attacks. MIMIC-IV (65,273 ICU admissions, 31 features) is partitioned into seven care-unit clients. Centralized logistic regression reaches 0.8920 AUROC; federated logistic regression reaches 0.8784 (1.52\% relative loss). However, after Platt scaling at the centralized threshold ($\tau=0.39$), recall falls from 85.2\% to 43.5\%, and recovering 86.3\% recall requires $\tau=0.05$ at 23.9\% precision (centralized: 30.2\%). Exploratory federated XGBoost via ensemble voting, which carries no formal privacy guarantee, reaches 0.9155 AUROC. When three of seven clients flip labels, Median retains 0.8594 AUROC and Krum $\approx$0.851 (Median minimum over all 1--3-client attacks: 0.8353), whereas FedAvg falls to 0.5011. DP-SGD yields 0.8477 AUROC. Differential privacy and Byzantine-robust aggregation were evaluated separately, not jointly. A seven-hospital federated replication on eICU-CRD gives 0.8349 AUROC (1.09\% relative loss versus centralized). The results come from single-split simulations; they support the feasibility of FL for ICU mortality prediction but do not establish clinical readiness.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -93,336 +90,239 @@ Federated Learning, Healthcare Machine Learning, Differential Privacy, Non-IID D
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{fig.png}
-\caption{Federated clinical learning architecture: 7 ICU care units train local mortality prediction models with DP-SGD (per-sample gradient clipping + calibrated Gaussian noise). Privatized model updates $\Delta w_k$ are sent to a central aggregation server, which applies Byzantine-robust aggregation (FedAvg, FedProx, Krum, or Median) and broadcasts the global model $w^t$ back to clients. No raw patient data or EHR records are transmitted. An aggregation server can tolerate compromised clients (e.g., due to ransomware or misconfiguration) by using robust aggregation methods.}
+\caption{Federated clinical learning architecture: seven ICU care units train local mortality-prediction models; each client may apply DP-SGD (per-sample gradient clipping and Gaussian noise) before sending its update $\Delta w_k$ to a central aggregation server, which applies an aggregation rule (FedAvg, FedProx, Krum, or Median) and broadcasts the global model $w^t$. No raw patient data are transmitted. In our experiments, DP-SGD was evaluated with FedAvg (Table~\ref{tab:performance}) and the robust aggregators were evaluated without DP (Table~\ref{tab:byzantine_robustness}); their combination was not evaluated.}
 \label{fig:architecture}
 \end{figure*}
 
 \section{Introduction}
-The healthcare industry has developed numerous mechanisms for collecting medical data in clinical institutions at an unprecedented rate, including electronic health records, radiology image storage, and laboratory test data. However, virtually no exchange of this data takes place between different healthcare organizations, primarily because existing legislation such as the Health Insurance Portability and Accountability Act (HIPAA) in the US and the General Data Protection Regulation (GDPR) in the European Union prohibits sharing patient data outside institutional boundaries~\cite{price2019privacy,wiens2019do}. Additionally, there has been a significant rise in ransomware attacks on hospital IT systems, increasing risks in centralized data storage~\cite{mothukuri2021survey}. In effect, hospitals have
-their own islands of data. Machine learning algorithms that require extensive datasets to train effectively cannot access them \cite{nguyen2022federated}.
+The healthcare industry collects medical data in clinical institutions at an unprecedented rate, including electronic health records, radiology images, and laboratory results. However, little of this data is exchanged between healthcare organizations, largely because legislation such as the Health Insurance Portability and Accountability Act (HIPAA) in the US and the General Data Protection Regulation (GDPR) in the European Union restricts sharing patient data outside institutional boundaries~\cite{price2019privacy,wiens2019do}. Ransomware attacks on hospital IT systems further increase the risk of centralized storage~\cite{mothukuri2021survey}. In effect, hospitals hold their own islands of data, and machine learning methods that need large datasets cannot access them~\cite{nguyen2022federated}.
 
-Federated Learning (FL) was proposed precisely to work around this constraint \cite{mcmahan2017communication}. The idea is straightforward: data never moves. Instead, every participating hospital trains a local copy of the model and transmits only the resulting weight updates to a central server, which fuses them into a shared global model \cite{kairouz2021advances}. No individual patient record ever leaves its home institution, supporting compliance with HIPAA and GDPR privacy principles by retaining raw EHR data on local hospital premises. Researchers have already tested variants of this approach on electronic health records \cite{xu2021federated}, wearable physiological monitoring \cite{nguyen2022federated}, and multi-hospital clinical trials \cite{antunes2022federated, sheller2020federated}.
+Federated Learning (FL) was proposed to work around this constraint~\cite{mcmahan2017communication}. Every participating hospital trains a local copy of the model and transmits only model updates to a central server, which fuses them into a shared global model~\cite{kairouz2021advances}. No patient record leaves its home institution, which supports compliance with HIPAA and GDPR privacy principles by keeping raw EHR data on local premises. FL variants have been tested on electronic health records~\cite{xu2021federated}, wearable physiological monitoring~\cite{nguyen2022federated}, and multi-hospital studies~\cite{antunes2022federated, sheller2020federated}.
 
-Moving from controlled experiments to actual hospital networks, however, uncovers a stubborn problem. Most FL algorithms---Federated Averaging (FedAvg) chief among them---were designed with well-calibrated, Independent and Identically Distributed (IID) benchmarks in mind \cite{li2020federated_challenges}. Real clinical populations look nothing like that. A diabetes clinic in a metropolitan area and a rural general practice serve wildly different patient demographics; their local datasets are, statistically speaking, deeply Non-Independent and Identically Distributed (Non-IID) \cite{zhao2018federated}. When a server naively averages weights from such mismatched clients, the optimization process can destabilize: different hospitals effectively tug the model in opposite directions \cite{fedprox, scaffold}. In healthcare, where disease class ratios vary enormously from site to site, this problem is especially acute \cite{li2020federated}.
+Moving from controlled experiments to hospital networks, however, exposes a problem. Most FL algorithms, Federated Averaging (FedAvg) chief among them, were designed with Independent and Identically Distributed (IID) benchmarks in mind~\cite{li2020federated_challenges}. Clinical populations differ across sites in demographics, case mix, and disease prevalence, so local datasets are typically Non-IID~\cite{zhao2018federated}. When a server averages models from such mismatched clients, optimization can destabilize because different sites pull the model in different directions~\cite{fedprox, scaffold}; in healthcare, where class ratios vary from site to site, this problem is especially acute~\cite{li2020federated}.
 
-Additionally, there is a security dimension that requires consideration. FL avoids transmission of raw data, but the gradient updates that are indeed transmitted over the network contain sensitive information. Zhu et al. showed that under optimal settings, an attacker may reverse-engineer gradients to recover original training data records \cite{zhu2019deep}. Unless strict mathematical constraints are enforced on the model for privacy protection, this weakness remains open \cite{dwork2014algorithmic, abadi2016deep}. Prompted by such concerns, we have developed a privacy-aware FL pipeline using MIMIC-IV (Medical Information Mart for Intensive Care IV), a large ICU database. Using MIMIC-IV, we create heterogeneous client groups by partitioning the data into ICU (Intensive Care Unit) care units and evaluate cross-dataset generalizability through federated replication across 7 independent hospitals from the eICU-CRD (eICU Collaborative Research Database). Our contributions include the following:
+There is also a security dimension. FL avoids transmitting raw data, but the updates that are transmitted can leak information: Zhu et al.\ showed that an attacker may, under favorable conditions, reconstruct training records from gradients~\cite{zhu2019deep}. Formal protection requires mathematical guarantees such as differential privacy~\cite{dwork2014algorithmic, abadi2016deep}. Prompted by these concerns, we built a benchmark pipeline for federated ICU mortality prediction using MIMIC-IV (Medical Information Mart for Intensive Care IV). We create Non-IID client groups by partitioning the data into ICU care units, and we replicate the federated experiment on seven hospitals of the eICU Collaborative Research Database (eICU-CRD). Our contributions are:
 \begin{itemize}
-
-\item We partition the MIMIC-IV dataset into seven ICU care units to construct realistic Non-IID clients, evaluating cross-dataset federated generalizability across seven independent hospitals from the multi-center eICU-CRD dataset.
-
-\item We analyze Byzantine-robust aggregation methods (Median and Krum) under multiple poisoning attacks, demonstrating their robustness (Median AUROC $\geq 0.8353$ across all attacks, $\geq 0.8594$ under label-flip; Krum AUROC $\approx 0.851$) compared to FedAvg and FedProx.
-
-\item We evaluate the privacy-utility trade-offs of DP-SGD alongside multiple architectures and FedF2, showing that FedF2 is highly effective in trusted settings but vulnerable to Byzantine attacks.
-
+\item \textbf{Benchmark.} We provide an empirical comparison of FedAvg, FedProx, coordinate-wise Median, Krum, and a validation-weighted variant (FedF2) for ICU mortality prediction with seven care-unit clients (a single-institution proxy for Non-IID data), together with a seven-hospital federated replication on eICU-CRD.
+\item \textbf{Byzantine robustness.} Under label-flip, sign-flip, and adaptive poisoning of 1--3 of 7 clients, Median (AUROC $\geq 0.8353$ in all scenarios, 0.8594 under three label-flip clients) and Krum ($\approx 0.851$) remain stable, whereas FedAvg, FedProx, and FedF2 collapse under three label-flip clients.
+\item \textbf{Operating points and privacy.} We show that federated averaging compresses predicted probabilities, so a threshold transferred from a centralized model loses sensitivity (43.5\% versus 85.2\% recall at $\tau=0.39$); we report a matched-sensitivity comparison, DP-SGD results at one privacy budget, and a negative result for F2-score-based client weighting.
 \end{itemize}
+We note the scope of these claims: differential privacy and Byzantine-robust aggregation are evaluated in separate experiments, and their interaction is left for future work.
 
-The remaining sections of this paper are as follows. Section II discusses related works. Section III includes experimental results, including how data splitting and federated aggregation were performed, as well as how privacy approaches were applied. Section IV discusses our findings, including scalability tests. Finally, Section V contains conclusions.
+The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews related work. Section~\ref{sec:method} describes the methodology. Section~\ref{sec:results} presents the results, including the Byzantine, privacy, scalability, and eICU-CRD experiments. Section~\ref{sec:limits} discusses limitations, and Section~\ref{sec:conclusion} concludes.
 
 \section{Related Work}
+\label{sec:related}
 
-Federated Learning (FL) has emerged as a promising paradigm for collaborative healthcare analytics by enabling multiple institutions to train shared machine learning models without exchanging sensitive patient records. This decentralized learning strategy addresses one of the major barriers to multi-center clinical research while supporting compliance with privacy regulations such as HIPAA and GDPR. Comprehensive surveys by Rieke et al.~\cite{rieke2020future}, Nguyen et al.~\cite{nguyen2022federated}, and Antunes et al.~\cite{antunes2022federated} identify FL as a key technology for healthcare AI because it enables knowledge sharing across institutions while preserving patient confidentiality. The effectiveness of FL has been demonstrated in numerous clinical applications, including brain tumor segmentation~\cite{sheller2020brain}, pneumonia detection with explainable AI~\cite{biswas2025flpnexainet}, COVID-19 outcome prediction across twenty hospitals~\cite{dayan2021federated}, rare cancer segmentation involving seventy-one institutions~\cite{pati2022federated}, as well as stroke prediction, drug discovery, and electronic health record (EHR) analysis~\cite{kaissis2020secure,xu2021federated}. Recently, Zhao et al.~\cite{zhao2025privacy} developed a privacy-preserving federated framework for multi-source EHR prognosis prediction using feature calibration. Although these studies demonstrate the feasibility of collaborative learning, they primarily evaluate FL under benign environments and often provide limited analysis of statistical heterogeneity, adversarial robustness, formal privacy guarantees, and external clinical validation. Xu et al.~\cite{xu2021federated}, for instance, reported that federated EHR models experience noticeable performance degradation when participating hospitals differ substantially in patient demographics, indicating that practical deployment remains challenging.
+Federated Learning has emerged as a promising paradigm for collaborative healthcare analytics, enabling multiple institutions to train shared models without exchanging patient records while supporting compliance with privacy regulations such as HIPAA and GDPR. Surveys by Rieke et al.~\cite{rieke2020future}, Nguyen et al.~\cite{nguyen2022federated}, and Antunes et al.~\cite{antunes2022federated} identify FL as a key technology for healthcare AI. Its effectiveness has been demonstrated in brain tumor segmentation~\cite{sheller2020brain}, pneumonia detection with explainable AI~\cite{biswas2025flpnexainet}, COVID-19 outcome prediction across twenty hospitals~\cite{dayan2021federated}, rare cancer segmentation across seventy-one institutions~\cite{pati2022federated}, and EHR analysis~\cite{kaissis2020secure,xu2021federated}. Zhao et al.~\cite{zhao2025privacy} recently developed a privacy-preserving federated framework for multi-source EHR prognosis prediction using feature calibration. These studies demonstrate feasibility, but they mostly evaluate FL in benign environments and often provide limited analysis of statistical heterogeneity, adversarial robustness, formal privacy guarantees, and external clinical validation. Xu et al.~\cite{xu2021federated}, for instance, reported that federated EHR models degrade noticeably when participating hospitals differ substantially in patient demographics.
 
-One of the most significant challenges in healthcare FL is the presence of Non-IID data. Hospitals naturally differ in patient populations, disease prevalence, treatment protocols, and demographic characteristics, violating the assumptions underlying classical Federated Averaging (FedAvg). Li et al.~\cite{li2020convergence} theoretically showed that FedAvg suffers from unstable convergence under heterogeneous client distributions, while Zhao et al.~\cite{zhao2018federated} observed performance degradation of up to 55\% compared with centralized IID training. To address this issue, several optimization strategies have been proposed, including FedProx~\cite{fedprox}, SCAFFOLD~\cite{scaffold}, and personalized federated learning methods such as Ditto and MAML~\cite{li2021ditto,fallah2020personalized}. While these approaches improve optimization, many introduce additional computational complexity or focus primarily on client personalization rather than developing robust global clinical models. Furthermore, most evaluations are conducted on generic benchmark datasets rather than realistic EHR data. Clinical datasets introduce additional challenges, including severe class imbalance, missing values, and varying disease prevalence across hospitals, leaving the effectiveness of these optimization strategies in practical ICU settings insufficiently explored. To better reflect real-world hospital collaboration, our framework adopts FedProx and constructs realistic ICU-specific Non-IID client partitions using MIMIC-IV, followed by external validation on the eICU-CRD dataset.
+Non-IID data is one of the main challenges in healthcare FL. Hospitals differ in patient populations, disease prevalence, and treatment protocols, violating the assumptions behind FedAvg. Li et al.~\cite{li2020convergence} showed theoretically that FedAvg converges more slowly under heterogeneous client distributions, and Zhao et al.~\cite{zhao2018federated} observed accuracy degradation of up to 55\% relative to IID training in an extreme label-skew setting. Proposed remedies include FedProx~\cite{fedprox}, SCAFFOLD~\cite{scaffold}, and personalization methods such as Ditto and MAML-based approaches~\cite{li2021ditto,fallah2020personalized}. Many of these add computational complexity or target client personalization rather than a robust global model, and most evaluations use generic benchmark data rather than EHR data. Clinical data add severe class imbalance, missing values, and varying prevalence across hospitals, so the behavior of these methods in ICU settings is insufficiently explored. Our benchmark therefore includes FedProx and builds ICU-specific Non-IID client partitions from MIMIC-IV, followed by a federated replication on eICU-CRD.
 
-Security and privacy remain equally important challenges because model updates themselves may leak sensitive patient information. Zhu et al.~\cite{zhu2019deep} demonstrated that original training samples can be reconstructed from shared gradients, while membership inference and model inversion attacks further expose patient information without direct access to the underlying datasets~\cite{shokri2016membership,fredrikson2014privacy}. Differential Privacy (DP), particularly DP-SGD~\cite{abadi2016deep,dwork2014algorithmic}, has therefore become a standard mechanism for providing formal privacy guarantees, although stronger privacy often reduces predictive performance. In parallel, Byzantine-resilient aggregation methods such as Krum~\cite{blanchard2017machine} and coordinate-wise Median~\cite{yin2018byzantine} have been proposed to defend against malicious client updates with relatively low computational overhead. However, previous studies generally investigate privacy preservation, Byzantine robustness, and optimization independently, while most evaluations rely on synthetic benchmark datasets rather than realistic healthcare environments. Consequently, the combined impact of heterogeneous data, differential privacy, and Byzantine attacks on clinical prediction remains insufficiently understood. Our work addresses this gap by jointly evaluating DP-SGD, Krum, and coordinate-wise Median under realistic poisoning attacks and heterogeneous ICU federated learning settings.
+Model updates themselves may leak sensitive information. Zhu et al.~\cite{zhu2019deep} reconstructed training samples from shared gradients, and membership-inference and model-inversion attacks expose information without access to the underlying data~\cite{shokri2016membership,fredrikson2014privacy}. Differential Privacy (DP), in particular DP-SGD~\cite{abadi2016deep,dwork2014algorithmic}, is a standard mechanism for formal guarantees, although stronger privacy generally reduces utility and can affect minority classes disproportionately~\cite{bagdasaryan2019differential}. In parallel, Byzantine-resilient aggregation rules such as Krum~\cite{blanchard2017machine} and coordinate-wise Median~\cite{yin2018byzantine} defend against malicious client updates at low computational cost. Privacy, robustness, and optimization are usually studied separately, often on synthetic benchmarks. This work contributes an empirical comparison of these components on clinical data. We evaluate DP-SGD and Byzantine-robust aggregation within one pipeline but in separate experiments; their interaction is not evaluated here.
 
-Reliable evaluation is equally important for clinical decision support systems. ICU mortality datasets such as MIMIC-IV and eICU-CRD are inherently imbalanced, making overall accuracy an inadequate indicator of clinical usefulness. Previous studies have emphasized that Recall and Precision--Recall analysis are more appropriate because failing to identify critically ill patients (false negatives) has substantially greater clinical consequences than generating false alarms~\cite{rajkomar2018scalable,mujtaba2019clinical,saito2015precision,hripcsak2013opportunities}. Moreover, trustworthy deployment requires external validation, reliable probability estimates, and robustness across heterogeneous hospital populations~\cite{wiens2019do}. Motivated by these limitations, this work presents an integrated federated learning framework that combines realistic Non-IID partitioning using MIMIC-IV, external validation on eICU-CRD, DP-SGD for formal privacy protection, lightweight Byzantine-resilient aggregation through Krum and coordinate-wise Median, and calibration-aware evaluation emphasizing clinically significant Recall. By jointly addressing optimization, privacy, security, and clinical reliability within a unified experimental framework, this study advances federated healthcare learning toward secure and trustworthy deployment in real-world critical care environments.
+Reliable evaluation is equally important for clinical decision support. ICU mortality data are imbalanced, so accuracy is an inadequate indicator, and precision--recall analysis is more informative than ROC analysis on imbalanced data~\cite{saito2015precision}. Because a missed high-risk patient (false negative) is generally costlier than a false alarm, we report recall and precision at explicit operating points alongside AUROC. Trustworthy deployment also requires external validation, reliable probability estimates, and robustness across heterogeneous hospital populations~\cite{wiens2019do}. Motivated by these considerations, this work benchmarks FL for ICU mortality prediction with Non-IID partitioning of MIMIC-IV, a cross-dataset federated replication on eICU-CRD, DP-SGD, Krum and Median aggregation, and calibration-aware evaluation.
 
 \section{Methodology}
+\label{sec:method}
 
-Our experiments were conducted by subjecting FL to conditions resembling real hospital network environments rather than standard benchmark settings (Fig. 1). There are four key parameters in our design of experiments: the way the distributed simulation was structured, the division of data for generating demographic diversity, the server-side aggregation countermeasures to employ, and the addition of privacy guarantees.
+Our experiments subject FL to conditions resembling a hospital network rather than a standard benchmark (Fig.~\ref{fig:architecture}). The design has four parts: the distributed simulation, the data partitioning that creates Non-IID clients, the server-side aggregation rules, and the privacy mechanism.
 
 \subsection{System Architecture and Reproducibility}
 
-To keep consistency and independent work of the federated
-learning experiment, we used Python code with the Scikit-
-Learn library to ensure reproducibility. For each of the seven
-hospital clients, the model is trained on patient data using logistic regression, multilayer perceptron, and extreme gradient boosting algorithms. The differential privacy SGD method is used to train these models, where the gradients are clipped and noise is added to the data before sending them to
-the aggregate server. The server then aggregates the gradi-
-ents using one of five methods – FedAvg, FedProx, FedF2,
-Median, and Krum – and sends the global model back to
-clients. In the baseline validation, the hospitals' models are
-trained for five rounds; for testing the aggregations, twenty
-rounds were used to allow for convergence.
+The simulation runs in Python on a single workstation, with each client's data held in a separate partition that the server never accesses. Each of the seven clients trains a logistic regression, a multilayer perceptron (MLP), or gradient-boosted trees (XGBoost) on its local patient data. DP-SGD, which clips per-sample gradients and adds Gaussian noise to the clipped gradients, is applied only to the logistic-regression pipeline; the MLP and XGBoost experiments are non-private. In each round, clients send model updates to the server, which aggregates them with one of five rules (FedAvg, FedProx, FedF2, Median, or Krum) and returns the global model. Baseline runs use five rounds; the aggregation and robustness runs use twenty rounds.
+% TODO(authors): state library versions actually used for XGBoost and the DP-SGD / accountant implementation.
 
-All primary benchmark evaluations use random seed 42 with stratified train–validation–test splits (yielding the headline FedAvg AUROC of 0.8784 reported in Table~\ref{tab:performance}). To assess statistical stability across cohort shuffles, we replicate measurements across five independent random seeds (42, 123, 456, 789, 1000), obtaining a mean FedAvg AUROC of 0.8860 $\pm$ 0.0065.
+All primary benchmark results use random seed 42 with stratified train--validation--test splits (yielding the headline FedAvg AUROC of 0.8784 in Table~\ref{tab:performance}). To assess variability across cohort shuffles, we repeated the FedAvg experiment with five seeds (42, 123, 456, 789, 1000), obtaining a mean AUROC of $0.8860 \pm 0.0065$. Only FedAvg was repeated; all other results, including Tables~\ref{tab:clinical_aggregation} and~\ref{tab:byzantine_robustness}, are single runs with seed 42.
 
 \subsection{Distributed Patient Cohorts (Care-Unit Modeling)}
 
-Nevertheless, patient cohorts within hospitals differ considerably from each
-other. The intensive care unit (ICU) of an academic institution cares for a different
-set of patients compared to the ICU of a rural community hospital. Such a
-difference goes against the IID assumptions used by most machine learning
-algorithms. MIMIC-IV \cite{PhysioNet-mimiciv-3.1,johnson2023mimic} (version 3.1 of Medical Information Mart for
-Intensive Care) ICU-specific database will be used in our work. It contains 65,273
-patient ICU admissions data that are characterized by 31 variables. These variables include demographics (age, gender, type of admission, insurance type), vital signs recorded in the first 24-hour period (HR, SBP, MAP, RR, temperature, SpO$_2$, glucose), laboratory measurements (creatinine, BUN, sodium, potassium, bicarbonate, hemoglobin, WBC, platelet, lactate, bilirubin, INR), and
-predictions of scores (SOFA, SAPS II \cite{legall1993saps2}, Charlson index \cite{charlson1987new}).
+Patient cohorts differ considerably across care settings: the ICU of an academic center serves a different population than that of a rural community hospital, which violates the IID assumption underlying most learning algorithms. We use MIMIC-IV~\cite{PhysioNet-mimiciv-3.1,johnson2023mimic} (version 3.1), which contains 65,273 ICU admissions characterized by 31 variables: demographics (age, gender, admission type, insurance type), vital signs from the first 24 hours (HR, SBP, MAP, RR, temperature, SpO$_2$, glucose), laboratory measurements (creatinine, BUN, sodium, potassium, bicarbonate, hemoglobin, WBC, platelet, lactate, bilirubin, INR), and severity scores (SOFA, SAPS II~\cite{legall1993saps2}, Charlson index~\cite{charlson1987new}). The prediction target is a binary mortality label with a prevalence of about 11\%.
+% TODO(authors): state the exact outcome definition (e.g., in-hospital mortality), the unit of analysis (ICU stay vs. patient), imputation, patient-level splitting, and whether the scaler is fit per client or globally.
 
-Federated learning on the MIMIC-IV dataset is well-suited to its heterogeneous nature. MIMIC-IV allows patient admissions to be split into 7 different ICU care units (MICU, SICU, CCU, etc.), where each unit serves a distinct patient population, resulting in Non-IID distributional heterogeneity. We used these 7 ICUs as our 7 federated clients to model a multi-client federated setting with Non-IID local data distributions.
+MIMIC-IV admissions are split into seven ICU care units (MICU, SICU, CCU, etc.), each serving a distinct patient population and thus producing Non-IID local distributions. We use these seven units as the seven federated clients.
 
-\textbf{Scope of simulation.} We note that our experiment involves
-7 clients originating from a common institution (Beth Israel
-Deaconess Medical Center). While this approach allows for
-controlled studies regarding the effect of Non-IID and robustness
-to adversaries within the known partition setting, it does not mimic
-fully the effect of heterogeneous hospitals due to differences in
-EHR software systems, protocols, or patient demographics. Our
-validation experiments in Section IV-I with eICU-CRD involve
-geographically separate hospitals, which is the real-world test
-setting. Further study will consider an end-to-end evaluation
-on multiple hospital settings \cite{nishio2019client}.
+\textbf{Scope of simulation.} All seven clients originate from one institution (Beth Israel Deaconess Medical Center). This allows controlled study of Non-IID effects and adversaries, but it does not reproduce the differences in EHR software, protocols, and demographics found between real hospitals. The eICU-CRD experiments in Section~\ref{subsec:eicu_validation} use geographically separate hospitals, but they train new models on eICU-CRD rather than testing the MIMIC-IV model; they are therefore a replication, not an external validation. End-to-end evaluation on a real multi-hospital deployment is future work~\cite{nishio2019client}.
 
 \subsection{Model Architectures}
 
-To confirm the ability of federated learning to generalize to more
-complicated model architectures than simple linear regressions, we test the following architectures:
+To test whether our findings extend beyond linear models, we evaluate three architectures.
 
-\paragraph{Logistic Regression (Baseline):}
-Training is done for balanced logistic regression (31 features $\rightarrow$ 1 output) with $\ell_2$ regularization and class weights balancing because of the imbalance
-between classes (11\%). The model is explainable, computationally cheap, and constitutes a classical statistical framework for medical machine learning problems.
+\paragraph{Logistic Regression (Baseline).}
+We train class-weighted logistic regression (31 features $\rightarrow$ 1 output) with $\ell_2$ regularization to handle the class imbalance (about 11\% positives). The model is explainable, computationally cheap, and a classical choice for clinical prediction.
 
 \paragraph{Multi-Layer Perceptron (MLP).}
-To examine whether federated learning preserves its ability to handle complex model architectures, we trained the MLP network (architecture $31 \rightarrow 64
-\rightarrow 32 \rightarrow 1$, where input features are followed by two hidden layers with 64 and 32 neurons respectively and a binary output.
-We apply ReLU activation on all neurons but the output, which
-uses sigmoid activation. The training utilizes the Adam optimizer (learning rate equals 0.001) and binary cross-entropy loss
-function. The number of iterations per one federated learning
-round equals 20 epochs. Batch size is equal to 32 and remains
-the same as in the case of logistic regression.
-Training procedure uses the same splits and StandardScaler preprocessing method as logistic regression.
+The MLP has architecture $31 \rightarrow 64 \rightarrow 32 \rightarrow 1$ (4,161 parameters) with ReLU activations, dropout (rate 0.2), and a sigmoid output. It is trained with Adam (learning rate 0.001), binary cross-entropy loss, 20 local epochs per federated round, and batch size 32, using the same splits and StandardScaler preprocessing as logistic regression.
 
-Both models have been trained using the same train/
-validation/test splits, and threshold-calibrated recall optimization is used on the validation sets for each model.
+\paragraph{XGBoost.}
+We use gradient-boosted trees (200 estimators, maximum depth 6). Clients train local ensembles and the server combines them by soft voting (averaging predicted probabilities); this is prediction-level ensembling, not parameter aggregation (Section~\ref{sec:multimodel}).
+
+All models use the same train/validation/test splits, and decision thresholds are optimized for recall on the validation sets of each model.
 
 \subsection{Federated Aggregation Approaches}
 
-Perhaps the most straightforward approach to aggregating
-updates from client devices by the server is simply averaging,
-known as Federated Averaging or FedAvg \cite{mcmahan2017communication}. FedAvg has
-variants such as matched averaging \cite{wang2020federated}, which perform better in the case of heterogeneity, but FedAvg remains the common baseline
-approach. This method is prone to two kinds of problems related
-to this paper. First, averaging in case of non-uniform data distribution among clients allows the majority of clients to take control
-over the global model. Second, just one malicious client is enough
-to spoil the whole aggregate. For this reason, we explored the
-proximal approach FedProx in combination with robust aggregation schemes. Median aggregation relies on computing coordinate-wise median instead of mean of incoming weight vectors,
-thus automatically dealing with outliers. \textit{Krum} works differently (Algorithm~\ref{alg:krum}): Calculates the distance between each submission
-and all other clients’ submissions and selects the one with
-the smallest aggregate distance from its peers—in other words,
-it relies on the update that best reflects community
-consensus and discards everything else
+\textbf{FedAvg}~\cite{mcmahan2017communication} averages client models weighted by local sample counts $n_k/n$ (Eq.~\eqref{eq:erm}). Variants such as matched averaging~\cite{wang2020federated} may handle heterogeneity better, but FedAvg remains the standard baseline. It has two weaknesses relevant here: with non-uniform clients, larger clients dominate the global model, and a single malicious client can arbitrarily corrupt the average. \textbf{FedProx}~\cite{fedprox} adds a proximal term $\frac{\mu}{2}\|\mathbf{w}-\mathbf{w}^t\|^2$ to each client's local objective; it is a client-side modification, and the server still averages as in FedAvg. \textbf{Median} replaces the mean with a coordinate-wise median, which limits the influence of outlying updates. \textbf{Krum} (Algorithm~\ref{alg:krum}) scores each update by its distances to its nearest peers and returns the single update with the lowest score, i.e., the one that best matches the consensus of the other clients.
 
 \subsection{Mathematical Formalism}
 
-\subsubsection{Federated Learning with Byzantine Robustness and Privacy}
+\subsubsection{Federated Learning Formulation}
 
-We formulate the federated learning problem as an Empirical Risk Minimization problem in the distributed setting. Assume that there are $K$ clients, where each client $k$ has its own data $\mathcal{D}_k$ of size $n_k$. The goal of the optimization problem is to minimize the loss:
+We formulate FL as empirical risk minimization. With $K$ clients, where client $k$ holds data $\mathcal{D}_k$ of size $n_k$, the goal is to minimize
 \begin{equation}
 \min_{\mathbf{w}} F(\mathbf{w}) = \frac{1}{n} \sum_{k=1}^{K} n_k \cdot F_k(\mathbf{w}), \quad n = \sum_{k=1}^{K} n_k.
+\label{eq:erm}
 \end{equation}
-
-Algorithm~\ref{alg:fl_dp} defines our defense pipeline, comprised of three steps: (i) local logistic-regression training, (ii) sample-wise DP-SGD with gradient clipping and additive Gaussian noise on each client, and (iii) server-side aggregation.
+Algorithm~\ref{alg:fl_dp} summarizes the training pipeline: local training (with optional DP-SGD), followed by server-side aggregation with a pluggable rule. FedAvg, FedProx with FedAvg-style averaging, and Median and Krum applied to updates $\Delta\mathbf{w}$ are equivalent to applying the same rules to the client models themselves, because these rules commute with a common shift by $\mathbf{w}^t$.
 
 \begin{algorithm}[t]
-\caption{Algorithm 1 Federated learning for medicine with layered
-privacy and robustness. The hospitals retain their data ownership (no centralization) while engaging in model building in collaboration. Privacy is enforced by DP-SGD, while robustness is ensured via Byzantine-robust aggregation.}
+\caption{Federated training with optional DP-SGD and a pluggable aggregation rule. Raw data never leave the clients.}
 \label{alg:fl_dp}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Clients $k = 1, \ldots, K$; aggregation method (FedAvg or FedProx); privacy params $(\epsilon, \delta)$; rounds $T$
-\State Initialize global model $\mathbf{w}_0$ at server
-\For{round $t = 1$ to $T$}
+\State \textbf{Input:} Clients $k = 1, \ldots, K$; aggregation rule $\mathcal{A} \in \{$FedAvg, FedProx, FedF2, Median, Krum$\}$; optional DP parameters $(\sigma, C)$; rounds $T$
+\State Initialize global model $\mathbf{w}^0$ at server
+\For{round $t = 0$ to $T-1$}
   \For{each client $k$ in parallel}
-    \State Train local logistic regression with DP-SGD on $\mathcal{D}_k$
-    \State Clip each sample gradient, add Gaussian noise, and update $\mathbf{w}^t_k$
-    \State Send privatized client update $\mathbf{w}^t_k$ to server
+    \State Initialize $\mathbf{w}_k \gets \mathbf{w}^t$ and train locally on $\mathcal{D}_k$ (for FedProx, add $\frac{\mu}{2}\|\mathbf{w}-\mathbf{w}^t\|^2$ to the local objective)
+    \State \textbf{if} DP-SGD enabled \textbf{then} clip each per-sample gradient to norm $C$ and add Gaussian noise $\mathcal{N}(0,\sigma^2C^2\mathbf{I})$ to the summed gradient
+    \State Send update $\Delta\mathbf{w}^t_k \gets \mathbf{w}_k - \mathbf{w}^t$ to server
   \EndFor
-  \State Server receives updates from responding clients
-  \State \textbf{if} aggregation method = FedAvg \textbf{then}
-    \State $\mathbf{w}^t_{\text{agg}} \gets \frac{1}{K_{\text{respond}}} \sum_{k \in \text{responding}} \mathbf{w}^t_k$
-  \State \textbf{else if} aggregation method = FedProx \textbf{then}
-    \State $\mathbf{w}^t_{\text{agg}} \gets \text{FedProx}(\{\mathbf{w}^t_k\})$
-  \State \textbf{end if}
-  \State Update global model: $\mathbf{w}^t \gets \mathbf{w}^t_{\text{agg}}$
+  \State Server receives updates from the responding set $R_t$
+  \State $\Delta\mathbf{w}^t \gets \mathcal{A}(\{\Delta\mathbf{w}^t_k\}_{k \in R_t})$ \Comment{FedAvg: $\sum_{k\in R_t}\frac{n_k}{\sum_{j\in R_t}n_j}\Delta\mathbf{w}^t_k$}
+  \State Update global model: $\mathbf{w}^{t+1} \gets \mathbf{w}^t + \Delta\mathbf{w}^t$
 \EndFor
 \State \textbf{Output:} Final model $\mathbf{w}^T$
 \end{algorithmic}
 \end{algorithm}
 
-2) Performance-Weighted Aggregation for Trusted Networks:
-We propose performance-weighting, an approach which adaptively incorporates local validation performance to determine client contribution weightings. Previous work in adaptive FL included FedNova \cite{wang2020fedavg}, which weights contributions according to gradient norm, and other adaptive approaches \cite{li2021ditto, fallah2020personalized} which weight contributions according to local model quality. We extend this work by incorporating F2-score weighting. This technique is particularly suited to clinical environments where sensitivity to patient outcomes varies across ICU units, and this motivates our proposed FedF2 method. We
-introduce FedF2 as an empirical investigation of this existing technique rather than as an algorithmic innovation;
-the purpose is to determine whether clinical F2-score-based weighting offers any advantage over FedAvg and to identify its failure
-points under adversarial conditions.
+\subsubsection{Performance-Weighted Aggregation (FedF2)}
 
-Motivation and Scope. The use of performance-based
-weighting becomes relevant in trustworthy networks, where all
-participating clients are honest or misconfigured (but not adver-
-saries). In such settings, clients that perform poorly would be
-downweighted, which results in better calibration of the glob-
-al model. However, when considering adversarial situations,
-where clients are deliberately corrupted or poisoned, perfor-
-mance-based weightage does not provide sufficient security—an
-observation that is verified by our Byzantine resistance analy-
-sis (Section IV-D).
+We study F2-score-based client weighting as an empirical baseline, not as a new algorithm. Weighting clients by local validation performance is a common heuristic; FedNova~\cite{wang2020fedavg}, by contrast, normalizes updates by the number of local steps to correct objective inconsistency. Our question is whether F2-based weighting improves on FedAvg for ICU mortality and where it fails under attack.
 
-FedF2 Design. The idea here is to take into account the
-local validation F2-score in weighting the contribution from
-the clients.
-
-Let $F_{2,k}^{t}$ denote the F2-score obtained using the local model
-$\mathbf{w}_{k}^{t}$ on the client $k$’s own private validation partition in round $t$.
+Let $F_{2,k}^{t}$ denote the F2-score of the local model $\mathbf{w}_{k}^{t}$ on client $k$'s own validation partition in round $t$. The aggregation weight is
 \begin{equation}
-\alpha_k^t = (1 - \gamma) \frac{n_k}{n} + \gamma \frac{F_{2,k}^t}{\sum_{j=1}^{K} F_{2,j}^t}
+\alpha_k^t = (1 - \gamma) \frac{n_k}{n} + \gamma \frac{F_{2,k}^t}{\sum_{j=1}^{K} F_{2,j}^t},
+\label{eq:fedf2}
 \end{equation}
-where $\gamma \in [0, 1)$ is the clinical sensitivity weighting factor. Under $\gamma = 0$, FedF2 collapses to standard sample-size-weighted FedAvg. The aggregated global weights are then computed as:
+where $\gamma \in [0, 1)$ controls the weight given to performance; $\gamma = 0$ recovers sample-size-weighted FedAvg, and $\sum_k \alpha_k^t = 1$. The global model is
 \begin{equation}
-\mathbf{w}^{t+1} = \sum_{k=1}^{K} \alpha_k^t \mathbf{w}_k^t
+\mathbf{w}^{t+1} = \sum_{k=1}^{K} \alpha_k^t \mathbf{w}_k^t.
 \end{equation}
-The $F_2$-score is chosen because it weights clinical sensitivity (recall) twice as heavily as positive predictive value (precision):
+The F2-score weights recall twice as heavily as precision:
 \begin{equation}
-F_2 = \frac{5 \cdot \text{Precision} \cdot \text{Recall}}{4 \cdot \text{Precision} + \text{Recall}}
+F_2 = \frac{5 \cdot \text{Precision} \cdot \text{Recall}}{4 \cdot \text{Precision} + \text{Recall}}.
 \end{equation}
-With a trusted system, adding in F2-weighting may help mitigate subpar clients. The method is limited, however; intentionally poisoned clients which always predict positive (to inflate recall), will find their precision reduced to the class precision  ($\approx 11\%$), lowering the F2-score. This property can offer protection against certain types of attacks. Byzantine aggregation algorithms (Median, Krum) offer better protection as shown in Section~\ref{sec:byzantine_robustness}.
+Two properties limit what FedF2 can do. First, $\alpha_k^t \geq (1-\gamma)n_k/n$, so for $\gamma=0.5$ no client can fall below half of its FedAvg weight. Second, an always-positive client with clean validation labels has $F_2 = 5p/(4p+1) \approx 0.38$ at prevalence $p\approx 0.11$, only modestly below the roughly 0.47 of the pooled federated model (Table~\ref{tab:clinical_aggregation}); if its validation labels are poisoned as well, its F2 approaches 1 and the client is \emph{up}-weighted. Neither case offers meaningful protection (Section~\ref{sec:byzantine_robustness}).
 
 \subsubsection{Coordinate-Wise Median Aggregation}
 
-Let $\{\Delta \mathbf{w}^t_1, \ldots, \Delta \mathbf{w}^t_{K_{\text{respond}}}\}$ denote the weight updates received from all responding clients at round $t$. The Byzantine-robust median aggregation is:
+Let $\{\Delta \mathbf{w}^t_1, \ldots, \Delta \mathbf{w}^t_{K_{\text{respond}}}\}$ denote the updates received at round $t$. The coordinate-wise median is
 \begin{equation}
 [\text{Median}]_j = \text{median} \{ [\Delta \mathbf{w}^t_1]_j, \ldots, [\Delta \mathbf{w}^t_{K_{\text{respond}}}]_j \}
 \end{equation}
-independently for every coordinate $j = 1, \ldots, d$, where $d$ is the dimension of the model. In this way, outliers are automatically ignored: one malicious node reporting abnormal data in any coordinate will be overridden. Unlike averaging, which loses robustness if more than $(K_{\text{respond}} - 1)/2$ clients are corrupted, the median remains robust.
+for every coordinate $j = 1, \ldots, d$, where $d$ is the model dimension. A single malicious client can arbitrarily corrupt a mean, whereas the median stays within the range of the honest values as long as fewer than half of the clients are corrupted; Yin et al.~\cite{yin2018byzantine} give statistical error rates for median-type estimators under assumptions (e.g., bounded variance) that our heterogeneous clinical setting does not verify, so our evidence for Median is empirical.
 
 \subsubsection{Krum Aggregation}
 
- Krum~\cite{blanchard2017machine} chooses the update which is closest to the consensus among the clients (Algorithm~\ref{alg:krum}). It calculates distances between all pairs of updates $d_{ij} = \|\Delta\mathbf{w}^{t}_{i} -\Delta\mathbf{w}^{t}_{j}\|_{2}$, sums up the $f$
-smallest of them $s_{i} = \sum_{j\in f\text{-closest}} d_{ij}$ and returns $\Delta\mathbf{w}^{t}_{i^*}$ where $i^*$
-$= \arg\min_{i} s_{i}$ with $f = K_{\text{respond}} - \lfloor\sqrt{K_{\text{respond}}}\rfloor - 1$.
+Krum~\cite{blanchard2017machine} selects the update closest to its peers. For each update $i$, let $\mathcal{N}_i$ be the $m$ updates nearest to it, with $m = K_{\text{respond}} - f - 2$ for an assumed bound $f$ on the number of Byzantine clients. The score is $s_i = \sum_{j\in\mathcal{N}_i}\|\Delta\mathbf{w}^t_i-\Delta\mathbf{w}^t_j\|_2^2$ and the server returns $\Delta\mathbf{w}^t_{i^*}$ with $i^*=\arg\min_i s_i$ (Algorithm~\ref{alg:krum}). The formal guarantee requires $2f+2 < K_{\text{respond}}$, i.e., $f \leq 2$ for $K=7$. Our implementation sets $m = K_{\text{respond}}-\lfloor\sqrt{K_{\text{respond}}}\rfloor-1 = 4$ for $K=7$, which corresponds to $f=1$ in this notation; results with two or three malicious clients are therefore empirical.
 
 \begin{algorithm}[t]
-\caption{Krum Selection}
+\caption{Krum selection}
 \label{alg:krum}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Updates $\{\Delta\mathbf{w}^t_k\}$, neighbor count $f$
+\State \textbf{Input:} Updates $\{\Delta\mathbf{w}^t_k\}$, neighbor count $m$
 \For{each client $i$}
-  \State $s_i \gets \sum_{j \in f\text{-nearest}} \|\Delta\mathbf{w}^t_i - \Delta\mathbf{w}^t_j\|_2$
+  \State $s_i \gets \sum_{j \in \mathcal{N}_i} \|\Delta\mathbf{w}^t_i - \Delta\mathbf{w}^t_j\|_2^2$, where $\mathcal{N}_i$ are the $m$ nearest updates to $i$
 \EndFor
 \State \textbf{return} $\Delta\mathbf{w}^t_{i^*}$, $i^* = \arg\min_i s_i$
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Differential Privacy Guarantees}
+\subsection{Differential Privacy}
+\label{sec:dp}
 
-Rather than using differential pri-
-vacy post-training, we use the Gaussian mechanism during
-training of the client optimizer. Each client performs: (1) clipping per-sample gradients according to the norm limit, (2) adding Gaussian noise scaled according to the mean of the gradient, (3) sending the update to the centralized server for aggregation, and (4) managing the privacy budget $(\epsilon, \delta)$ at
-each iteration.
+We apply DP-SGD~\cite{abadi2016deep} at each client for the logistic-regression model, using the Gaussian mechanism~\cite{dwork2014algorithmic} inside the local optimizer rather than perturbing weights after training. For each local mini-batch (size 32), the client (1) computes per-sample gradients, (2) clips each to $\ell_2$ norm $C=1.0$, (3) sums the clipped gradients and adds Gaussian noise $\mathcal{N}(0,\sigma^2C^2\mathbf{I})$ with noise multiplier $\sigma\approx 4.80$, and (4) divides by the batch size before the gradient step. Clipping bounds each sample's influence independently of the number of parameters, which is why this design replaced our earlier output-perturbation prototype, whose noise scaled poorly with model dimensionality.
 
-Given our calibrated $(\epsilon, \delta)$ parameters $(\epsilon = 4.36, \delta = 10^{-5})$,
-we provide formal privacy guarantees but with a sacrifice
-in utility, leading to the privacy--utility tradeoff shown in Table~
-\ref{tab:performance}.
-
-FedAvg converges at $O(1/\sqrt{T})$ under strong convexity \cite{li2020convergence}. Byzantine methods (Median, Krum) tolerate up to $f \leq K/2$ malicious clients with $O(f/K)$ utility degradation \cite{blanchard2017machine,yin2018byzantine}. DP-SGD with $(\epsilon=4.36, \delta=10^{-5})$ maintains privacy-utility balance via Gaussian mechanism theory \cite{abadi2016deep,dwork2014algorithmic}.
-
-\subsection{Differential Privacy Constraints}
-We ensure differential privacy at the client side through the application of the Gaussian mechanism introduced by Abadi et al. \cite{abadi2016deep} within the local optimizer. At each update sent to the server, each client: (1) computes per-sample gradients for a
-mini-batch, (2) clips each sample gradient according to $\ell_2$ norm $C = 1.0$, (3) averages the clipped sample gradients within the batch, and then (4) adds Gaussian noise with zero mean based on the $(\epsilon, \delta) = (4.36, 10^{-5})$ (calculated by the moments
-accountant) before conducting the stochastic gradient step.This entire process of clipping and adding noise per sample is conducted during each local training iteration, and hence the weight update $\Delta w_k^t$ sent to the server ensures the guarantee of differential privacy for the Gaussian mechanism \cite{dwork2014algorithmic}.
-
-\textbf{Privacy budget composition.} Across federated training rounds, the per-client privacy loss is accumulated and tracked using the moments accountant \cite{abadi2016deep}. In our experimental configuration (batch size 32, local training partitions averaging $\approx 5{,}967$ samples per client drawn from unit cohorts averaging $\approx 9{,}325$ admissions, clipping threshold $C = 1.0$, noise multiplier $\sigma \approx 4.80$, and failure probability $\delta = 10^{-5}$), the composition across local stochastic gradient steps yields an accumulated privacy expenditure bounded at $(\epsilon = 4.36, \delta = 10^{-5})$.
-The prior proof-of-concept design applied output perturbation, where weights were subjected to noise post-training, yielding unstable convergence due to sensitivity scaling with model dimensionality. Per-sample DP-SGD addresses this by clipping local gradients prior to perturbation, bounding sensitivity independently of parameter count. With calibrated parameters $(\epsilon = 4.36, \delta = 10^{-5})$, federated DP-SGD training achieves 0.8477 AUROC (Table~\ref{tab:performance}), demonstrating that formal differential privacy can be guaranteed while preserving practical clinical utility on MIMIC-IV. Post-hoc Platt scaling is applied to calibrate predicted probabilities without modifying the rank-order discriminative capability of the model.
+Privacy loss accumulates over all local steps and rounds and is tracked per client with a moments accountant~\cite{abadi2016deep}; with batch size 32, about 5,967 training samples per client (from unit cohorts averaging about 9,325 admissions), $C=1.0$, $\sigma\approx4.80$, and $\delta=10^{-5}$, the accumulated budget is $\epsilon=4.36$. This is example-level DP with respect to each client's released model updates. It does \emph{not} cover Platt scaling or threshold selection, which use validation labels, and it is applied only to the logistic-regression pipeline with FedAvg; the MLP and XGBoost results are non-private. Platt scaling is monotone and leaves AUROC unchanged.
+% TODO(authors): report the total number of DP-SGD steps (rounds x local epochs x steps per epoch) and the accountant used. By our recomputation, sigma=4.8 and q=32/5967 give eps about 1.3 for 74,400 steps and eps=4.36 only at about 7e5 steps; please verify.
 
 \section{Results and Evaluation}
+\label{sec:results}
 
 \begin{figure*}[t]
 \centerline{\includegraphics[width=0.95\textwidth]{figures/figure2_scalability.pdf}}
-\caption{System scalability and network robustness analysis. \textit{Left:} AUROC (blue, left axis) is stable at over 0.88 as the client numbers increase from 7 to 28; however, throughput (orange, right axis) drops due to synchronous-aggregation straggling. \textit{Right:} AUROC with 10--30\% random client dropout; throughput rises as dropout ratio rises since there are less clients responding per iteration.}
+\caption{System scalability and network robustness in simulation. \textit{Left:} AUROC (blue, left axis) stays above 0.88 as the number of clients increases from 7 to 28, while throughput (orange, right axis) drops because of straggling under synchronous aggregation. \textit{Right:} AUROC under 10--30\% random client dropout; throughput rises with the dropout rate because fewer clients respond per round.}
 \label{fig:comprehensive}
 \end{figure*}
 
-We evaluate our federated learning framework using two large-scale clinical datasets: the Medical Information Mart for Intensive Care IV (MIMIC-IV) dataset is used for model development, Byzantine robustness testing, and internal validation; the eICU Collaborative Research Database (eICU-CRD) serves as an independent cohort for external generalizability. In a clinical setting, overlooking a disease is highly perilous. While a false positive---an indication that the patient is seriously ill even though he/she is healthy---means more testing, an annoyance, it does not have serious implications. However, a false negative implies that a seriously ill patient is discharged without any treatment, and this is why all evaluations in this study prioritize Recall over accuracy \cite{rajkomar2018scalable, mujtaba2019clinical}. The clinicians and decision support system designers \cite{hripcsak2013opportunities} understand this distinction.
+We use two clinical databases. MIMIC-IV is used for model development, Byzantine-robustness testing, and internal validation; eICU-CRD is used for a federated replication on an independent multi-center database. In a clinical setting, overlooking a high-risk patient is costly: a false positive leads to additional monitoring or testing, whereas a false negative may mean that a deteriorating patient receives no escalation of care. We therefore report recall and precision at explicit operating points in addition to AUROC~\cite{saito2015precision}.
 
-\subsection{Clinical Baseline vs. Federated Optimization}
+\subsection{Clinical Baseline vs.\ Federated Optimization}
+\label{sec:baseline}
 
-For generating a baseline, we trained the logistic regression classifier on the centralized MIMIC-IV dataset (all 65,273 patients combined), which predicted mortality using 31 clinical variables. In a balanced setting with weight-adjusted training and threshold of 0.39 on the validation dataset, the centralized classifier obtained
-a 85.2\% Recall and 30.2\% Precision for mortality prediction.
-We consider this our clinical reference operating point.
-Using 7 ICU-based clients along with FedAvg aggregation, but with no differential privacy added, we obtained the federated classifier performance of 86.3\% Recall and 23.9\% Precision,
-where the optimal threshold in validation was 0.05 (unlike centralized models, FedAvg models were evaluated using non-calibrated outputs). The optimized threshold in case of federated training turned out to be 0.05---a much lower number compared to the centralized threshold of 0.39 due to the known calibration problem for federated weight averaging (probabilities tend to become closer to zero).
+As a baseline, we trained class-weighted logistic regression on the pooled MIMIC-IV data (all 65,273 admissions, 31 variables). With the threshold chosen on the validation set ($\tau=0.39$), it reaches 85.2\% recall and 30.2\% precision; we treat this as the clinical reference operating point. Federated FedAvg with seven care-unit clients and no differential privacy reaches AUROC 0.8784. Its raw outputs are compressed toward zero (ECE 0.2338, Table~\ref{tab:clinical_aggregation}), so the validation-optimal threshold is $\tau=0.05$ rather than 0.39; at $\tau=0.05$, recall is 86.3\% and precision 23.9\%.
 
-\textbf{Recalibrated vs. uncalibrated recall:} the
-86.3\% recalculated recall is achieved by exploiting the above problem to maximize recall but minimize precision (it is 23.9\%). The clinical reference point can be achieved through Platt scaling, aligning the federated probabilities to the centralized threshold of 0.39---leading to an AUROC = 0.8784, Recall = 43.5\% and Precision = 69.8\% (reported in Table~\ref{tab:performance}). Calibrated metrics
-are used for all comparisons in this paper except when noted. All convergence plateaus after round 5 for all experiments (Fig.~\ref{fig:bottleneck}). Not a single patient record was transferred out of its source ICU.
+\textbf{Matched-sensitivity comparison.} At about 85\% sensitivity, the centralized model has 30.2\% precision and the federated model 23.9\% (Table~\ref{tab:performance}). This precision gap, i.e., more false alarms per true detection, is a more informative cost of federation than the 1.52\% relative AUROC difference (0.8784 versus 0.8920).
 
-\textbf{A statistical note about AUROC comparisons.} Differences
-of AUROC between methods from this study are given across 5 seeded experiments (mean $\pm$ standard deviation). Significance testing based on the DeLong test \cite{delong1988comparing} is done only between pair
-differences greater than 0.01 AUROC; differences smaller than this value (such as FedAvg 0.8784 vs. FedF2 0.8781)
-should be viewed as equivalent. Bootstrap confidence intervals are strongly recommended in future work for all pairwise AUROC comparisons; we consider our 7-client simulations insufficiently powerful to support more detailed statistics.
+\textbf{Calibrated, fixed threshold.} Applying Platt scaling to the federated outputs and keeping the centralized threshold $\tau=0.39$ gives AUROC 0.8784 (unchanged, since Platt scaling is monotone), recall 43.5\%, and precision 69.8\%. Calibration fixes the probabilities (ECE 0.0091) but $\tau=0.39$ is then a different operating point; sensitivity depends on threshold selection, and a threshold transferred from a centralized model should not be assumed to preserve sensitivity. Calibrated metrics are used for the comparisons in this paper unless noted. In our runs, validation performance plateaued after about five rounds (curves not shown). In the simulation, only model updates are exchanged between clients and the server.
 
-AUROC 0.8591, Recall 38.0\%, and Precision 63.0\% were
-obtained using FedProx ($\mu = 0.01$). Recall being lower for FedProx compared with FedAvg is a consequence of operating  point calibration: FedProx’s $\mu$ penalty restricts local training,limiting the effect of threshold tuning by FedAvg (at threshold 0.05). Calibration would allow comparable performance for FedProx; Table~\ref{tab:performance} results depend heavily on operating points.
+\textbf{Statistical note.} Only FedAvg was repeated over five seeds (standard deviation 0.0065 AUROC); the centralized-versus-federated gap (0.0136) is about two such standard deviations, and the centralized model was not repeated over the same seeds. All other results are single runs. We did not run DeLong~\cite{delong1988comparing} or bootstrap tests, so AUROC differences smaller than about 0.01 (such as FedAvg 0.8784 versus FedF2 0.8781) should be treated as indistinguishable, and Tables~\ref{tab:clinical_aggregation} and~\ref{tab:byzantine_robustness} as indicative.
+
+\textbf{FedProx.} With $\mu=0.01$, FedProx obtained AUROC 0.8591, recall 38.0\%, and precision 63.0\% under the same Platt-scaled protocol. FedProx's AUROC is below FedAvg's in every configuration we ran (0.8591 in Table~\ref{tab:performance}, 0.8174 in Table~\ref{tab:clinical_aggregation}, and 0.7721 in Table~\ref{tab:byzantine_robustness}), and the two nominally comparable 5-round Platt-scaled runs differ between Tables~\ref{tab:performance} and~\ref{tab:clinical_aggregation}. A small proximal weight should make FedProx behave close to FedAvg, so this gap and its instability suggest sensitivity to implementation or hyperparameters that we did not isolate. We therefore treat the FedProx results as preliminary and draw no conclusion about its intrinsic merits.
 
 \begin{table*}[t]
-\caption{Performance of federated learning algorithms in benchmark test on MIMIC-IV data set using 5 rounds and 7 ICU clients. For federated learning, all results are from balanced logistic regression with Platt's calibration performed on the decision threshold (0.39).
-The DP row corresponds to the calculated DP-SGD training approach with accurate $\epsilon$, $\delta$ (which are 4.36, $10^{-5}$ respectively for the MIMIC-IV dataset) calculated.}
+\caption{Federated learning on MIMIC-IV with 5 rounds and 7 ICU clients. Federated rows use balanced logistic regression with Platt scaling at the decision threshold 0.39, except the uncalibrated row. The DP row uses per-sample DP-SGD with $\epsilon=4.36$, $\delta=10^{-5}$. The three ``1/7 malicious'' results in Tables~\ref{tab:performance}, \ref{tab:clinical_aggregation} and~\ref{tab:byzantine_robustness} come from separate runs (different attacks, rounds, and calibration) and are not directly comparable.}
 \centering
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccl}
 \toprule
 \textbf{Configuration} & \textbf{AUROC} & \textbf{Recall} & \textbf{Precision} & \textbf{Notes} \\
 \midrule
-Centralized Baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, threshold=0.39 \\
-FedAvg (Baseline, Platt-scaled) & 0.8784 & 43.5\% & 69.8\% & Platt-scaled to threshold=0.39 \\
-FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Proximal regularization; Recall gap is operating-point/calibration artefact \\
+Centralized baseline & 0.8920 & 85.2\% & 30.2\% & Balanced LR, $\tau=0.39$ \\
+FedAvg (uncalibrated, $\tau=0.05$) & 0.8784 & 86.3\% & 23.9\% & Matched sensitivity ($\approx$85\%) \\
+FedAvg (Platt-scaled) & 0.8784 & 43.5\% & 69.8\% & Fixed centralized threshold $\tau=0.39$ \\
+FedProx ($\mu=0.01$) & 0.8591 & 38.0\% & 63.0\% & Platt-scaled, $\tau=0.39$ \\
 \midrule
-FL + DP-SGD ($\epsilon = 4.36$, seed 42, Platt-scaled) & 0.8477 & 38.1\% & 65.4\% & Corrected per-sample DP-SGD rerun + calibration \\
+FL + DP-SGD ($\epsilon = 4.36$, seed 42) & 0.8477 & 38.1\% & 65.4\% & Per-sample DP-SGD, Platt-scaled \\
 \midrule
-Adversarial (1/7 Byzantine) & 0.8618 & 48.9\% & 64.5\% & Single malicious client (1/7) \\
+Single malicious client (1/7) & 0.8618 & 48.9\% & 64.5\% & Attack protocol differs from Tables~\ref{tab:clinical_aggregation}, \ref{tab:byzantine_robustness} \\
 \bottomrule
 \end{tabular}
 \label{tab:performance}
 \end{table*}
 
-\subsection{Performance-Weighted Aggregation in Trusted Networks}
+\subsection{Performance-Weighted Aggregation (FedF2)}
 \label{sec:fedf2_results}
 
-For evaluation of the performance-weighted aggregation strategy under clean and adversarial scenarios, ablation studies were performed comparing FedF2 against other baseline methods. It must be noted that this work presents neither a novel algorithmic contribution nor a new theoretical framework, but rather an empirical analysis of performance-weighted aggregation in federated learning.
-\begin{enumerate}
-    \item \textbf{Precision-Recall AUC (AUPRC):} Unlike ROC-AUC, the AUPRC metric does not consider the prediction capabilities of the major class, but considers only Recall and Precision of the minor classes without paying attention to any number of true negatives.
-    \item \textbf{Expected Calibration Error (ECE):} Real-world probabilities have to be appropriately reflected by the predictions of the model. However, federated averaging reduces the predictions, which makes calibration problematic. Thus, the expected calibration error (ECE) metric calculates the gap between probabilities predicted by the model and their discretized counterparts:
-    \begin{equation}
-    \text{ECE} = \sum_{b=1}^{B} \frac{|B_b|}{N} | \text{acc}(B_b) - \text{conf}(B_b) |
-    \end{equation}
-\end{enumerate}
+We compare FedF2 with FedAvg and FedProx under clean and poisoned conditions. This is an empirical analysis of an existing weighting heuristic, not a new algorithm. We use two additional metrics. \textbf{AUPRC} summarizes the precision--recall curve and ignores true negatives. \textbf{Expected Calibration Error (ECE)} measures the gap between predicted probabilities and observed frequencies over $B$ bins:
+\begin{equation}
+\text{ECE} = \sum_{b=1}^{B} \frac{|B_b|}{N} \left| \text{acc}(B_b) - \text{conf}(B_b) \right|.
+\end{equation}
 
-Table~\ref{tab:clinical_aggregation} presents the systematic ablation of our pipeline under standard (non-adversarial) conditions and in an adversarial environment with the presence of an artificial degenerate client. The artificial degenerate client is simulated by corrupting the labels of the second-largest unit, Cardiac Vascular ICU ($n = 8,118$; see Table~\ref{tab:performance} for full cohort breakdown), to contain $99.9\%$ positive values. This represents a hospital node that fails to train correctly and instead classifies all clients as de-
-ceased. This trivially ensures perfect recall but no precision.
+Table~\ref{tab:clinical_aggregation} presents the ablation under clean conditions and with one degenerate client. The degenerate client is simulated by corrupting the labels of the second-largest unit, Cardiac Vascular ICU ($n=8{,}118$), so that 99.9\% are positive; this mimics a node that fails to train and labels every patient as deceased, which gives perfect recall and no precision.
+
 \begin{table*}[t]
-\caption{Systematic ablation and calibration evaluation of FedF2 vs. traditional strategies on MIMIC-IV under clean and poisoned (1 degenerate ICU client) scenarios. ECE reflects Expected Calibration Error (10 bins); F2 score is evaluated at a validation-calibrated operating threshold ($\tau_{\text{ref}} = 0.39$ for calibrated models, $\tau_{\text{ref}} = 0.05$ for uncalibrated models). (Note on FedProx: Table~\ref{tab:performance} reports the calibrated 5-round baseline at 0.8591 AUROC, Table~\ref{tab:clinical_aggregation} reports the 5-round ablation sweep at 0.8174 AUROC, and Table~\ref{tab:byzantine_robustness} evaluates 20 rounds of uncalibrated adversarial training at 0.7721 AUROC.)}
+\caption{Ablation and calibration evaluation of FedF2 versus other strategies on MIMIC-IV under clean and poisoned (one degenerate ICU client) scenarios. ECE uses 10 bins; $F_2$ is evaluated at a validation-calibrated threshold ($\tau_{\text{ref}}=0.39$ for calibrated models, 0.05 for uncalibrated models). Note on FedProx: Table~\ref{tab:performance} reports the calibrated 5-round baseline at 0.8591 AUROC, this table reports the 5-round ablation sweep at 0.8174, and Table~\ref{tab:byzantine_robustness} evaluates 20 uncalibrated rounds at 0.7721; these are separate runs.}
 \centering
 \small
 \begin{tabular}{lcccccc}
 \toprule
-\textbf{Scenario} & \textbf{Aggregation Configuration} & \textbf{Platt Calibrated} & \textbf{Test AUROC} & \textbf{Test AUPRC} & \textbf{Expected Calibration (ECE)} & \textbf{Test $F_2$-Score} \\
+\textbf{Scenario} & \textbf{Aggregation} & \textbf{Platt} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{ECE} & \textbf{$F_2$} \\
 \midrule
-\textbf{Clean} & FedAvg (Baseline, Raw) & No & 0.8784 & 0.6024 & 0.2338 (Miscalibrated) & 0.3925 \\
- & FedAvg + Platt Calibration & Yes & 0.8784 & 0.6024 & 0.0091 & 0.4704 \\
- & FedProx + Platt Calibration ($\mu = 0.01$) & Yes & 0.8174 & 0.5245 & \textbf{0.0072} & 0.4054 \\
- & FedF2 + Platt Calibration ($\gamma = 0.5$) & Yes & \textbf{0.8781} & \textbf{0.5999} & 0.0089 & \textbf{0.4695} \\
+\textbf{Clean} & FedAvg (raw) & No & 0.8784 & 0.6024 & 0.2338 & 0.3925 \\
+ & FedAvg + Platt & Yes & 0.8784 & 0.6024 & 0.0091 & 0.4704 \\
+ & FedProx + Platt ($\mu = 0.01$) & Yes & 0.8174 & 0.5245 & 0.0072 & 0.4054 \\
+ & FedF2 + Platt ($\gamma = 0.5$) & Yes & 0.8781 & 0.5999 & 0.0089 & 0.4695 \\
 \midrule
-\textbf{Poisoned} & FedAvg (Baseline, Raw) & No & 0.7984 & 0.4448 & 0.7205 (Catastrophic) & 0.3778 \\
-(1 Degenerate ICU) & FedAvg + Platt Calibration & Yes & 0.7984 & 0.4448 & 0.0081 & 0.3242 \\
- & FedF2 + Platt Calibration ($\gamma = 0.5$) & Yes & \textbf{0.7947} & \textbf{0.4372} & 0.0083 & \textbf{0.3186} \\
+\textbf{Poisoned} & FedAvg (raw) & No & 0.7984 & 0.4448 & 0.7205 & 0.3778 \\
+(1 degenerate ICU) & FedAvg + Platt & Yes & 0.7984 & 0.4448 & 0.0081 & 0.3242 \\
+ & FedF2 + Platt ($\gamma = 0.5$) & Yes & 0.7947 & 0.4372 & 0.0083 & 0.3186 \\
 \bottomrule
 \end{tabular}
 \label{tab:clinical_aggregation}
 \end{table*}
-In pristine settings, FedAvg becomes drastically miscalibrated
-(ECE = 0.2338). Miscalibration is corrected by Platt scaling (ECE = 0.0091), as seen from the reliability plot (Figure~\ref{fig:calibration_and_pr}, left panel). Among the calibrated models, FedF2 achieves an AUROC within 0.03\% of FedAvg (0.8781 vs. 0.8784, respectively). Diagnostic accuracy in both models is confirmed by the precision-recall analysis.
 
-Under the poisoned case study, the plain FedAvg is severely affected by catastrophic miscalibration (ECE 0.7205) due to the distorted
-parameter space resulting from extreme client updates. However, though calibration helps fix the ECE problem, the test AUROC performance of standard FedAvg is reduced to 0.7984, while the AUPRC falls to 0.4448. FedF2 can handle the threat posed by the degenerate client effectively since it always predicts death (its validation precision equals the class probability $\approx 11\%$, reducing its
-validation F2). FedF2 uses the local evaluation of the degenerate client, which mathematically reduces its influence to almost zero (its weight being approximately $0.5 \times n_k/n \approx 6.2\%$---less than the unweighted FedAvg share of $1/K = 14.3\%$---due to the near-zero F2 score of the degenerate client under Eq.~(2). This partial down-weighting explains the modest AUROC improvement (0.7947 vs.\ 0.7984) and why FedF2 cannot fully neutralize a poisoned client. It is important to note that FedF2 provides limited improvements over calibrated FedAvg in terms of robustness to single-client poisoning (1 of 7, i.e., $f = 14.3\%$). For multi-client
-poisoning, the gap in performance increases significantly in line with this formulation; for multi-client poisoning ($f > 1$), robust aggregation methods such as Median and Krum perform significantly better~\cite{blanchard2017machine,yin2018byzantine}.
+Without poisoning, FedAvg is badly miscalibrated (ECE 0.2338), and Platt scaling corrects this (ECE 0.0091; Fig.~\ref{fig:calibration_and_pr}, left). Calibrated FedAvg and FedF2 are indistinguishable in AUROC (0.8784 versus 0.8781, well below the seed standard deviation of 0.0065) and in the precision--recall analysis.
+
+With one degenerate client, uncalibrated FedAvg has ECE 0.7205. Platt scaling restores ECE (0.0081), but AUROC remains at 0.7984 (AUPRC 0.4448), 0.080 below the clean value. FedF2 does not help: its AUROC is 0.7947. This follows from Eq.~\eqref{eq:fedf2}: the degenerate client's weight cannot fall below $0.5\,n_k/n \approx 6.2\%$, and with the F2 values above it stays close to its FedAvg share of $n_k/n\approx 12.4\%$; if the client's validation labels are corrupted as well, its F2 rises and its weight increases. We therefore regard FedF2 as a negative result: no measurable benefit in clean conditions and no protection against poisoning. For poisoning of more than one client, Median and Krum perform far better (Section~\ref{sec:byzantine_robustness})~\cite{blanchard2017machine,yin2018byzantine}.
 
 \begin{figure*}[t]
 \centerline{
@@ -430,231 +330,201 @@ poisoning, the gap in performance increases significantly in line with this form
   \hfill
   \includegraphics[width=0.48\textwidth]{figures/precision_recall_curves.pdf}
 }
-\caption{Calibration and precision-recall analysis. Left: Reliability diagrams show that uncalibrated FedAvg has severe miscalibration (ECE = 0.2338), while Platt scaling recovers reliability (ECE $<$ 0.01) across all aggregation methods. Right: Precision-Recall curves demonstrate that calibrated methods maintain similar diagnostic utility (AUPRC $\approx 0.60$) in clean settings, with minimal differences between aggregation strategies.}
+\caption{Calibration and precision--recall analysis. Left: uncalibrated FedAvg is severely miscalibrated (ECE = 0.2338); Platt scaling brings ECE below 0.01 for all aggregation methods. Right: calibrated methods show similar precision--recall behavior (AUPRC $\approx 0.60$ for FedAvg and FedF2; 0.524 for FedProx) in clean settings.}
 \label{fig:calibration_and_pr}
 \end{figure*}
 
 \subsection{Multi-Model Architecture Comparison}
 \label{sec:multimodel}
 
-Logistic regression has an established baseline in terms of the
-clinical knowledge base, but the feature interactions in ICU data can be more complex than simple models can capture. Two advanced neural network architectures were considered:
-A Multi-Layer Perceptron with architecture 31 → 64 → 32 →
-sigmoid activation (input → hidden1 → hidden2 → output),
-and a gradient boosting model based on XGBoost, with n
-estimators=200 and max depth =6. The MLP network em-
-ploys ReLU activation, dropout regularization (rate 0.2), and Adam optimization (learning rate 0.001). The XGBoost model is trained locally by each client through soft voting. This is particularly relevant as health tabular data has been shown to be better suited for gradient boosting methods \cite{shickel2017deep}.
+Feature interactions in ICU data may exceed what logistic regression captures, so we also evaluate an MLP and XGBoost (Section~\ref{sec:method}). Gradient boosting is a natural candidate because tree ensembles often outperform neural networks on tabular data~\cite{grinsztajn2022tree}. The XGBoost model is trained locally by each client, and predictions are combined by soft voting. This is an ensemble of locally trained models, not federated parameter aggregation, and it is non-private (see below).
 
 \begin{table*}[t]
-\caption{Multi-model federated learning comparison on MIMIC-IV. Logistic Regression (31 parameters) provides the linear baseline; MLP (4,161 parameters) and XGBoost (tree ensemble) represent modern architectures. XGBoost achieves the highest centralized AUROC (0.9243), but federated ensemble averaging preserves 99.0\% of this performance (AUROC 0.9155, loss 0.95\%). All use 7 ICU clients. Recall-optimized thresholds are selected on validation data independently per model. (In this multi-architecture benchmark run, centralized LR achieved 0.8914 vs. 0.8920 in the primary single-model benchmark in Table~\ref{tab:performance}.)}
+\caption{Multi-model federated comparison on MIMIC-IV (7 ICU clients). Logistic regression (31 parameters) is the linear baseline; the MLP has 4,161 parameters; XGBoost is a 200-tree ensemble combined by soft voting. Thresholds are selected for recall on validation data independently per model. In this multi-architecture run, centralized LR achieved 0.8914 (federated 0.8782) versus 0.8920 (federated 0.8784) in the primary benchmark of Table~\ref{tab:performance}.}
 \centering
 \small
 \begin{tabular}{lcccccc}
 \toprule
-\textbf{Model} & \textbf{Architecture} & \textbf{Cent. AUROC} & \textbf{Fed. AUROC} & \textbf{AUROC Loss} & \textbf{Cent. Recall} & \textbf{Fed. Recall} \\
+\textbf{Model} & \textbf{Architecture} & \textbf{Cent. AUROC} & \textbf{Fed. AUROC} & \textbf{AUROC loss} & \textbf{Cent. recall} & \textbf{Fed. recall} \\
 \midrule
 Logistic Regression & Linear (31 params) & 0.8914 & 0.8782 & 1.5\% & 85.4\% & 83.1\% \\
-MLP Neural Network & $31{\to}64{\to}32{\to}1$ (4161 params) & 0.9185 & 0.8701 & 5.3\% & 85.6\% & 81.9\% \\
-XGBoost (Ours) & Tree Ensemble (200 trees) & 0.9243 & 0.9155 & 0.95\% & 85.1\% & 85.4\% \\
+MLP & $31{\to}64{\to}32{\to}1$ (4,161 params) & 0.9185 & 0.8701 & 5.3\% & 85.6\% & 81.9\% \\
+XGBoost & Tree ensemble (200 trees) & 0.9243 & 0.9155 & 0.95\% & 85.1\% & 85.4\% \\
 \bottomrule
 \end{tabular}
 \label{tab:multimodel_comparison}
 \end{table*}
 
-\subsubsection{XGBoost: Gradient Boosting in Federated Settings}
-The model with the highest centralized AUROC (0.9243) demonstrates the effectiveness of gradient boosting for healthcare tabular data. A federated version of XGBoost with ensemble soft voting yielded an AUROC of 0.9155, representing a loss of only 0.95\% compared to the centralized baseline, and 5.3\% less than the federated MLP.
-This result comes unexpectedly since, due to the nonlinearity of the model based on trees, the voting works well with tree-based models. However, this is possible when clients have enough records to train
-their models (on average, there were 5,967 records per client). Recall remains at the same level (centralized - 85.1\%, federated - 85.4\%). This indicates the similarity of interactions of features during federation.
-Voting or averaging the predictions can be used effectively in the federated mode for tree-based models as the process connects all client ensembles to make a prediction (average of them). There is no alignment of the models’ parameters necessary in the Non-IID environment, unlike the averaging of weights
+\subsubsection{XGBoost: Gradient Boosting in a Federated Setting}
+XGBoost has the highest centralized AUROC (0.9243). With ensemble soft voting, the federated version reaches 0.9155, a relative loss of 0.95\% and 0.045 AUROC above the federated MLP (0.8701). Because voting averages predicted probabilities, no alignment of model parameters across Non-IID clients is needed, unlike weight averaging. The result holds with an average of about 5,967 training records per client, which is enough for each client to train a useful local model; we did not test smaller clients.
 
-Privacy notice. XGBoost soft voting sends ˆy probability vectors rather than gradients. The DP privacy characteristics are different from those of the gradient FL scheme [15]. The DP-SGD privacy guarantees provided in Table I are only applicable
-to the logistic regression model pipeline and cannot be extended to federated learning with XGBoost in this paper. To bound the privacy loss associated with the prediction aggregation method, additional analyses are required that exceed the scope of the present paper [28]. In all of our experiments, we assess the federated
-ensemble models’ performance using held-out MIMIC-IV test data(no patient records sent by clients). For full implementation, encryption of model parameters is recommended.
+\textbf{Privacy notice.} Soft voting shares locally trained tree models or their predictions rather than gradients, so the privacy properties differ from gradient-based FL~\cite{zhu2019deep}. The DP-SGD guarantee in Table~\ref{tab:performance} applies only to the logistic-regression pipeline and does not extend to XGBoost; bounding the privacy loss of prediction aggregation requires additional analysis beyond the scope of this paper~\cite{shokri2016membership}. All models are evaluated on held-out MIMIC-IV test data. A real deployment would additionally require encryption or secure aggregation.
 
 \subsubsection{Comparison: LR, MLP, XGBoost}
 
-Table~\ref{tab:multimodel_comparison} shows that the centralized AUROC ranking is XGBoost (0.9243) $>$ MLP (0.9185) $>$ LR (0.8914). However, the federated AUROC losses tell a different story:
-\begin{itemize}
-    \item \textbf{XGBoost}: 0.95\% loss (0.9243 → 0.9155)
-    \item \textbf{Logistic Regression}: 1.48\% loss (0.8914 → 0.8782)
-    \item \textbf{MLP}: 5.28\% loss (0.9185 → 0.8701)
-\end{itemize}
-The improved federated learning performance of XGBoost
-can be attributed to the fact that it can detect non-linear patterns locally without the need for synchronized parameter averaging. It is natural that the MLP model will have greater losses
-since, in high-dimensional models, weight averaging between heterogeneous clients leads to reduced learned representation space as various clients learn diverse decision boundaries in the same parameter space.
-All three models perform better than the minimum require-
-ment (80\%) of recall in federated learning scenarios (see Fig.~\ref{fig:xgboost_comparison}).
-In practice, for clinical deployment, it may be preferable to adopt models with lower federated AUROC loss, which favors architectures such as XGBoost with soft voting.
-
-\begin{figure*}[t]
-\centerline{\includegraphics[width=0.95\textwidth]{figures/xgboost_comparison.pdf}}
-\caption{Comparison of Federated Learning Multi-model Approach on MIMIC-IV Dataset. The XGBoost algorithm (gradient boosting) gets the largest centralized AUROC
-(0.9243), and it retains 99.0\% of its performance through federated soft voting method (AUROC = 0.9155, loss = 0.95\%). The MLP exhibits higher federated
-degradation performance (loss of 5.3\%) because of weight averaging in high dimensions. The Logistic Regression (LR) model is relatively stable.}
-\label{fig:xgboost_comparison}
-\end{figure*}
+Table~\ref{tab:multimodel_comparison} shows the centralized AUROC ranking XGBoost (0.9243) $>$ MLP (0.9185) $>$ LR (0.8914), but the federated losses differ: XGBoost 0.95\% (0.9243 $\rightarrow$ 0.9155), logistic regression 1.48\% (0.8914 $\rightarrow$ 0.8782), and MLP 5.27\% (0.9185 $\rightarrow$ 0.8701). A plausible explanation for the MLP's larger loss is that averaging weights of a non-convex model trained on heterogeneous clients mixes inconsistent representations; we did not test this. All three federated models reach recall above 80\% at their validation-optimized thresholds. For deployment, models with a small federated loss, such as XGBoost with soft voting, are attractive, subject to the privacy caveat above.
 
 \begin{figure*}[t]
 \centerline{\includegraphics[width=0.95\textwidth]{figures/robustness_comprehensive_comparison.pdf}}
-\caption{Comprehensive Byzantine robustness evaluation. Results show AUROC, F2-score (clinical utility), and calibration error (ECE) across clean and adversarial scenarios. Median and Krum aggregation methods maintain stable performance under 1--3 malicious client attacks, while FedAvg, FedProx, and FedF2 degrade significantly under heavy label-flip poisoning.}
+\caption{Byzantine robustness evaluation: AUROC, $F_2$-score, and calibration error (ECE) across clean and adversarial scenarios, and mean AUROC loss relative to each method's clean baseline (bottom right). Median and Krum remain stable under 1--3 malicious clients, whereas FedAvg, FedProx, and FedF2 degrade strongly under three label-flip clients.}
 \label{fig:byzantine_robustness}
 \end{figure*}
 
 \subsection{Byzantine Robustness under Diverse Attack Scenarios}
 \label{sec:byzantine_robustness}
 
-An extensive experimental evaluation was carried out comparing all five
-aggregation techniques with respect to multiple Byzantine attacks (1, 2, and 3 faulty clients) under three kinds of attacks – label flipping, sign flipping, and adaptive attacks. This evaluation helps fill an important gap highlighted in previous research, that is, although Byzantine-robust aggregation techniques have sound theoretical motivation \cite{blanchard2017machine, yin2018byzantine}, their robustness in realistic multiclient healthcare federated learning environments and shortcomings in averaging schemes such as FedAvg and FedProx haven’t been studied in depth yet.
+Byzantine-robust aggregation rules have sound theoretical motivation~\cite{blanchard2017machine, yin2018byzantine}, but their behavior in multi-client healthcare FL has been studied less. We compare all five aggregation rules under three kinds of attack on 1, 2, or 3 of the 7 clients.
 
 \subsubsection{Attack Scenarios and Baselines}
 
-In total, we evaluate five aggregation mechanisms across eight distinct attack scenarios. The threat models include: (i) a \textit{clean baseline} (no attacks) serving as the performance upper bound; (ii) \textit{label-flipping attacks} (with 1, 2, or 3 poisoned clients) where compromised nodes invert all local labels; (iii) \textit{sign-flipping attacks} (with 1 or 2 poisoned clients) accompanied by over-sampling of the positive class; and (iv) \textit{adaptive attacks} (with 1 or 2 poisoned clients) combining sign- and label-flipping with positive class over-sampling. 
+We evaluate five aggregation rules across eight scenarios: (i) a \textit{clean baseline}; (ii) \textit{label-flip attacks} (1, 2, or 3 poisoned clients) in which compromised clients invert all local labels; (iii) \textit{sign-flip attacks} (1 or 2 clients) with oversampling of the positive class; and (iv) \textit{adaptive attacks} (1 or 2 clients) that combine sign flipping, label flipping, and positive-class oversampling. The rules are: \textit{FedAvg} (sample-size-weighted), \textit{FedProx} ($\mu=0.01$), \textit{Median}, \textit{Krum}, and \textit{FedF2} ($\gamma=0.5$). To study convergence and resilience, we train for 20 rounds (versus 5 in Table~\ref{tab:performance}) without Platt scaling. The attacks are not tailored to Median or Krum, so they do not constitute a worst-case adversary.
 
-To counter these threats, we compare five server-side aggregation strategies: (i) \textit{FedAvg}, the standard sample-size-weighted baseline; (ii) \textit{FedProx}, which adds proximal regularization ($\mu=0.01$); (iii) \textit{Median}, a coordinate-wise median estimator; (iv) \textit{Krum}, a distance-based consensus selection method; and (v) \textit{FedF2} ($\gamma=0.5$), which weights updates based on local clinical $F_2$-scores.
-In order to evaluate the convergence performance and resiliency with regard to the training process, we use the above-mentioned aggregation techniques for 20 rounds (as opposed to 5 rounds in Table~\ref{tab:performance}) without using Platt scaling.
 \begin{figure*}[!h]
 \centerline{
 \includegraphics[width=0.95\textwidth]{figures/figure4_feature_drift.pdf}
 }
-\caption{Federated feature drift across ICU sites. Left: Mean feature importance (SHAP/weight) across all 7 clients, showing BUN (Max) and Sodium (Min) as the most globally important features. Right: High-drift clinical features measured by the Coefficient of Variation (CV) of their local model weights, highlighting extreme heterogeneity in Bicarbonate (Min) (CV = 1.46) and BUN (Max) (CV = 1.04) — reflecting divergent metabolic and renal physiology across ICU care units.}
+\caption{Federated feature drift across ICU sites. Left: mean feature importance (SHAP/weight) across the 7 clients; Heart Rate (Mean), Medicare Insurance, and Systolic BP (Mean) rank highest, followed by Age and BUN (Max). Right: coefficient of variation (CV) of local model weights; Bicarbonate (Min) (CV = 1.46) and BUN (Max) (CV = 1.04) show the largest heterogeneity.}
 \label{fig:feature_drift}
 \end{figure*}
 
 \subsubsection{Results and Key Findings}
 
 \begin{table*}[t]
-\caption{Byzantine robustness on the MIMIC-IV dataset (20 rounds, 7 ICU care units as clients, uncalibrated output of the AI models). Aggregation algorithms (FedAvg, FedProx, Median, Krum, FedF2) are executed for 20 rounds without any recalibration to test the algorithm convergence in the adversarial setting. Performance is shown for the AUROC score for the test set for the clean dataset and label flipping attack with 1, 2, or 3 Byzantine clients. Note: FedProx AUROC here (0.7721) differs from Table~\ref{tab:performance} (0.8591) due to 20 training rounds without recalibration. Since AUROC is a rank-based metric, the absence of Platt scaling cannot account for this gap; the likely cause is $\mu=0.01$ over-regularisation under extended adversarial training.}
+\caption{Byzantine robustness on MIMIC-IV (20 rounds, 7 ICU care units as clients, uncalibrated outputs, single run, seed 42). Entries are test AUROC. Loss is relative to each method's own clean baseline; ``mean loss'' averages the scenarios in a block (negative values mean AUROC above the clean baseline) and the last row averages all seven attacked scenarios. FedProx differs from Table~\ref{tab:performance} (0.7721 vs.\ 0.8591) because of 20 rather than 5 rounds and no Platt scaling; since AUROC is rank-based, the absence of Platt scaling cannot explain the gap (see Section~\ref{sec:baseline}).}
 \centering
 \small
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Scenario} & \textbf{FedAvg} & \textbf{FedProx} & \textbf{Median} & \textbf{Krum} & \textbf{FedF2 ($\gamma=0.5$)} \\
 \midrule
-\textbf{CLEAN (No Attacks)} &  &  &  &  &  \\
+\textbf{CLEAN (no attack)} &  &  &  &  &  \\
   Baseline (0 malicious) & 0.8784 & 0.7721 & 0.8628 & 0.8653 & 0.8781 \\
 \midrule
-\textbf{LABEL-FLIP ATTACKS} &  &  &  &  &  \\
+\textbf{LABEL-FLIP} &  &  &  &  &  \\
   1 malicious client & 0.8523 & 0.4642 & 0.8698 & 0.8653 & 0.8534 \\
   2 malicious clients & 0.7995 & 0.3626 & 0.8420 & 0.8511 & 0.7862 \\
   3 malicious clients & 0.5011 & 0.2953 & 0.8594 & 0.8511 & 0.4000 \\
-  \hspace{2em} (AUROC loss) & (43.0\%) & (61.8\%) & (0.4\%) & (1.6\%) & (54.4\%) \\
+  \hspace{2em} loss at 3 clients & 43.0\% & 61.8\% & 0.4\% & 1.6\% & 54.4\% \\
+  \hspace{2em} mean loss (1--3 clients) & 18.3\% & 51.6\% & 0.7\% & 1.1\% & 22.6\% \\
 \midrule
-\textbf{SIGN-FLIP ATTACKS} &  &  &  &  &  \\
+\textbf{SIGN-FLIP} &  &  &  &  &  \\
   1 malicious client & 0.8736 & 0.6963 & 0.8670 & 0.8653 & 0.8740 \\
   2 malicious clients & 0.8713 & 0.7431 & 0.8574 & 0.8511 & 0.8713 \\
-  \hspace{2em} (avg AUROC loss) & (0.7\%) & (4.1\%) & (0.6\%) & (1.6\%) & (0.6\%) \\
+  \hspace{2em} mean loss & 0.7\% & 6.8\% & 0.1\% & 0.8\% & 0.6\% \\
 \midrule
-\textbf{ADAPTIVE ATTACKS} &  &  &  &  &  \\
+\textbf{ADAPTIVE} &  &  &  &  &  \\
   1 malicious client & 0.8563 & 0.5166 & 0.8710 & 0.8653 & 0.8571 \\
   2 malicious clients & 0.8255 & 0.4728 & 0.8353 & 0.8511 & 0.8182 \\
-  \hspace{2em} (avg AUROC loss) & (4.3\%) & (36.0\%) & (3.2\%) & (1.6\%) & (4.6\%) \\
+  \hspace{2em} mean loss & 4.3\% & 35.9\% & 1.1\% & 0.8\% & 4.6\% \\
 \midrule
-\textbf{AVERAGE ROBUSTNESS (all attacks, \% AUROC loss)} & \textbf{9.3\%} & \textbf{34.3\%} & \textbf{0.6\%} & \textbf{0.9\%} & \textbf{11.2\%} \\
+\textbf{MEAN LOSS (all 7 attacks)} & \textbf{9.3\%} & \textbf{34.3\%} & \textbf{0.6\%} & \textbf{0.9\%} & \textbf{11.2\%} \\
 \bottomrule
 \end{tabular}
 \label{tab:byzantine_robustness}
 \end{table*}
 
-\textbf{Median and Krum both exhibit better empirical robustness} (see Table~\ref{tab:byzantine_robustness} and Fig.~\ref{fig:byzantine_robustness}). While median aggregation keeps AUROC $\geq 0.8594$ when subject to three label flip attacks (0.4\% degradation), Krum exhibits stable AUROC $\approx 0.851$ across all multi-attacker scenarios (1.6\% degradation). Because Krum deterministically selects a single geometric medoid client update rather than computing a linear combination, it reliably selects the central uncompromised client (AUROC = 0.8653) across all 1-attacker variants, and shifts to the nearest alternative honest medoid (AUROC = 0.8511) under 2- and 3-attacker conditions, resulting in identical invariant scores across attack types with matching attacker counts. This confirms theoretical Byzantine tolerance: coordinate median minimizes the effect of outliers, and Krum provides theoretical Byzantine tolerance for up to $f \leq \lfloor(K-3)/2\rfloor = 2$ malicious nodes under its formal guarantee (requiring $K \geq 2f+3$); our empirical results show it remains robust at $f=3$ in this specific dataset.
+\textbf{Median and Krum are the most robust} (Table~\ref{tab:byzantine_robustness}, Fig.~\ref{fig:byzantine_robustness}). Under three label-flip clients, Median keeps AUROC at 0.8594 (0.4\% loss) and Krum at 0.8511 (1.6\% loss); across all tested attacks, Median's minimum is 0.8353 (adaptive, two clients) and Krum's is 0.8511. Median sometimes exceeds its own clean value (0.8698 under one label-flip client and 0.8710 under one adaptive client versus 0.8628); such differences of about 0.01 are comparable to the seed variability we measured for FedAvg and should not be over-interpreted.
 
-\textbf{FedAvg} collapses to AUROC 0.5011 under 3 malicious clients (43.0\% loss), because label-flipped gradients corrupt the global model and naive averaging provides no correction.
+Krum returns a single client's update, so its AUROC equals that of one client-trained model. It yields 0.8653 in the clean run and in every one-attacker run, i.e., it selects the same update with and without attackers, and 0.8511 in every two- and three-attacker run. This explains the identical values across attack types. It also means that Krum's score must be read against a local-only baseline, which we did not run: in a single-institution simulation a single client's model can already be competitive with the federated models. Krum's formal guarantee requires $2f+2<K$, i.e., $f\le 2$ for $K=7$; the three-client results are empirical, and our neighbor count corresponds to $f=1$ (Section~\ref{sec:method}).
 
-\textbf{FedProx} is highly sensitive.
-A small proximal regularization factor ($\mu = 0.01$) limits local models' deviation from the previous global model but at the same time prevents any possibility of recovering from a poisoning attack.
-In case of label flip attacks, FedProx AUROC is 0.2953 (61.8\% loss)—poorer results than if using completely random prediction.
-This result is specific to $\mu=0.01$ over 20 uncalibrated rounds (see Table~\ref{tab:byzantine_robustness} caption); a sweep over $\mu \in \{0.001, 0.01, 0.1\}$ confirmed that smaller $\mu$ values ease the proximal constraint but do not recover robustness comparable to Median or Krum.
+\textbf{FedAvg} collapses to AUROC 0.5011 under three label-flip clients (43.0\% loss) because label-flipped updates corrupt the average and averaging offers no correction.
 
-\textbf{\textbf{FedF2} is adequate under benign and single-attacker conditions (AUROC $\approx 0.855$), but collapses to 0.4000 under 3 label-flip attackers (54.4\% loss). Poisoned clients also corrupt their local validation sets, preventing F2-based weights from identifying malicious participants.
+\textbf{FedProx} is the most affected: AUROC is 0.2953 (61.8\% loss) under three label-flip clients. A value below 0.5 indicates a systematically inverted ranking, consistent with models that learned the flipped labels, rather than random behavior. Given the instability of FedProx across our experiments (Section~\ref{sec:baseline}), these numbers are specific to $\mu=0.01$ and 20 uncalibrated rounds, and we report no $\mu$ sweep.
+% TODO(authors): if the mu in {0.001, 0.01, 0.1} sweep was actually run, add its results as a table; otherwise leave as is.
 
-\textbf{Sign-flip attacks} are weaker: no method drops below AUROC 0.693, and average loss is only 1.5\% versus 16.2\% under label-flip.
-\textbf{Clinical consequence:} In a 7-client hospital network, empirical robustness order under worst-case label-flip ($K=3$) is: Median $\approx$ Krum $\gg$ FedAvg $\gg$ FedF2 $\gg$ FedProx.
+\textbf{FedF2} is comparable to FedAvg without attacks and with one attacker (AUROC about 0.855), but falls to 0.4000 under three label-flip clients (54.4\% loss). Poisoned clients also corrupt their local validation sets, so F2-based weights cannot identify them (Section~\ref{sec:method}).
 
-The above findings have clearly demonstrated that FedF2, which has the advantages of clinical calibration but lacks Byzantine robustness, cannot rival the robust aggregation methods discussed herein. Based on our empirical results, FedF2 performs comparably to FedAvg under single-client compromise ($f=1$, 14.3\% of clients) in trusted settings. For any environment with credible adversarial risk, Median aggregation is recommended.
+\textbf{Sign-flip attacks are weaker.} No method falls below AUROC 0.696. For FedAvg, the mean loss is 0.7\% over the sign-flip scenarios versus 18.3\% over the label-flip scenarios; for FedProx, 6.8\% versus 51.6\%. Under three label-flip clients, the ordering is Median $\approx$ Krum $\gg$ FedAvg $\gg$ FedF2 $\gg$ FedProx. FedF2 therefore cannot rival the robust rules, and for any environment with credible adversarial risk we recommend Median aggregation.
 
 \subsection{Practitioner Guidance: Aggregation Method Selection}
 
-Based on our empirical findings, we offer a decision matrix for clinical practitioners deploying federated learning (Table~\ref{tab:deployment_guidance}). The choice of aggregation method should balance data heterogeneity tolerance, Byzantine robustness, communication overhead, and threat model assumptions.
+Table~\ref{tab:deployment_guidance} summarizes the choice of aggregation rule by threat level, based on the experiments above (7 clients, 1--3 attackers).
 
 \begin{table*}[t]
-\caption{Aggregation method selection guide for clinical federated learning deployment. Methods are ranked by suitability for each deployment scenario.}
+\caption{Aggregation-rule selection guide derived from this study's experiments. AUROC values come from Tables~\ref{tab:performance} and~\ref{tab:byzantine_robustness}. We did not benchmark the extra server-side cost of Median and Krum; their per-client communication equals FedAvg's.}
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c >{\raggedright\arraybackslash}X c c >{\raggedright\arraybackslash}X}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.4cm} c >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Deployment Scenario} & \textbf{Client Integrity} & \textbf{Data Heterogeneity} & \textbf{Recommended Method} & \textbf{AUROC Performance} & \textbf{Overhead} & \textbf{Notes} \\
+\textbf{Scenario} & \textbf{Client integrity} & \textbf{Recommended rule} & \textbf{AUROC} & \textbf{Notes} \\
 \midrule
-
-\textbf{Trusted Network} & All honest & Moderate/High & FedAvg + Platt scaling & 0.8784 & Minimal & Simple, well-understood \\
-(e.g., single health system) & & & FedF2 ($\gamma=0.5$) & 0.8781 & Minimal & Marginal calibration benefit \\
-
+Trusted network & All clients honest & FedAvg + Platt scaling & 0.8784 & Simple and well understood; FedF2 gave no measurable benefit (0.8781) \\
 \midrule
-
-\textbf{Semi-Untrusted Network} & $<15\%$ estimated compromise & Moderate/High & Median & $\geq0.8353$ & +15--20\% server compute & Best practical robustness \\
-(e.g., multi-hospital, low threat) & & & Krum & $\approx0.851$ & +15--20\% server compute & Slightly lower but consistent \\
-& & & FedF2 fallback & 0.7947 & Minimal & Only if willing to accept risk \\
-
+Possible compromise & Unknown threat model, or up to 1 of 7 (14.3\%) clients & Median & $\geq 0.8353$ & Default when the threat model is unknown; Krum ($\approx0.851$) is an alternative \\
 \midrule
-
-\textbf{Adversarial/High-Risk Network} & $\geq15\%$ estimated compromise & Moderate/High & Median & $\geq0.8353$ & +15--20\% server compute & Essential for clinical safety \\
-(e.g., ransomware threat) & & & Krum & $\approx0.851$ & +15--20\% server compute & Do NOT use FedAvg/FedF2 \\
-
+Probable compromise & 2--3 of 7 (28.6--42.9\%) clients & Median & $\geq 0.8353$ & Do not use FedAvg, FedProx, or FedF2; Krum's guarantee holds only for $f\le2$ at $K=7$ \\
 \bottomrule
 \end{tabularx}
 \label{tab:deployment_guidance}
 \end{table*}
 
-Recommendations: (1) Platt calibration on federated probabilities must be done in all scenarios; (2) The median rule is appropriate in practice as the default in the absence of any threat model; (3) FedF2 must be used
-only in trusted networks; and (4) The additional server-side computation cost for Byzantine methods (15\%--20\% overhead) is reasonable given the safety benefit.
+Recommendations: (1) calibrate federated probabilities and select thresholds on validation data of the federated model; (2) use Median as the default when the threat model is unknown; (3) use FedAvg with Platt scaling when all clients are trusted, since FedF2 showed no benefit; (4) account for the additional server-side computation of Median and Krum, which we did not measure.
 
-\subsection{Privacy and Scalability Trade-Offs}
+\subsection{Privacy and Scalability}
 \label{sec:privacy_scalability}
 
-DP-SGD with $(\epsilon=4.36, \delta=10^{-5}$, $\sigma=4.80$) achieves AUROC 0.8477 after calibration (Table~\ref{tab:performance}). With 65,273 patients distributed across 7 local datasets, the system preserves federated model quality under privacy constraints. Scalability testing to 28 clients and 30\% dropout tolerance demonstrate resilience to network growth and client failures. Byzantine-resilient methods (Krum, Median) require 15--20\% additional \emph{server-side} computation overhead compared to FedAvg (communication bandwidth per client is identical).
+DP-SGD ($\epsilon=4.36$, $\delta=10^{-5}$, $\sigma=4.80$) yields AUROC 0.8477 (Table~\ref{tab:performance}), 0.031 below non-private FedAvg (0.8784), with 38.1\% recall and 65.4\% precision at $\tau=0.39$; this is a single run at a single privacy budget, so it does not trace a full privacy--utility curve. Fig.~\ref{fig:scaling} shows that DP also raises the Brier score and ECE. In simulation, AUROC stayed near 0.885 as the number of clients grew from 7 to 28 and declined slightly (about 0.88 to 0.87) under 10--30\% random client dropout, while throughput fell with more clients under synchronous aggregation (Fig.~\ref{fig:comprehensive}). Median and Krum require additional server-side computation compared with FedAvg; per-client communication is identical.
+% TODO(authors): describe how the 28-client scalability and dropout experiments partitioned the data.
 
 \subsection{Clinical Interpretation of Federated Feature Drift}
 \label{sec:clinical_interpretation}
-Feature importance analysis reveals significant heterogeneity across ICU care units. Bicarbonate (Min) and BUN (Max) exhibit the highest coefficient of variation (CV = 1.46 and 1.04 respectively), reflecting divergent metabolic pathways across unit types (Figure~\ref{fig:feature_drift}). This heterogeneity impacts federated averaging through probability compression effects.
+The coefficient of variation of local model weights is highest for Bicarbonate (Min) (1.46) and BUN (Max) (1.04), indicating that these features contribute very differently across care units (Fig.~\ref{fig:feature_drift}). One hypothesis is that this reflects differences in metabolic and renal physiology across unit types; we did not test it, and the CV of weights is also sensitive to weights near zero.
 
 \subsection{Reproducibility and Experimental Setup}
 \label{sec:reproducibility}
-All experiments were performed on one computer equipped with an Intel Xeon E-2286M processor (32 GB RAM), \texttt{RANDOM\_SEED=42}, without the use of a GPU. Our approach utilizes Python 3.14, NumPy 2.2, Pandas 2.2, and Scikit-Learn 1.6. A 5-round training using FedAvg is completed within $\approx$42 seconds; adding DP-SGD results in $\approx$3 minutes.
+All experiments ran on one computer with an Intel Xeon E-2286M processor and 32 GB RAM, without a GPU, with \texttt{RANDOM\_SEED=42}. The software stack was Python 3.14, NumPy 2.2, Pandas 2.2, and Scikit-Learn 1.6. A 5-round FedAvg run completes in about 42 seconds; adding DP-SGD raises this to about 3 minutes.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=0.95\columnwidth]{figures/figure1_main_results.pdf}}
-\caption{Main results comparison showing AUROC and clinical recall (sensitivity) for centralized vs. federated learning under Non-IID conditions. DP-SGD values are reported at the Platt-calibrated threshold (0.39); see Table~\ref{tab:performance} for full details.}
+\caption{AUROC and clinical recall for centralized versus federated learning under Non-IID conditions. Federated recall values are at the Platt-calibrated threshold (0.39); see Table~\ref{tab:performance}.}
 \label{fig:bottleneck}
 \end{figure}
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=0.95\columnwidth]{figures/figure5_privacy_tradeoff.pdf}}
-\caption{Privacy--utility tradeoff at $\epsilon=4.36$, $\delta=10^{-5}$ (verified via moments accountant). Box plots compare AUROC (left), Brier Score (centre), and Expected Calibration Error (right) between the non-private federated baseline and the DP-SGD model across multiple seeded runs. Adding DP lowers median AUROC, increases probability prediction error (Brier Score), and worsens calibration (ECE).}
+\caption{Privacy--utility tradeoff at $\epsilon=4.36$, $\delta=10^{-5}$. Box plots compare AUROC (left), Brier score (center), and ECE (right) for the non-private federated baseline and the DP-SGD model across multiple seeded runs. DP lowers median AUROC and raises Brier score and ECE; the high DP ECE indicates that these outputs are not Platt-scaled.}
 \label{fig:scaling}
 \end{figure}
 
 \subsection{Cross-Dataset Federated Replication on eICU-CRD}
 \label{subsec:eicu_validation}
 
-To validate whether our federated learning framework generalizes across independent hospital ecosystems with distinct demographic profiles and clinical practice patterns, we conducted a cross-dataset replication benchmark using the eICU Collaborative Research Database (eICU-CRD) \cite{eicu2018}---a public database containing over 200,000 ICU admissions from 208 hospitals. Rather than evaluating a single-site model, we instantiated an independent 7-hospital federated network to assess whether collaborative training achieves comparable performance on an independent multi-center cohort. From this, we collected 131,517 ICU adult admissions ($\geq18$ years old, LOS $\geq4$ hours) and selected 7 hospitals based on admission volume (Hospitals 73, 264, 338, 420, 243, 458, 167), yielding 22,361 training samples across 7 clients. The mortality rate was 10.1\% (compared to 10.8\% in MIMIC-IV), the mean age was 61.4 $\pm$ 16.5 (compared to 64.5 $\pm$ 15.8 in MIMIC), and 29 clinical features within the first 24 hours were aligned following the same preprocessing pipeline.
+To test whether the federated behavior observed on MIMIC-IV recurs on an independent multi-center database, we ran a replication on eICU-CRD~\cite{eicu2018}, a public database of over 200,000 ICU admissions from 208 hospitals. We selected 131,517 adult admissions ($\geq18$ years, length of stay $\geq4$ hours) and the seven hospitals with the highest admission volume (hospitals 73, 264, 338, 420, 243, 458, 167), yielding 22,361 training samples across 7 clients. The mortality rate was 10.1\% (MIMIC-IV: 10.8\%), the mean age was $61.4 \pm 16.5$ years (MIMIC-IV: $64.5\pm15.8$), and 29 clinical features from the first 24 hours were aligned using the same preprocessing pipeline. New models were trained on eICU-CRD; the MIMIC-IV model was not applied to eICU-CRD.
 \begin{itemize}
-    \item \textbf{Baseline Model (centralized):} AUROC 0.8441 (compared to 0.8920 in centralized model in MIMIC-IV logistic regression experiment)
-
-    \item \textbf{Federated FedAvg:} AUROC 0.8349 (1.09\% relative loss compared to centralized baseline)
-
-    \item \textbf{Expected Calibration Error (ECE):} 0.0134 after applying Platt scaling
-
-    \item \textbf{Inter-dataset AUROC difference:} 5.33\% AUROC difference between MIMIC-IV and eICU-CRD centralized models (0.8920 versus 0.8441)
+    \item \textbf{Centralized baseline:} AUROC 0.8441 (MIMIC-IV: 0.8920).
+    \item \textbf{Federated FedAvg:} AUROC 0.8349, a 1.09\% relative loss versus centralized.
+    \item \textbf{Calibration:} ECE 0.0134 after Platt scaling.
+    \item \textbf{Inter-dataset gap:} the centralized AUROC differs by 0.048 (5.4\% relative) between MIMIC-IV and eICU-CRD.
 \end{itemize}
 
-The 1.09\% federated loss on eICU-CRD parallels the 1.52\% relative loss on MIMIC-IV, suggesting consistent federated degradation across datasets. ECE of 0.0134 confirms strong calibration after Platt scaling. The 5.33\% inter-dataset centralized AUROC gap (0.8920 vs.\ 0.8441) reflects genuine demographic and clinical practice differences between the two cohorts.
+The 1.09\% federated loss on eICU-CRD is similar to the 1.52\% on MIMIC-IV, so the small AUROC cost of federation recurred in a second database. The 0.048 gap between datasets cannot be attributed to demographic or practice differences alone, because the datasets also differ in feature count (29 versus 31), sample size, and preprocessing.
 
 \FloatBarrier
+\section{Discussion and Limitations}
+\label{sec:limits}
+
+\textbf{Simulation scope.} The seven MIMIC-IV clients are care units of one hospital. The eICU-CRD experiment trains new models on a second database; transferring the MIMIC-IV model to eICU-CRD hospitals, i.e., true external validation, was not evaluated.
+
+\textbf{Statistics.} Most results are single runs; only FedAvg was repeated over five seeds, and the variability found there (0.0065 AUROC) is comparable to many differences between methods. We report no confidence intervals or DeLong tests and no local-only baseline, which is needed to interpret Krum, whose output is one client's model.
+
+\textbf{Privacy.} DP-SGD was evaluated only for logistic regression with FedAvg at a single $\epsilon$. Platt scaling and threshold selection use validation labels outside the guarantee, and DP can affect minority classes disproportionately~\cite{bagdasaryan2019differential}. XGBoost ensembling has no formal privacy guarantee. DP and Byzantine-robust aggregation were not evaluated together, and DP noise may interact with Krum's distances and the median; this remains open.
+
+\textbf{Threat model.} The attacks are simple and not tailored to the aggregator. Krum's formal guarantee covers $f\le2$ for seven clients, and FedProx results were unstable across experiments.
+
+\textbf{Deployment.} The simulation assumes synchronous rounds, harmonized features, and no network layer. Real deployments also need secure transport and aggregation, audit trails, ontology harmonization (e.g., ICD-9/10), and prospective clinical validation, including subgroup and fairness analysis. The study is retrospective and does not assess clinical utility.
+
 \section{Conclusion}
-This study demonstrates that federated learning achieves competitive discriminative performance with centralized training on realistic, large-scale ICU datasets without centralizing patient records. On MIMIC-IV, federated FedAvg attained an AUROC of 0.8784, a 1.52\% relative reduction from the centralized baseline AUROC of 0.8920. Probability calibration is critical for threshold selection: Platt-scaled FedAvg yields 43.5\% recall at $\tau=0.39$, or 86.3\% recall at the adjusted threshold $\tau=0.05$ (23.9\% precision). Furthermore, independent cross-dataset replication on eICU-CRD across seven disjoint hospitals verified that federated learning degrades by only 1.09\% relative to centralized training (0.8349 vs. 0.8441 AUROC). Formally private per-sample DP-SGD ($\epsilon = 4.36, \delta = 10^{-5}$) preserved strong clinical utility at 0.8477 AUROC.
+\label{sec:conclusion}
+We benchmarked federated learning for ICU mortality prediction on MIMIC-IV, with a federated replication on eICU-CRD. Federated logistic regression reached 0.8784 AUROC versus 0.8920 centralized (1.52\% relative loss), and the replication showed a similar small loss (1.09\%; 0.8349 versus 0.8441). The AUROC difference understates the practical cost: at matched sensitivity of about 85\%, federated precision was 23.9\% versus 30.2\%, and a Platt-scaled federated model at the centralized threshold $\tau=0.39$ had only 43.5\% recall, so thresholds must be re-selected for federated models. DP-SGD ($\epsilon=4.36$) gave 0.8477 AUROC in a single run.
 
-A full Byzantine-robustness evaluation for aggregation strategies against 1, 2, and 3 malicious clients employing label-flip, sign-flip, and adaptive attacks (Section~\ref{sec:byzantine_robustness}, Table~\ref{tab:byzantine_robustness}) was carried out. Notably, median aggregation is resilient to 3 malicious clients performing a label-flip attack (degradation in AUROC by 0.4\%), maintaining AUROC $= 0.8594$ in this scenario (minimum across all tested attacks: 0.8353), while Krum provides AUROC of about 0.851 in all cases of label-flip attacks (degradation in AUROC by 1.6\%). However, both FedAvg and FedProx suffer from severe degradation under 3 attacks, with respectively AUROC values of 0.5011 (43\% degradation) and 0.2953 (61.8\% degradation). These results confirm the necessity of Byzantine-resistant aggregation in adversarial healthcare settings. FedF2 performs adequately under single-attacker conditions (AUROC 0.8534) but fails under heavy poisoning (AUROC 0.4000).
+Under label-flip, sign-flip, and adaptive attacks on 1--3 of 7 clients, Median kept AUROC at or above 0.8353 (0.8594 under three label-flip clients) and Krum at about 0.851, while FedAvg and FedProx fell to 0.5011 and 0.2953 and FedF2 to 0.4000. F2-based weighting showed no benefit over FedAvg. These results support Byzantine-robust aggregation when client trust cannot be assured. They come from single-split simulations without joint DP-plus-robust-aggregation experiments, statistical tests, or external validation, and they do not establish clinical readiness.
 
-However, FedProx ($\mu = 0.01$) yielded lower recall (38.0\% vs. 43.5\% for calibrated FedAvg at $\tau=0.39$) due to proximal penalty constraints on local parameters. Byzantine-robust aggregation such as Krum or Median was resilient to adversarial clients at the cost of 15--20\% additional server-side computation per aggregation round.
+\section*{Ethics Statement}
+This study used de-identified data from MIMIC-IV (v3.1) and eICU-CRD (v2.0), both distributed through PhysioNet. The collection of MIMIC-IV was approved by the Institutional Review Boards of the Massachusetts Institute of Technology and Beth Israel Deaconess Medical Center with a waiver of informed consent, and eICU-CRD is de-identified under the HIPAA Safe Harbor provision~\cite{eicu2018}. Access followed completion of required human-subjects training (CITI Program) and signed PhysioNet data use agreements. No additional IRB approval was required for this secondary analysis.
+
+\section*{Data and Code Availability}
+MIMIC-IV and eICU-CRD are available to credentialed researchers on PhysioNet (\url{https://physionet.org}) after training and a data use agreement. The code for cohort preprocessing, federated training, differential-privacy accounting, calibration, and robustness experiments is available at \url{https://github.com/raiyan-jiyon/federated-healthcare-ml}.
 
 \section*{Acknowledgment}
 The authors gratefully acknowledge the support from Green University of Bangladesh and Jahangirnagar University. We thank all colleagues who provided constructive feedback during manuscript preparation. This work was supported in part by institutional research funds.
